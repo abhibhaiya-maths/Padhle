@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abhi Bhaiya | Mathematics Mentor & Educator</title>
+    
+    <!-- Fonts: Inter (Body) & Sora (Headings) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- GSAP for High-End Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Sora', 'sans-serif'],
+                    },
+                    colors: {
+                        background: '#020617',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #020617;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .glow-border {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .glow-border::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(56,189,248,0.5), rgba(37,99,235,0.1));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .glow-border:hover::before {
+            opacity: 1;
+        }
+
+        /* Floating Math background container */
+        #math-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+            opacity: 0.15;
+        }
+
+        .math-symbol {
+            position: absolute;
+            color: #3b82f6;
+            font-weight: bold;
+            font-size: 2rem;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-blue-500 selection:text-white">
+
+    <!-- Ambient Glows -->
+    <div class="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-600/30 rounded-full blur-[150px] pointer-events-none z-0"></div>
+    <div class="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-sky-500/20 rounded-full blur-[150px] pointer-events-none z-0"></div>
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 w-full z-50 glass-card border-b-0 border-white/5 px-6 py-4 flex justify-between items-center backdrop-blur-xl transition-all duration-300">
+        <div class="flex items-center gap-3">
+            <img src="logo-nav.png" alt="Padhle India" class="h-10 object-contain" onerror="this.src='https://via.placeholder.com/140x40?text=Logo+Nav'">
+        </div>
+        <div class="hidden md:flex gap-8 text-sm font-medium text-gray-300">
+            <a href="#about" class="hover:text-sky-400 transition-colors">About Mentor</a>
+            <a href="#programs" class="hover:text-sky-400 transition-colors">Programs</a>
+            <a href="#ecosystem" class="hover:text-sky-400 transition-colors">Free Lectures</a>
+            <a href="#resources" class="hover:text-sky-400 transition-colors">Resources</a>
+        </div>
+        <button class="bg-white text-black px-6 py-2 rounded-full font-bold text-sm hover:scale-105 transition-transform flex items-center gap-2">
+            Explore Courses <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="relative min-h-screen flex items-center justify-center pt-20 z-10 px-6">
+        <div id="math-canvas"></div>
+        
+        <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center w-full relative z-10">
+            
+            <!-- Left Content -->
+            <div class="flex flex-col gap-6 hero-content opacity-0 translate-x-[-50px]">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card w-max border-white/10 text-xs font-semibold text-sky-400 uppercase tracking-widest">
+                    <i data-lucide="graduation-cap" class="w-3 h-3 fill-sky-400"></i>
+                    Excellence in Mathematics Mentorship
+                </div>
+                
+                <h1 class="text-5xl lg:text-[64px] font-extrabold tracking-tight leading-[1.1] font-display">
+                    Master Mathematics.<br/>
+                    <span class="text-gradient">Achieve Academic Excellence.</span>
+                </h1>
+                
+                <p class="text-lg text-gray-400 max-w-xl leading-relaxed">
+                    Join 38 Lakh+ students who have transformed their logical thinking and secured top percentiles in CBSE Boards, Olympiads, and Foundation exams under the guidance of Abhi Bhaiya.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row flex-wrap gap-4 mt-4">
+                    <a href="#programs" class="bg-gradient-to-r from-blue-600 to-sky-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:shadow-[0_0_30px_rgba(56,189,248,0.4)] hover:scale-105 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                        <i data-lucide="book-open" class="w-5 h-5"></i> View Programs
+                    </a>
+                    <a href="#ecosystem" class="glass-card px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                        <i data-lucide="play-circle" class="w-5 h-5"></i> Free Lectures
+                    </a>
+                </div>
+                <p class="text-xs text-gray-500 font-medium tracking-wide">
+                    <i data-lucide="users" class="w-3 h-3 inline mr-1"></i> Trusted by a community of 134,000+ active learners.
+                </p>
+            </div>
+
+            <!-- Right Image & Floating Cards -->
+            <div class="relative h-[600px] w-full flex justify-center items-end lg:items-center hero-visual opacity-0 scale-90">
+                <img src="hero-photo.png" alt="Abhinay Rai (Abhi Bhaiya)" class="absolute bottom-0 h-[90%] object-contain drop-shadow-[0_0_50px_rgba(37,99,235,0.3)] z-10" onerror="this.src='https://via.placeholder.com/400x500?text=Founder+Photo'">
+
+                <!-- Floating Card 1 -->
+                <div class="absolute top-[10%] left-0 z-20 glass-card p-4 rounded-2xl flex items-center gap-4 floating-element" data-speed="2">
+                    <div class="bg-blue-500/20 p-3 rounded-xl"><i data-lucide="users" class="text-sky-400 w-6 h-6"></i></div>
+                    <div>
+                        <div class="text-2xl font-bold font-display"><span class="counter" data-target="38">0</span>L+</div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Students Mentored</div>
+                    </div>
+                </div>
+
+                <!-- Floating Card 2 -->
+                <div class="absolute top-[40%] right-[-5%] z-20 glass-card p-4 rounded-2xl flex items-center gap-4 floating-element" data-speed="-1.5">
+                    <div class="bg-yellow-500/20 p-3 rounded-xl"><i data-lucide="award" class="text-yellow-400 w-6 h-6"></i></div>
+                    <div>
+                        <div class="text-2xl font-bold font-display">95%+</div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Board Accuracy</div>
+                    </div>
+                </div>
+
+                <!-- Floating Card 3 -->
+                <div class="absolute bottom-[15%] left-[-10%] z-20 glass-card p-4 rounded-2xl flex items-center gap-4 floating-element" data-speed="1.2">
+                    <div class="bg-purple-500/20 p-3 rounded-xl"><i data-lucide="briefcase" class="text-purple-400 w-6 h-6"></i></div>
+                    <div>
+                        <div class="text-2xl font-bold font-display"><span class="counter" data-target="10">0</span>+</div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Years Experience</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TRUST SECTION -->
+    <section class="py-12 border-y border-white/5 bg-white/5 relative z-10">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <p class="text-sm font-bold tracking-[0.2em] text-gray-500 mb-8 uppercase font-display">Delivered Quality Education Across India's Leading Platforms</p>
+            <div class="flex flex-wrap justify-center items-center gap-12 lg:gap-24 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+                <h3 class="text-2xl font-bold font-display tracking-tight">Unacademy</h3>
+                <h3 class="text-2xl font-bold font-display tracking-tight">PhysicsWallah</h3>
+                <h3 class="text-2xl font-bold font-display tracking-tight">BYJU'S</h3>
+                <h3 class="text-2xl font-bold font-display tracking-tight">Toppr</h3>
+                <div class="relative group cursor-pointer">
+                    <h3 class="text-2xl font-bold font-display tracking-tight text-white">The City Carnival</h3>
+                    <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-max bg-blue-600 text-white text-xs px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                        "Mentoring over 38 Lakh Indian Students..."
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT MENTOR -->
+    <section id="about" class="py-32 px-6 bg-[#03081a] relative z-10">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-20 gs-reveal">
+                <span class="text-blue-500 font-bold tracking-[0.2em] uppercase text-sm font-display mb-4 block">About Your Mentor</span>
+                <h2 class="text-4xl lg:text-5xl font-extrabold mb-6 font-display leading-tight">
+                    A Legacy of Academic <br/>
+                    <span class="text-gradient">Excellence and Mentorship.</span>
+                </h2>
+                <p class="text-gray-400 text-lg leading-relaxed mb-6">
+                    From clearing the nation's toughest engineering exams to shaping the mathematics curriculum at India's largest EdTech organizations, Abhinay Rai brings over a decade of profound pedagogical expertise.
+                </p>
+                <p class="text-gray-300 text-lg font-medium italic">
+                    "True education is not about memorizing formulas; it is about cultivating analytical thinking and problem-solving skills that last a lifetime."
+                </p>
+            </div>
+
+            <div class="relative border-l border-white/10 ml-4 md:ml-0 md:border-l-0">
+                <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-white/10"></div>
+                
+                <!-- Timeline Item 1 -->
+                <div class="mb-12 relative flex items-center justify-between w-full md:w-[100%] gs-reveal">
+                    <div class="hidden md:block w-[45%] text-right pr-8"></div>
+                    <div class="absolute left-[-5px] md:left-1/2 md:transform md:-translate-x-1/2 w-3 h-3 rounded-full bg-blue-500 ring-4 ring-[#03081a] z-10 shadow-[0_0_15px_rgba(59,130,246,0.8)]"></div>
+                    <div class="ml-8 md:ml-0 w-full md:w-[45%] glass-card p-6 rounded-2xl hover:border-blue-500/50 transition-colors md:pl-8 border-l-2 border-l-blue-500">
+                        <span class="text-gray-500 font-bold text-xs tracking-widest uppercase mb-2 block font-display">Academic Foundation</span>
+                        <h3 class="text-xl font-bold mb-2 font-display text-white">Engineering Background</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">B.Tech in Mechanical Engineering. Successfully qualified GATE '21 (IIT Bombay Zone), UPSEE, and JEE Main.</p>
+                    </div>
+                </div>
+
+                <!-- Timeline Item 2 -->
+                <div class="mb-12 relative flex items-center justify-between w-full md:w-[100%] md:flex-row-reverse gs-reveal">
+                    <div class="hidden md:block w-[45%] text-left pl-8"></div>
+                    <div class="absolute left-[-5px] md:left-1/2 md:transform md:-translate-x-1/2 w-3 h-3 rounded-full bg-blue-500 ring-4 ring-[#03081a] z-10 shadow-[0_0_15px_rgba(59,130,246,0.8)]"></div>
+                    <div class="ml-8 md:ml-0 w-full md:w-[45%] glass-card p-6 rounded-2xl hover:border-blue-500/50 transition-colors md:pr-8 border-r-2 md:border-r-blue-500 text-left md:text-right">
+                        <span class="text-gray-500 font-bold text-xs tracking-widest uppercase mb-2 block font-display">EdTech Leadership</span>
+                        <h3 class="text-xl font-bold mb-2 font-display text-white">Curriculum Development</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">Played a pivotal role in curriculum design and student success strategies at PhysicsWallah, BYJU'S, and Toppr.</p>
+                    </div>
+                </div>
+
+                <!-- Timeline Item 3 -->
+                <div class="mb-12 relative flex items-center justify-between w-full md:w-[100%] gs-reveal">
+                    <div class="hidden md:block w-[45%] text-right pr-8"></div>
+                    <div class="absolute left-[-5px] md:left-1/2 md:transform md:-translate-x-1/2 w-3 h-3 rounded-full bg-blue-500 ring-4 ring-[#03081a] z-10 shadow-[0_0_15px_rgba(59,130,246,0.8)]"></div>
+                    <div class="ml-8 md:ml-0 w-full md:w-[45%] glass-card p-6 rounded-2xl hover:border-blue-500/50 transition-colors md:pl-8 border-l-2 border-l-blue-500">
+                        <span class="text-gray-500 font-bold text-xs tracking-widest uppercase mb-2 block font-display">National Educator</span>
+                        <h3 class="text-xl font-bold mb-2 font-display text-white">Unacademy</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">Currently an esteemed educator at Unacademy, guiding students for Class 9, 10 boards, and competitive Olympiads.</p>
+                    </div>
+                </div>
+                
+                <!-- Timeline Item 4 -->
+                <div class="mb-12 relative flex items-center justify-between w-full md:w-[100%] md:flex-row-reverse gs-reveal">
+                    <div class="hidden md:block w-[45%] text-left pl-8"></div>
+                    <div class="absolute left-[-5px] md:left-1/2 md:transform md:-translate-x-1/2 w-4 h-4 rounded-full bg-white ring-4 ring-blue-500 z-10 shadow-[0_0_20px_rgba(255,255,255,1)]"></div>
+                    <div class="ml-8 md:ml-0 w-full md:w-[45%] glass-card p-6 rounded-2xl hover:border-white/50 transition-colors md:pr-8 border-r-2 md:border-r-white text-left md:text-right">
+                        <span class="text-blue-400 font-bold text-xs tracking-widest uppercase mb-2 block font-display">Present Vision</span>
+                        <h3 class="text-2xl font-bold mb-2 font-display text-white">Padhle India</h3>
+                        <p class="text-gray-300 text-sm leading-relaxed">A dedicated platform providing structured, high-quality, and accessible education to millions of students nationwide.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PREMIUM PROGRAMS -->
+    <section id="programs" class="py-32 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-20 gs-reveal">
+                <span class="text-blue-500 font-bold tracking-[0.2em] uppercase text-sm font-display mb-4 block">Structured Learning</span>
+                <h2 class="text-4xl lg:text-5xl font-extrabold mb-4 font-display">Premium <span class="text-gradient">Mentorship Programs.</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">Comprehensive courses designed meticulously for ultimate conceptual clarity and board exam excellence.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Course 1 -->
+                <div class="glass-card glow-border p-10 rounded-3xl relative group cursor-pointer overflow-hidden transform transition-all hover:-translate-y-2 gs-reveal">
+                    <div class="absolute top-0 right-0 w-40 h-40 blur-[80px] bg-blue-500/20 rounded-full transition-opacity opacity-0 group-hover:opacity-100"></div>
+                    <span class="absolute top-6 right-6 bg-blue-600 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">Class 10</span>
+                    <div class="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-6">
+                        <i data-lucide="book-open" class="text-blue-400 w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-3xl font-bold mb-3 font-display">Complete Board Strategy <span class="text-blue-400">(Prahaar)</span></h3>
+                    <p class="text-gray-400 text-base mb-8 leading-relaxed">An exhaustive curriculum covering the entire Class 10 mathematics syllabus. Focuses on deep conceptual understanding, NCERT mastery, and board pattern questions.</p>
+                    <button class="w-full sm:w-auto bg-white text-black px-6 py-3 rounded-full font-bold text-sm hover:scale-105 transition-transform flex items-center justify-center gap-2">
+                        View Details <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Course 2 -->
+                <div class="glass-card glow-border p-10 rounded-3xl relative group cursor-pointer overflow-hidden transform transition-all hover:-translate-y-2 gs-reveal" style="transition-delay: 100ms;">
+                    <div class="absolute top-0 right-0 w-40 h-40 blur-[80px] bg-emerald-500/20 rounded-full transition-opacity opacity-0 group-hover:opacity-100"></div>
+                    <span class="absolute top-6 right-6 bg-emerald-600 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">Class 9</span>
+                    <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-6">
+                        <i data-lucide="layers" class="text-emerald-400 w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-3xl font-bold mb-3 font-display">Foundation Builder <span class="text-emerald-400">(Aarambh)</span></h3>
+                    <p class="text-gray-400 text-base mb-8 leading-relaxed">Designed to bridge the gap between middle school and high school mathematics. Establishes a robust base required for future competitive exams and boards.</p>
+                    <button class="w-full sm:w-auto bg-white text-black px-6 py-3 rounded-full font-bold text-sm hover:scale-105 transition-transform flex items-center justify-center gap-2">
+                        View Details <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Course 3 -->
+                <div class="glass-card glow-border p-10 rounded-3xl relative group cursor-pointer overflow-hidden transform transition-all hover:-translate-y-2 gs-reveal">
+                    <div class="absolute top-0 right-0 w-40 h-40 blur-[80px] bg-orange-500/20 rounded-full transition-opacity opacity-0 group-hover:opacity-100"></div>
+                    <span class="absolute top-6 right-6 bg-orange-600 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">Revision</span>
+                    <div class="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-6">
+                        <i data-lucide="trending-up" class="text-orange-400 w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-3xl font-bold mb-3 font-display">Board Booster Series</h3>
+                    <p class="text-gray-400 text-base mb-8 leading-relaxed">A targeted revision program for students aiming to maximize their final scores. Includes rigorous PYQ solving, time-management strategies, and mock tests.</p>
+                    <button class="w-full sm:w-auto bg-white text-black px-6 py-3 rounded-full font-bold text-sm hover:scale-105 transition-transform flex items-center justify-center gap-2">
+                        View Details <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Course 4 -->
+                <div class="glass-card glow-border p-10 rounded-3xl relative group cursor-pointer overflow-hidden transform transition-all hover:-translate-y-2 gs-reveal" style="transition-delay: 100ms;">
+                    <div class="absolute top-0 right-0 w-40 h-40 blur-[80px] bg-purple-500/20 rounded-full transition-opacity opacity-0 group-hover:opacity-100"></div>
+                    <span class="absolute top-6 right-6 bg-purple-600 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">Competitive</span>
+                    <div class="w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-6">
+                        <i data-lucide="award" class="text-purple-400 w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-3xl font-bold mb-3 font-display">Olympiad & JEE Base</h3>
+                    <p class="text-gray-400 text-base mb-8 leading-relaxed">An advanced curriculum for high-achieving students preparing for IOQM, RMO, and early JEE foundation. Focuses on critical thinking and complex problem solving.</p>
+                    <button class="w-full sm:w-auto bg-white text-black px-6 py-3 rounded-full font-bold text-sm hover:scale-105 transition-transform flex items-center justify-center gap-2">
+                        View Details <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- YOUTUBE ECOSYSTEM SECTION -->
+    <section id="ecosystem" class="py-32 px-6 relative z-10 bg-black/40">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6 gs-reveal">
+                <div>
+                    <span class="text-red-500 font-bold tracking-[0.2em] uppercase text-sm font-display mb-4 block">YouTube Ecosystem</span>
+                    <h2 class="text-4xl lg:text-5xl font-extrabold mb-4 font-display">Free, High-Quality <span class="text-gradient">Education.</span></h2>
+                    <p class="text-gray-400 max-w-2xl text-lg">Structured video lectures across dedicated channels, ensuring premium educational content is accessible to millions of students.</p>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Channel 1 -->
+                <a href="https://www.youtube.com/@10thTitansbyUnacademy" target="_blank" class="glass-card glow-border p-6 rounded-3xl flex flex-col group hover:bg-white/5 transition-all gs-reveal">
+                    <div class="w-16 h-16 rounded-full bg-black flex items-center justify-center border border-white/10 mb-4 group-hover:scale-110 transition-transform overflow-hidden">
+                        <img src="10th-titans.png" alt="10th Titans" class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 font-display">10th Titans</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-4">Dedicated board preparation strategies, chapter explanations, and previous year paper discussions.</p>
+                    <div class="mt-auto flex items-center text-red-500 text-xs font-bold uppercase tracking-wider">
+                        Explore Channel <i data-lucide="chevron-right" class="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1"></i>
+                    </div>
+                </a>
+                
+                <!-- Channel 2 -->
+                <a href="https://www.youtube.com/@9thKnightsbyUnacademy-l3f" target="_blank" class="glass-card glow-border p-6 rounded-3xl flex flex-col group hover:bg-white/5 transition-all gs-reveal" style="transition-delay: 100ms;">
+                    <div class="w-16 h-16 rounded-full bg-black flex items-center justify-center border border-white/10 mb-4 group-hover:scale-110 transition-transform overflow-hidden">
+                        <img src="9th-knights.png" alt="9th Knights" class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 font-display">9th Knights</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-4">In-depth conceptual lectures tailored for Class 9 students to build a strong academic base.</p>
+                    <div class="mt-auto flex items-center text-red-500 text-xs font-bold uppercase tracking-wider">
+                        Explore Channel <i data-lucide="chevron-right" class="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1"></i>
+                    </div>
+                </a>
+
+                <!-- Channel 3 -->
+                <a href="https://www.youtube.com/@Class11Unacademy" target="_blank" class="glass-card glow-border p-6 rounded-3xl flex flex-col group hover:bg-white/5 transition-all gs-reveal" style="transition-delay: 200ms;">
+                    <div class="w-16 h-16 rounded-full bg-black flex items-center justify-center border border-white/10 mb-4 group-hover:scale-110 transition-transform overflow-hidden">
+                        <img src="class-11.png" alt="Class 11 Hub" class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 font-display">Class 11 Hub</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-4">Smooth transition guides and foundational lectures for students entering senior secondary education.</p>
+                    <div class="mt-auto flex items-center text-red-500 text-xs font-bold uppercase tracking-wider">
+                        Explore Channel <i data-lucide="chevron-right" class="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1"></i>
+                    </div>
+                </a>
+
+                <!-- Channel 4 -->
+                <a href="https://www.youtube.com/@UAOlympiadCorner" target="_blank" class="glass-card glow-border p-6 rounded-3xl flex flex-col group hover:bg-white/5 transition-all gs-reveal" style="transition-delay: 300ms;">
+                    <div class="w-16 h-16 rounded-full bg-black flex items-center justify-center border border-white/10 mb-4 group-hover:scale-110 transition-transform overflow-hidden bg-white">
+                        <img src="olympiad-corner.png" alt="Olympiad Corner" class="w-full h-full object-contain p-1">
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 font-display">Olympiad Corner</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-4">Advanced problem-solving sessions designed specifically for national and international math olympiads.</p>
+                    <div class="mt-auto flex items-center text-red-500 text-xs font-bold uppercase tracking-wider">
+                        Explore Channel <i data-lucide="chevron-right" class="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FREE RESOURCES -->
+    <section id="resources" class="py-32 px-6 bg-gradient-to-b from-[#020617] to-[#040b24] z-10 relative border-t border-white/5">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-20 gs-reveal">
+                <span class="text-blue-500 font-bold tracking-[0.2em] uppercase text-sm font-display mb-4 block">Study Material</span>
+                <h2 class="text-4xl lg:text-5xl font-extrabold mb-4 font-display">Essential Resources. <span class="text-gradient">Curated by Experts.</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">High-yield revision notes, past year question archives, and formula sheets designed for efficient academic preparation.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-4 gap-6 text-left">
+                <div class="glass-card p-8 rounded-3xl border-t border-t-white/20 hover:-translate-y-2 transition-transform duration-300 gs-reveal group cursor-pointer">
+                    <i data-lucide="file-text" class="text-blue-400 w-8 h-8 mb-6 group-hover:scale-110 transition-transform"></i>
+                    <h3 class="text-xl font-bold mb-3 font-display text-white">Comprehensive Notes</h3>
+                    <p class="text-gray-400 mb-6 text-sm">Systematically structured handwritten notes covering key concepts, theorems, and proofs.</p>
+                    <a href="https://t.me/mathsvalebhaiya" target="_blank" class="text-xs font-bold uppercase tracking-widest text-sky-400 flex items-center gap-1 hover:gap-2 transition-all">
+                        Download Free <i data-lucide="arrow-down-circle" class="w-4 h-4"></i>
+                    </a>
+                </div>
+
+                <div class="glass-card p-8 rounded-3xl border-t border-t-white/20 hover:-translate-y-2 transition-transform duration-300 gs-reveal group cursor-pointer" style="transition-delay: 100ms;">
+                    <i data-lucide="archive" class="text-blue-400 w-8 h-8 mb-6 group-hover:scale-110 transition-transform"></i>
+                    <h3 class="text-xl font-bold mb-3 font-display text-white">PYQ Archive</h3>
+                    <p class="text-gray-400 mb-6 text-sm">A meticulously compiled repository of previous year board questions categorized by chapter and weightage.</p>
+                    <a href="https://t.me/mathsvalebhaiya" target="_blank" class="text-xs font-bold uppercase tracking-widest text-sky-400 flex items-center gap-1 hover:gap-2 transition-all">
+                        Download Free <i data-lucide="arrow-down-circle" class="w-4 h-4"></i>
+                    </a>
+                </div>
+
+                <div class="glass-card p-8 rounded-3xl border-t border-t-white/20 hover:-translate-y-2 transition-transform duration-300 gs-reveal group cursor-pointer" style="transition-delay: 200ms;">
+                    <i data-lucide="calculator" class="text-blue-400 w-8 h-8 mb-6 group-hover:scale-110 transition-transform"></i>
+                    <h3 class="text-xl font-bold mb-3 font-display text-white">Formula Master Sheet</h3>
+                    <p class="text-gray-400 mb-6 text-sm">Quick-reference sheets mapping all essential formulas across the curriculum for rapid revision.</p>
+                    <a href="https://t.me/mathsvalebhaiya" target="_blank" class="text-xs font-bold uppercase tracking-widest text-sky-400 flex items-center gap-1 hover:gap-2 transition-all">
+                        Download Free <i data-lucide="arrow-down-circle" class="w-4 h-4"></i>
+                    </a>
+                </div>
+
+                <div class="glass-card p-8 rounded-3xl border-t border-t-white/20 hover:-translate-y-2 transition-transform duration-300 gs-reveal group cursor-pointer" style="transition-delay: 300ms;">
+                    <i data-lucide="clipboard-list" class="text-blue-400 w-8 h-8 mb-6 group-hover:scale-110 transition-transform"></i>
+                    <h3 class="text-xl font-bold mb-3 font-display text-white">Mock Test Papers</h3>
+                    <p class="text-gray-400 mb-6 text-sm">Expert-curated sample papers strictly aligned with the latest CBSE examination pattern.</p>
+                    <a href="https://t.me/mathsvalebhaiya" target="_blank" class="text-xs font-bold uppercase tracking-widest text-sky-400 flex items-center gap-1 hover:gap-2 transition-all">
+                        Download Free <i data-lucide="arrow-down-circle" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section id="testimonials" class="py-32 px-6 bg-[#03081a] relative z-10">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-20 gs-reveal">
+                <span class="text-orange-500 italic font-semibold tracking-widest text-sm font-display mb-4 block">Real Stories</span>
+                <h2 class="text-4xl lg:text-5xl font-extrabold mb-4 font-display">From the <span class="text-gradient">Unstoppable Army.</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">A glimpse of what students say after joining a battalion.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Testimonial 1 -->
+                <div class="glass-card glow-border p-10 rounded-3xl relative flex flex-col gs-reveal hover:bg-white/5 transition-all">
+                    <span class="text-6xl text-orange-400 font-serif leading-none absolute top-6 left-8">&ldquo;</span>
+                    <p class="text-gray-300 mt-8 mb-10 leading-relaxed relative z-10">
+                        Maths kabhi mera favourite subject nahi tha, par 10th Titans join karne ke baad sab kuch clear lagta hai. Boards ka dar nikal gaya.
+                    </p>
+                    <div class="flex items-center gap-4 mt-auto">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-blue-600 to-sky-500 flex items-center justify-center font-bold text-white text-lg shadow-lg">
+                            SO
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-white font-display">Sounjay</h4>
+                            <p class="text-xs text-gray-400">Class 10, Batch: 10th Titans</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 2 -->
+                <div class="glass-card glow-border p-10 rounded-3xl relative flex flex-col gs-reveal hover:bg-white/5 transition-all" style="transition-delay: 100ms;">
+                    <span class="text-6xl text-orange-400 font-serif leading-none absolute top-6 left-8">&ldquo;</span>
+                    <p class="text-gray-300 mt-8 mb-10 leading-relaxed relative z-10">
+                        9th Knights ne foundation itna strong bana diya ki ab JEE ke liye Class 11 me jaake bhi confidence kam nahi hota.
+                    </p>
+                    <div class="flex items-center gap-4 mt-auto">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center font-bold text-white text-lg shadow-lg">
+                            AA
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-white font-display">Aaradhya</h4>
+                            <p class="text-xs text-gray-400">Class 9, Batch: 9th Knights</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 3 -->
+                <div class="glass-card glow-border p-10 rounded-3xl relative flex flex-col gs-reveal hover:bg-white/5 transition-all" style="transition-delay: 200ms;">
+                    <span class="text-6xl text-orange-400 font-serif leading-none absolute top-6 left-8">&ldquo;</span>
+                    <p class="text-gray-300 mt-8 mb-10 leading-relaxed relative z-10">
+                        Abhi Bhaiya ke teaching style ki sabse achi baat — woh sirf formula nahi dete, samjhate hain ki formula aaya kaha se.
+                    </p>
+                    <div class="flex items-center gap-4 mt-auto">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center font-bold text-white text-lg shadow-lg">
+                            PR
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-white font-display">Prateek</h4>
+                            <p class="text-xs text-gray-400">Class 11, Batch: Unstoppables</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT SECTION -->
+    <section id="contact" class="py-32 px-6 relative z-10 bg-gradient-to-b from-[#040b24] to-[#020617] border-t border-white/5">
+        <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-start">
+            <div class="gs-reveal">
+                <span class="text-orange-500 font-semibold tracking-widest text-sm font-display mb-4 block italic">Get In Touch</span>
+                <h2 class="text-4xl lg:text-6xl font-extrabold mb-6 font-display leading-tight">
+                    Doubts? Questions?<br>
+                    <span class="text-white">Bata Do.</span>
+                </h2>
+                <p class="text-gray-400 text-lg mb-12 leading-relaxed max-w-md">
+                    Batches, content ya collaborations ke baare me kuch bhi poochna hai — neeche likh dijiye, team jaldi reply karegi.
+                </p>
+                
+                <div class="flex flex-col gap-8">
+                    <div class="flex items-center gap-6 group">
+                        <div class="w-14 h-14 rounded-full glass-card border border-white/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+                            <i data-lucide="mail" class="text-blue-400 w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-white font-display text-lg mb-1">Email Address</h4>
+                            <p class="text-gray-400 text-sm">abhibhaiyaunstoppables@gmail.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-6 group">
+                        <div class="w-14 h-14 rounded-full glass-card border border-white/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+                            <i data-lucide="map-pin" class="text-blue-400 w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-white font-display text-lg mb-1">Headquarters</h4>
+                            <p class="text-gray-400 text-sm">India</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card glow-border p-8 lg:p-12 rounded-[2rem] gs-reveal">
+                <form class="flex flex-col gap-6" onsubmit="event.preventDefault();">
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-semibold text-gray-300">Your Name</label>
+                            <input type="text" class="bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all placeholder:text-gray-600" placeholder="Enter your name">
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-semibold text-gray-300">Email Address</label>
+                            <input type="email" class="bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all placeholder:text-gray-600" placeholder="Enter your email">
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-semibold text-gray-300">Phone Number</label>
+                        <input type="tel" class="bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all placeholder:text-gray-600" placeholder="+91 XXXXX XXXXX">
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-semibold text-gray-300">Message</label>
+                        <textarea rows="4" class="bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all resize-none placeholder:text-gray-600" placeholder="Write your message here..."></textarea>
+                    </div>
+                    <button class="w-full bg-gradient-to-r from-[#f97316] to-[#f59e0b] hover:from-[#ea580c] hover:to-[#d97706] text-white font-bold py-4 rounded-xl mt-4 transition-all shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:shadow-[0_0_30px_rgba(249,115,22,0.5)]">
+                        Send Message
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="pt-20 pb-10 px-6 border-t border-white/10 relative z-10 bg-[#01030b]">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-16 mb-16">
+                <div>
+                    <img src="logo-footer.png" alt="Padhle India" class="h-10 object-contain mb-6" onerror="this.src='https://via.placeholder.com/150x40?text=Logo+Footer'">
+                    <p class="text-lg text-gray-300 max-w-md leading-relaxed font-medium">
+                        Empowering students through structured mathematics mentorship, logical reasoning, and academic excellence.
+                    </p>
+                    <p class="mt-6 text-gray-500 text-sm max-w-md">
+                        Led by Abhinay Rai (Abhi Bhaiya) — B.Tech, GATE Qualified, and trusted by over 38 Lakh students nationwide.
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="text-white font-bold mb-6 uppercase text-sm font-display">Academics</h4>
+                        <ul class="space-y-3 text-gray-400 text-sm">
+                            <li><a href="#programs" class="hover:text-blue-400 transition-colors">Class 10 Foundation</a></li>
+                            <li><a href="#programs" class="hover:text-blue-400 transition-colors">Class 9 Programs</a></li>
+                            <li><a href="#programs" class="hover:text-blue-400 transition-colors">Board Revision Series</a></li>
+                            <li><a href="#programs" class="hover:text-blue-400 transition-colors">Olympiad Preparation</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-6 uppercase text-sm font-display">Connect</h4>
+                        <ul class="space-y-3 text-gray-400 text-sm">
+                            <li><a href="https://t.me/mathsvalebhaiya" class="hover:text-blue-400 transition-colors flex items-center gap-2"><i data-lucide="send" class="w-4 h-4"></i> Telegram Community</a></li>
+                            <li><a href="https://www.youtube.com/@10thTitansbyUnacademy" class="hover:text-blue-400 transition-colors flex items-center gap-2"><i data-lucide="youtube" class="w-4 h-4"></i> YouTube Lectures</a></li>
+                            <li><a href="https://www.instagram.com/abhinay.rai_unstoppable/" class="hover:text-blue-400 transition-colors flex items-center gap-2"><i data-lucide="instagram" class="w-4 h-4"></i> Instagram Updates</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500 font-medium">
+                <p>© 2026 Padhle India. All rights reserved.</p>
+                <div class="flex items-center gap-6">
+                    <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
+                    <a href="#" class="hover:text-white transition-colors">Terms & Conditions</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts for Logic & Animations -->
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Register GSAP ScrollTrigger
+        gsap.registerPlugin(ScrollTrigger);
+
+        // 1. Math Background Symbols Animation
+        const mathCanvas = document.getElementById('math-canvas');
+        const symbols = ["∫", "∑", "π", "√", "∞", "÷", "×", "θ", "Δ", "≈"];
+        
+        for (let i = 0; i < 20; i++) {
+            let el = document.createElement('div');
+            el.className = 'math-symbol';
+            el.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.top = Math.random() * 100 + 'vh';
+            mathCanvas.appendChild(el);
+
+            gsap.to(el, {
+                y: () => -200 - Math.random() * 200,
+                x: () => -50 + Math.random() * 100,
+                rotation: () => Math.random() * 360,
+                opacity: 0,
+                duration: 10 + Math.random() * 10,
+                repeat: -1,
+                ease: "linear",
+                modifiers: {
+                    opacity: function() {
+                        return Math.sin(Date.now() / 1000) * 0.3 + 0.3;
+                    }
+                }
+            });
+        }
+
+        // 2. Hero Section Entrance Animation
+        gsap.to(".hero-content", { opacity: 1, x: 0, duration: 1, ease: "power3.out", delay: 0.2 });
+        gsap.to(".hero-visual", { opacity: 1, scale: 1, duration: 1, ease: "power3.out", delay: 0.4 });
+
+        // 3. Floating Elements (Mouse Parallax)
+        document.addEventListener("mousemove", (e) => {
+            const x = (window.innerWidth - e.pageX) / 50;
+            const y = (window.innerHeight - e.pageY) / 50;
+
+            document.querySelectorAll(".floating-element").forEach(el => {
+                const speed = el.getAttribute("data-speed");
+                gsap.to(el, {
+                    x: x * speed,
+                    y: y * speed,
+                    duration: 1,
+                    ease: "power1.out"
+                });
+            });
+        });
+
+        // 4. Scroll Reveal Animations
+        gsap.utils.toArray('.gs-reveal').forEach(function(elem) {
+            ScrollTrigger.create({
+                trigger: elem,
+                start: "top 85%",
+                onEnter: function() {
+                    gsap.fromTo(elem, 
+                        { y: 50, opacity: 0 }, 
+                        { y: 0, opacity: 1, duration: 0.8, ease: "power3.out", overwrite: "auto" }
+                    );
+                },
+                once: true
+            });
+        });
+
+        // 5. Number Counter Animation on Scroll
+        const counters = document.querySelectorAll('.counter');
+        counters.forEach(counter => {
+            ScrollTrigger.create({
+                trigger: counter,
+                start: "top 90%",
+                once: true,
+                onEnter: () => {
+                    const target = +counter.getAttribute('data-target');
+                    gsap.to(counter, {
+                        innerHTML: target,
+                        duration: 2,
+                        snap: { innerHTML: 1 },
+                        ease: "power2.out"
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
