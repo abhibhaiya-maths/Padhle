@@ -483,17 +483,27 @@
         </div>
     </footer>
 
-    <!-- FIREBASE & CORE LOGIC SCRIPT -->
+    <!-- FIREBASE, VALIDATION & CORE LOGIC SCRIPT -->
     <script type="module">
         lucide.createIcons();
         gsap.registerPlugin(ScrollTrigger);
 
+        // -- FIREBASE IMPORTS --
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyDOIDBbvA0zLmCCyxjWE7vi1TjQi7hDjh0", authDomain: "padhle-india.firebaseapp.com", projectId: "padhle-india", storageBucket: "padhle-india.firebasestorage.app", messagingSenderId: "420251652776", appId: "1:420251652776:web:3758004a37ef43f318a89d", measurementId: "G-K2MQCQCGST" };
+        // -- FIREBASE CONFIG --
+        const firebaseConfig = {
+          apiKey: "AIzaSyDOIDBbvA0zLmCCyxjWE7vi1TjQi7hDjh0",
+          authDomain: "padhle-india.firebaseapp.com",
+          projectId: "padhle-india",
+          storageBucket: "padhle-india.firebasestorage.app",
+          messagingSenderId: "420251652776",
+          appId: "1:420251652776:web:3758004a37ef43f318a89d",
+          measurementId: "G-K2MQCQCGST"
+        };
 
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
@@ -501,97 +511,452 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        let currentUser = null, userPhoneVerified = false, pendingAction = null, currentTcTarget = null;
+        // -- STATE & DOM ELEMENTS --
+        let currentUser = null;
+        let userPhoneVerified = false;
+        let pendingAction = null;
+
+        const authModal = document.getElementById('auth-modal');
+        const googleSection = document.getElementById('google-login-section');
+        const phoneSection = document.getElementById('phone-section');
+        const googleBtn = document.getElementById('google-signin-btn');
+        const savePhoneBtn = document.getElementById('save-phone-btn');
+        const phoneInput = document.getElementById('user-phone');
+        const closeAuthBtn = document.getElementById('close-auth-btn');
+
+        const loginTcCheckbox = document.getElementById('login-tc-agree');
+        const contactTcCheckbox = document.getElementById('contact-tc-agree');
+        const tcCheckboxes = [loginTcCheckbox, contactTcCheckbox];
         
-        const authModal = document.getElementById('auth-modal'), googleSection = document.getElementById('google-login-section'), phoneSection = document.getElementById('phone-section'), googleBtn = document.getElementById('google-signin-btn'), savePhoneBtn = document.getElementById('save-phone-btn'), phoneInput = document.getElementById('user-phone'), closeAuthBtn = document.getElementById('close-auth-btn'), loginTcCheckbox = document.getElementById('login-tc-agree'), contactTcCheckbox = document.getElementById('contact-tc-agree'), tcCheckboxes = [loginTcCheckbox, contactTcCheckbox], tcPopup = document.getElementById('tc-popup'), closeTcBtn = document.getElementById('close-tc-btn'), acceptTcBtn = document.getElementById('accept-tc-btn'), contactSubmitBtn = document.getElementById('contact-submit-btn');
+        const openTcBtns = document.querySelectorAll('.open-tc-btn');
+        const tcPopup = document.getElementById('tc-popup');
+        const closeTcBtn = document.getElementById('close-tc-btn');
+        const acceptTcBtn = document.getElementById('accept-tc-btn');
+        const contactSubmitBtn = document.getElementById('contact-submit-btn');
 
-        if(loginTcCheckbox) loginTcCheckbox.addEventListener('change', (e) => { googleBtn.disabled = !e.target.checked; googleBtn.classList.toggle('opacity-50', !e.target.checked); googleBtn.classList.toggle('cursor-not-allowed', !e.target.checked); });
-        if(contactTcCheckbox) contactTcCheckbox.addEventListener('change', (e) => { contactSubmitBtn.disabled = !e.target.checked; contactSubmitBtn.classList.toggle('opacity-50', !e.target.checked); contactSubmitBtn.classList.toggle('cursor-not-allowed', !e.target.checked); contactSubmitBtn.classList.toggle('hover:scale-[1.02]', e.target.checked); contactSubmitBtn.classList.toggle('shadow-[0_0_20px_rgba(59,130,246,0.4)]', e.target.checked); });
+        let currentTcTarget = null;
 
-        document.querySelectorAll('.open-tc-btn').forEach(btn => { btn.addEventListener('click', (e) => { currentTcTarget = e.target.closest('#auth-modal') ? loginTcCheckbox : contactTcCheckbox; tcPopup.classList.remove('opacity-0', 'pointer-events-none'); }); });
-        if(closeTcBtn) closeTcBtn.addEventListener('click', () => tcPopup.classList.add('opacity-0', 'pointer-events-none'));
-        if(acceptTcBtn) acceptTcBtn.addEventListener('click', () => { if(currentTcTarget) { currentTcTarget.checked = true; currentTcTarget.dispatchEvent(new Event('change')); } else { tcCheckboxes.forEach(cb => { if(cb) { cb.checked = true; cb.dispatchEvent(new Event('change')); }}); } tcPopup.classList.add('opacity-0', 'pointer-events-none'); });
+        // -- SMART PHONE REGEX VALIDATION FUNCTION --
+        function validateIndianPhone(phone) {
+            const cleanPhone = phone.trim();
+            // Check if exactly 10 digits and starts with 6,7,8,9
+            if (!/^[6-9]\d{9}$/.test(cleanPhone)) return { valid: false, msg: "Please enter a valid 10-digit Indian mobile number." };
+            // Check for fake repeating sequences or known test numbers
+            if (/^(\d)\1{9}$/.test(cleanPhone) || ['1234567890','0123456789','9876543210'].includes(cleanPhone)) return { valid: false, msg: "This appears to be a test or invalid number." };
+            return { valid: true };
+        }
 
+        // Show Error Shake UI
+        function showPhoneError(inputEl, msg) {
+            alert(msg);
+            inputEl.classList.remove('border-white/10', 'focus:border-blue-500');
+            inputEl.classList.add('border-red-500', 'ring-1', 'ring-red-500', 'error-shake');
+            setTimeout(()=> inputEl.classList.remove('error-shake'), 500);
+            inputEl.addEventListener('input', function fix() {
+                inputEl.classList.add('border-white/10', 'focus:border-blue-500');
+                inputEl.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
+                inputEl.removeEventListener('input', fix);
+            });
+        }
+
+        // -- ENABLE/DISABLE BUTTONS BASED ON CHECKBOX --
+        if(loginTcCheckbox) {
+            loginTcCheckbox.addEventListener('change', (e) => {
+                if(e.target.checked) {
+                    googleBtn.disabled = false;
+                    googleBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    googleBtn.disabled = true;
+                    googleBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            });
+        }
+
+        if(contactTcCheckbox) {
+            contactTcCheckbox.addEventListener('change', (e) => {
+                if(e.target.checked) {
+                    contactSubmitBtn.disabled = false;
+                    contactSubmitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    contactSubmitBtn.classList.add('hover:scale-[1.02]', 'shadow-[0_0_20px_rgba(59,130,246,0.4)]');
+                } else {
+                    contactSubmitBtn.disabled = true;
+                    contactSubmitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    contactSubmitBtn.classList.remove('hover:scale-[1.02]', 'shadow-[0_0_20px_rgba(59,130,246,0.4)]');
+                }
+            });
+        }
+
+        // -- T&C GLOBAL MODAL LOGIC --
+        openTcBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if(e.target.closest('#auth-modal')) currentTcTarget = loginTcCheckbox;
+                else currentTcTarget = contactTcCheckbox;
+                tcPopup.classList.remove('opacity-0', 'pointer-events-none');
+            });
+        });
+
+        if(closeTcBtn) {
+            closeTcBtn.addEventListener('click', () => {
+                tcPopup.classList.add('opacity-0', 'pointer-events-none');
+            });
+        }
+
+        if(acceptTcBtn) {
+            acceptTcBtn.addEventListener('click', () => {
+                if(currentTcTarget) {
+                    currentTcTarget.checked = true;
+                    currentTcTarget.dispatchEvent(new Event('change')); 
+                } else {
+                    tcCheckboxes.forEach(cb => {
+                        if(cb) {
+                            cb.checked = true;
+                            cb.dispatchEvent(new Event('change'));
+                        }
+                    });
+                }
+                tcPopup.classList.add('opacity-0', 'pointer-events-none');
+            });
+        }
+
+        // -- AUTH STATE LISTENER --
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
+                const userRef = doc(db, "Users", user.uid);
                 try {
-                    const userSnap = await getDoc(doc(db, "Users", user.uid));
+                    const userSnap = await getDoc(userRef);
                     if (userSnap.exists() && userSnap.data().phoneNumber) {
-                        userPhoneVerified = true; closeAuthModal(); if(pendingAction) { pendingAction(); pendingAction = null; }
-                    } else { userPhoneVerified = false; if(authModal && !authModal.classList.contains('pointer-events-none')) { googleSection.classList.add('hidden'); phoneSection.classList.remove('hidden'); } }
-                } catch(error) { console.error("Firestore Error: ", error); }
-            } else { currentUser = null; userPhoneVerified = false; }
-        });
-
-        function showAuthModal(action) { pendingAction = action; authModal.classList.remove('opacity-0', 'pointer-events-none'); document.body.style.overflow = 'hidden'; if (currentUser && !userPhoneVerified) { googleSection.classList.add('hidden'); phoneSection.classList.remove('hidden'); } else { googleSection.classList.remove('hidden'); phoneSection.classList.add('hidden'); } }
-        function closeAuthModal() { if(authModal) authModal.classList.add('opacity-0', 'pointer-events-none'); document.body.style.overflow = 'auto'; pendingAction = null; setTimeout(() => { if(googleSection) googleSection.classList.remove('hidden'); if(phoneSection) phoneSection.classList.add('hidden'); if(tcPopup) tcPopup.classList.add('opacity-0', 'pointer-events-none'); }, 300); }
-        if(closeAuthBtn) closeAuthBtn.addEventListener('click', closeAuthModal);
-
-        if(googleBtn) googleBtn.addEventListener('click', () => { if (!loginTcCheckbox.checked) return alert("Please agree to the Privacy Policy and T&C before continuing."); signInWithPopup(auth, provider).catch(error => console.log("Login Failed")); });
-        if(savePhoneBtn) savePhoneBtn.addEventListener('click', async () => {
-            const phoneVal = phoneInput.value.trim(); if(phoneVal.length < 10) return alert("Please enter a valid phone number!");
-            if(currentUser) {
-                const originalText = savePhoneBtn.innerText; savePhoneBtn.innerText = "Saving...";
-                try { await setDoc(doc(db, "Users", currentUser.uid), { name: currentUser.displayName, email: currentUser.email, phoneNumber: phoneVal, joinedAt: new Date() }, { merge: true }); userPhoneVerified = true; closeAuthModal(); if(pendingAction) { pendingAction(); pendingAction = null; } } catch (error) { alert("Error saving number."); savePhoneBtn.innerText = originalText; }
+                        userPhoneVerified = true;
+                        closeAuthModal();
+                        if(pendingAction) {
+                            pendingAction();
+                            pendingAction = null;
+                        }
+                    } else {
+                        userPhoneVerified = false;
+                        if(authModal && !authModal.classList.contains('pointer-events-none')) {
+                            googleSection.classList.add('hidden');
+                            phoneSection.classList.remove('hidden');
+                        }
+                    }
+                } catch(error) {
+                    console.error("Firestore Error: ", error);
+                }
+            } else {
+                currentUser = null;
+                userPhoneVerified = false;
             }
         });
 
-        document.querySelectorAll('.requires-auth').forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); const action = () => window.open(link.getAttribute('href'), '_blank'); if (currentUser && userPhoneVerified) { action(); } else { showAuthModal(action); } }); });
-
-        const contactForm = document.getElementById('contact-form');
-        if(contactForm) contactForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); 
-            if (!contactTcCheckbox.checked) return alert("Please agree to the Privacy Policy and T&C.");
-            const submitAction = async () => {
-                const name = document.getElementById('contact-name').value, email = document.getElementById('contact-email').value, phone = document.getElementById('contact-phone').value, message = document.getElementById('contact-message').value;
-                if(!name || !email || !message) return;
-                const originalText = contactSubmitBtn.innerHTML; contactSubmitBtn.innerHTML = "Sending... <i data-lucide='loader' class='w-4 h-4 md:w-5 md:h-5 animate-spin'></i>"; lucide.createIcons();
-                try { await addDoc(collection(db, "Contact_Messages"), { name: name, email: email, phone: phone, message: message, timestamp: new Date() }); alert("Message Sent Successfully! Team will connect with you soon."); contactForm.reset(); } catch (error) { alert("Error sending message."); } finally { contactSubmitBtn.innerHTML = originalText; lucide.createIcons(); }
-            };
-            if (currentUser && userPhoneVerified) { submitAction(); } else { showAuthModal(submitAction); }
-        });
-
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn'), closeMenuBtn = document.getElementById('close-menu-btn'), mobileMenu = document.getElementById('mobile-menu'), mobileLinks = document.querySelectorAll('.mobile-link');
-        function openMenu() { if(mobileMenu) mobileMenu.classList.remove('translate-x-full'); document.body.style.overflow = 'hidden'; }
-        function closeMenu() { if(mobileMenu) mobileMenu.classList.add('translate-x-full'); if(authModal && authModal.classList.contains('opacity-0') && tcPopup && tcPopup.classList.contains('opacity-0')) document.body.style.overflow = 'auto'; }
-        if(mobileMenuBtn) mobileMenuBtn.addEventListener('click', openMenu); if(closeMenuBtn) closeMenuBtn.addEventListener('click', closeMenu); mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
-
-        const mathCanvas = document.getElementById('math-canvas');
-        if(mathCanvas) {
-            const symbols = ["∫", "∑", "π", "√", "∞", "÷", "×", "θ", "Δ", "≈"]; const symbolCount = window.innerWidth < 768 ? 10 : 20;
-            for (let i = 0; i < symbolCount; i++) { let el = document.createElement('div'); el.className = 'math-symbol'; el.innerText = symbols[Math.floor(Math.random() * symbols.length)]; el.style.left = Math.random() * 100 + 'vw'; el.style.top = Math.random() * 100 + 'vh'; mathCanvas.appendChild(el); gsap.to(el, { y: () => -200 - Math.random() * 200, x: () => -50 + Math.random() * 100, rotation: () => Math.random() * 360, opacity: 0, duration: 10 + Math.random() * 10, repeat: -1, ease: "linear", modifiers: { opacity: () => Math.sin(Date.now() / 1000) * 0.3 + 0.3 } }); }
+        // -- MODAL CONTROLS --
+        function showAuthModal(action) {
+            pendingAction = action;
+            authModal.classList.remove('opacity-0', 'pointer-events-none');
+            document.body.style.overflow = 'hidden';
+            if (currentUser && !userPhoneVerified) {
+                googleSection.classList.add('hidden');
+                phoneSection.classList.remove('hidden');
+            } else {
+                googleSection.classList.remove('hidden');
+                phoneSection.classList.add('hidden');
+            }
         }
 
-        gsap.to(".hero-content", { opacity: 1, x: 0, duration: 1, ease: "power3.out", delay: 0.2 }); gsap.to(".hero-visual", { opacity: 1, scale: 1, duration: 1, ease: "power3.out", delay: 0.4 });
-        if (window.innerWidth >= 768) document.addEventListener("mousemove", (e) => { const x = (window.innerWidth - e.pageX) / 50; const y = (window.innerHeight - e.pageY) / 50; document.querySelectorAll(".floating-element").forEach(el => gsap.to(el, { x: x * el.getAttribute("data-speed"), y: y * el.getAttribute("data-speed"), duration: 1, ease: "power1.out" })); });
-        gsap.utils.toArray('.gs-reveal').forEach(elem => ScrollTrigger.create({ trigger: elem, start: "top 85%", onEnter: () => gsap.fromTo(elem, { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "power3.out", overwrite: "auto" }), once: true }));
-        document.querySelectorAll('.counter').forEach(counter => ScrollTrigger.create({ trigger: counter, start: "top 90%", once: true, onEnter: () => gsap.to({ val: 0 }, { val: parseFloat(counter.getAttribute('data-target')), duration: 2, ease: "power2.out", onUpdate: function() { counter.innerHTML = parseFloat(counter.getAttribute('data-target')) % 1 !== 0 ? this.targets()[0].val.toFixed(1) : Math.floor(this.targets()[0].val); } }) }));
+        function closeAuthModal() {
+            if(authModal) authModal.classList.add('opacity-0', 'pointer-events-none');
+            document.body.style.overflow = 'auto';
+            pendingAction = null; 
+            setTimeout(() => {
+                if(googleSection) googleSection.classList.remove('hidden');
+                if(phoneSection) phoneSection.classList.add('hidden');
+                if(tcPopup) tcPopup.classList.add('opacity-0', 'pointer-events-none');
+            }, 300);
+        }
 
-        const slides = document.querySelectorAll('.carousel-slide'), dotsContainer = document.getElementById('carousel-dots'), prevBtn = document.getElementById('prev-btn'), nextBtn = document.getElementById('next-btn'), carouselContainer = document.getElementById('results-carousel');
-        let currentSlide = 0, autoSlideInterval;
+        if(closeAuthBtn) closeAuthBtn.addEventListener('click', closeAuthModal);
+
+        // -- GOOGLE LOGIN --
+        if(googleBtn) {
+            googleBtn.addEventListener('click', () => {
+                if (!loginTcCheckbox.checked) {
+                    alert("Please agree to the Privacy Policy and T&C before continuing.");
+                    return;
+                }
+                signInWithPopup(auth, provider).catch(error => {
+                    console.log("Login Cancelled or Failed");
+                });
+            });
+        }
+
+        // -- PHONE SAVING WITH VALIDATION --
+        if(savePhoneBtn) {
+            savePhoneBtn.addEventListener('click', async () => {
+                const phoneVal = phoneInput.value;
+                const validation = validateIndianPhone(phoneVal);
+                
+                if(!validation.valid) {
+                    return showPhoneError(phoneInput, validation.msg);
+                }
+                
+                if(currentUser) {
+                    const originalText = savePhoneBtn.innerText;
+                    savePhoneBtn.innerText = "Saving...";
+                    try {
+                        await setDoc(doc(db, "Users", currentUser.uid), {
+                            name: currentUser.displayName,
+                            email: currentUser.email,
+                            phoneNumber: phoneVal,
+                            joinedAt: new Date()
+                        }, { merge: true });
+
+                        userPhoneVerified = true;
+                        closeAuthModal();
+                        if(pendingAction) {
+                            pendingAction();
+                            pendingAction = null;
+                        }
+                    } catch (error) {
+                        alert("Error saving number. Please check your Firestore rules.");
+                        savePhoneBtn.innerText = originalText;
+                    }
+                }
+            });
+        }
+
+        // -- INTERCEPT STUDY MATERIAL CLICKS --
+        document.querySelectorAll('.requires-auth').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetUrl = link.getAttribute('href');
+                const action = () => window.open(targetUrl, '_blank');
+                
+                if (currentUser && userPhoneVerified) {
+                    action();
+                } else {
+                    showAuthModal(action);
+                }
+            });
+        });
+
+        // -- INTERCEPT CONTACT FORM SUBMIT WITH VALIDATION --
+        const contactForm = document.getElementById('contact-form');
+        if(contactForm) {
+            contactForm.addEventListener('submit', async (e) => {
+                e.preventDefault(); 
+                
+                if (!contactTcCheckbox.checked) {
+                    alert("Please agree to the Privacy Policy and T&C.");
+                    return;
+                }
+
+                const phoneInputEl = document.getElementById('contact-phone');
+                const phoneVal = phoneInputEl.value;
+                const validation = validateIndianPhone(phoneVal);
+                
+                if(!validation.valid) {
+                    return showPhoneError(phoneInputEl, validation.msg);
+                }
+
+                const submitAction = async () => {
+                    const name = document.getElementById('contact-name').value;
+                    const email = document.getElementById('contact-email').value;
+                    const message = document.getElementById('contact-message').value;
+
+                    if(!name || !email || !message) return;
+
+                    const originalText = contactSubmitBtn.innerHTML;
+                    contactSubmitBtn.innerHTML = "Sending... <i data-lucide='loader' class='w-4 h-4 md:w-5 md:h-5 animate-spin'></i>";
+                    lucide.createIcons();
+
+                    try {
+                        await addDoc(collection(db, "Contact_Messages"), {
+                            name: name,
+                            email: email,
+                            phone: phoneVal, // Verified phone
+                            message: message,
+                            timestamp: new Date()
+                        });
+                        alert("Message Sent Successfully! Team will connect with you soon.");
+                        contactForm.reset();
+                    } catch (error) {
+                        alert("Error sending message. Check Firebase Rules.");
+                    } finally {
+                        contactSubmitBtn.innerHTML = originalText;
+                        lucide.createIcons();
+                    }
+                };
+
+                if (currentUser && userPhoneVerified) {
+                    submitAction();
+                } else {
+                    showAuthModal(submitAction);
+                }
+            });
+        }
+
+        // -- MOBILE MENU LOGIC --
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const closeMenuBtn = document.getElementById('close-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+
+        function openMenu() {
+            if(mobileMenu) mobileMenu.classList.remove('translate-x-full');
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeMenu() {
+            if(mobileMenu) mobileMenu.classList.add('translate-x-full');
+            if(authModal && authModal.classList.contains('opacity-0') && tcPopup && tcPopup.classList.contains('opacity-0')) {
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        if(mobileMenuBtn) mobileMenuBtn.addEventListener('click', openMenu);
+        if(closeMenuBtn) closeMenuBtn.addEventListener('click', closeMenu);
+        mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
+
+        // -- BACKGROUND MATH ANIMATIONS --
+        const mathCanvas = document.getElementById('math-canvas');
+        if(mathCanvas) {
+            const symbols = ["∫", "∑", "π", "√", "∞", "÷", "×", "θ", "Δ", "≈"];
+            const isMobile = window.innerWidth < 768;
+            const symbolCount = isMobile ? 10 : 20;
+
+            for (let i = 0; i < symbolCount; i++) {
+                let el = document.createElement('div');
+                el.className = 'math-symbol';
+                el.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+                el.style.left = Math.random() * 100 + 'vw';
+                el.style.top = Math.random() * 100 + 'vh';
+                mathCanvas.appendChild(el);
+
+                gsap.to(el, {
+                    y: () => -200 - Math.random() * 200,
+                    x: () => -50 + Math.random() * 100,
+                    rotation: () => Math.random() * 360,
+                    opacity: 0,
+                    duration: 10 + Math.random() * 10,
+                    repeat: -1,
+                    ease: "linear",
+                    modifiers: { opacity: () => Math.sin(Date.now() / 1000) * 0.3 + 0.3 }
+                });
+            }
+        }
+
+        // -- GSAP ANIMATIONS --
+        gsap.to(".hero-content", { opacity: 1, x: 0, duration: 1, ease: "power3.out", delay: 0.2 });
+        gsap.to(".hero-visual", { opacity: 1, scale: 1, duration: 1, ease: "power3.out", delay: 0.4 });
+
+        if (window.innerWidth >= 768) {
+            document.addEventListener("mousemove", (e) => {
+                const x = (window.innerWidth - e.pageX) / 50;
+                const y = (window.innerHeight - e.pageY) / 50;
+                document.querySelectorAll(".floating-element").forEach(el => {
+                    const speed = el.getAttribute("data-speed");
+                    gsap.to(el, { x: x * speed, y: y * speed, duration: 1, ease: "power1.out" });
+                });
+            });
+        }
+
+        gsap.utils.toArray('.gs-reveal').forEach(function(elem) {
+            ScrollTrigger.create({
+                trigger: elem,
+                start: "top 85%",
+                onEnter: function() {
+                    gsap.fromTo(elem, { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "power3.out", overwrite: "auto" });
+                },
+                once: true
+            });
+        });
+
+        document.querySelectorAll('.counter').forEach(counter => {
+            ScrollTrigger.create({
+                trigger: counter,
+                start: "top 90%",
+                once: true,
+                onEnter: () => {
+                    const target = parseFloat(counter.getAttribute('data-target'));
+                    const hasDecimals = target % 1 !== 0;
+                    gsap.to({ val: 0 }, {
+                        val: target,
+                        duration: 2,
+                        ease: "power2.out",
+                        onUpdate: function() {
+                            counter.innerHTML = hasDecimals ? this.targets()[0].val.toFixed(1) : Math.floor(this.targets()[0].val);
+                        }
+                    });
+                }
+            });
+        });
+
+        // -- CAROUSEL LOGIC --
+        const slides = document.querySelectorAll('.carousel-slide');
+        const dotsContainer = document.getElementById('carousel-dots');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const carouselContainer = document.getElementById('results-carousel');
+        
+        let currentSlide = 0;
+        let autoSlideInterval;
+
         if(slides.length > 0 && dotsContainer) {
-            slides.forEach((_, i) => { const dot = document.createElement('button'); dot.className = `w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-all duration-300 ${i === 0 ? 'bg-blue-400 scale-125 shadow-[0_0_10px_rgba(96,165,250,0.5)]' : 'bg-white/20 hover:bg-white/40'}`; dot.addEventListener('click', () => { goToSlide(i); resetAutoSlide(); }); dotsContainer.appendChild(dot); });
+            slides.forEach((_, i) => {
+                const dot = document.createElement('button');
+                dot.className = `w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-all duration-300 ${i === 0 ? 'bg-blue-400 scale-125 shadow-[0_0_10px_rgba(96,165,250,0.5)]' : 'bg-white/20 hover:bg-white/40'}`;
+                dot.addEventListener('click', () => { goToSlide(i); resetAutoSlide(); });
+                dotsContainer.appendChild(dot);
+            });
+
             const dots = dotsContainer.querySelectorAll('button');
+
             function goToSlide(index) {
                 if(!slides.length) return;
-                slides[currentSlide].classList.replace('opacity-100', 'opacity-0'); slides[currentSlide].classList.add('translate-x-10', 'pointer-events-none', 'z-0'); slides[currentSlide].classList.remove('z-10'); if(dots[currentSlide]) dots[currentSlide].className = 'w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-white/20 transition-all duration-300 hover:bg-white/40';
+                slides[currentSlide].classList.replace('opacity-100', 'opacity-0');
+                slides[currentSlide].classList.add('translate-x-10', 'pointer-events-none');
+                slides[currentSlide].classList.remove('z-10');
+                slides[currentSlide].classList.add('z-0');
+                if(dots[currentSlide]) dots[currentSlide].className = 'w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-white/20 transition-all duration-300 hover:bg-white/40';
+
                 currentSlide = index;
-                slides[currentSlide].classList.replace('opacity-0', 'opacity-100'); slides[currentSlide].classList.remove('translate-x-10', 'pointer-events-none', 'z-0'); slides[currentSlide].classList.add('z-10'); if(dots[currentSlide]) dots[currentSlide].className = 'w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-blue-400 scale-125 shadow-[0_0_10px_rgba(96,165,250,0.5)] transition-all duration-300';
+
+                slides[currentSlide].classList.replace('opacity-0', 'opacity-100');
+                slides[currentSlide].classList.remove('translate-x-10', 'pointer-events-none');
+                slides[currentSlide].classList.remove('z-0');
+                slides[currentSlide].classList.add('z-10');
+                if(dots[currentSlide]) dots[currentSlide].className = 'w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-blue-400 scale-125 shadow-[0_0_10px_rgba(96,165,250,0.5)] transition-all duration-300';
             }
+
             function nextSlide() { if(slides.length) goToSlide((currentSlide + 1) % slides.length); }
             function prevSlide() { if(slides.length) goToSlide((currentSlide - 1 + slides.length) % slides.length); }
+
             if(nextBtn) nextBtn.addEventListener('click', () => { nextSlide(); resetAutoSlide(); });
             if(prevBtn) prevBtn.addEventListener('click', () => { prevSlide(); resetAutoSlide(); });
-            let touchStartX = 0, touchEndX = 0;
+
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
             if(carouselContainer) {
-                carouselContainer.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; pauseAutoSlide(); }, {passive: true});
-                carouselContainer.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; if (touchEndX < touchStartX - 50) nextSlide(); if (touchEndX > touchStartX + 50) prevSlide(); startAutoSlide(); }, {passive: true});
-                carouselContainer.addEventListener('mouseenter', pauseAutoSlide); carouselContainer.addEventListener('mouseleave', startAutoSlide);
+                carouselContainer.addEventListener('touchstart', e => {
+                    touchStartX = e.changedTouches[0].screenX;
+                    pauseAutoSlide();
+                }, {passive: true});
+
+                carouselContainer.addEventListener('touchend', e => {
+                    touchEndX = e.changedTouches[0].screenX;
+                    if (touchEndX < touchStartX - 50) nextSlide();
+                    if (touchEndX > touchStartX + 50) prevSlide();
+                    startAutoSlide();
+                }, {passive: true});
+
+                carouselContainer.addEventListener('mouseenter', pauseAutoSlide);
+                carouselContainer.addEventListener('mouseleave', startAutoSlide);
             }
+
             function startAutoSlide() { if(slides.length) autoSlideInterval = setInterval(nextSlide, 5000); }
             function pauseAutoSlide() { clearInterval(autoSlideInterval); }
             function resetAutoSlide() { pauseAutoSlide(); startAutoSlide(); }
+
             startAutoSlide();
         }
     </script>
