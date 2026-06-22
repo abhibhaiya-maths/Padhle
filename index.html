@@ -52,7 +52,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Bawal Emerald/Teal Gradient */
         .text-gradient {
             background: linear-gradient(135deg, #34d399 0%, #2dd4bf 100%);
             -webkit-background-clip: text;
@@ -116,16 +115,22 @@
 </head>
 <body class="antialiased selection:bg-emerald-500 selection:text-white" id="home">
 
-    <!-- LOGIN & AUTHENTICATION OVERLAY (GATED WALL) -->
-    <div id="auth-modal" class="fixed inset-0 z-[1000] bg-[#020604]/80 backdrop-blur-xl flex items-center justify-center transition-all duration-500">
-        <div class="glass-card glow-border p-8 md:p-12 rounded-[2rem] w-[90%] max-w-md bg-[#03120A]/90 text-center relative overflow-hidden shadow-[0_0_50px_rgba(16,185,129,0.2)]">
+    <!-- LOGIN & AUTHENTICATION OVERLAY (HIDDEN BY DEFAULT NOW) -->
+    <div id="auth-modal" class="fixed inset-0 z-[1000] bg-[#020604]/80 backdrop-blur-xl flex items-center justify-center transition-all duration-300 opacity-0 pointer-events-none">
+        <div class="glass-card glow-border p-8 md:p-12 rounded-[2rem] w-[90%] max-w-md bg-[#03120A]/95 text-center relative overflow-hidden shadow-[0_0_50px_rgba(16,185,129,0.3)]">
+            
+            <!-- Close Button -->
+            <button id="close-auth-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+
             <!-- Google Login Section -->
             <div id="google-login-section">
                 <div class="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/30">
                     <i data-lucide="lock" class="w-8 h-8 text-emerald-400"></i>
                 </div>
-                <h3 class="text-2xl font-bold font-display text-white mb-2">Join Unstoppables</h3>
-                <p class="text-gray-400 text-sm mb-8">Login to access premium courses, notes, and previous year question papers.</p>
+                <h3 class="text-2xl font-bold font-display text-white mb-2">Login Required</h3>
+                <p class="text-gray-400 text-sm mb-8">Please login to securely access study materials or send us a message.</p>
                 
                 <button id="google-signin-btn" class="w-full bg-white text-black font-bold py-3.5 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-100 transition-all hover:scale-105">
                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
@@ -289,6 +294,7 @@
 
             <div class="relative border-l border-white/5 ml-4 md:ml-0 md:border-l-0">
                 <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-white/5"></div>
+                
                 <div class="mb-12 relative flex flex-col md:flex-row items-start md:items-center justify-between w-full gs-reveal">
                     <div class="hidden md:block w-[45%] text-right pr-8"></div>
                     <div class="absolute left-[-5.5px] md:left-1/2 md:transform md:-translate-x-1/2 w-3 h-3 rounded-full bg-emerald-400 ring-4 ring-[#03120A] z-10 shadow-[0_0_15px_rgba(52,211,153,0.8)] mt-2 md:mt-0"></div>
@@ -298,6 +304,7 @@
                         <p class="text-gray-400 text-sm leading-relaxed text-justify">B.Tech in Mechanical Engineering. Successfully qualified GATE '21 (IIT Bombay Zone), UPSEE, and JEE Main.</p>
                     </div>
                 </div>
+
                 <div class="mb-12 relative flex flex-col md:flex-row-reverse items-start md:items-center justify-between w-full gs-reveal">
                     <div class="hidden md:block w-[45%] text-left pl-8"></div>
                     <div class="absolute left-[-5.5px] md:left-1/2 md:transform md:-translate-x-1/2 w-3 h-3 rounded-full bg-teal-400 ring-4 ring-[#03120A] z-10 shadow-[0_0_15px_rgba(45,212,191,0.8)] mt-2 md:mt-0"></div>
@@ -307,6 +314,7 @@
                         <p class="text-gray-400 text-sm leading-relaxed text-justify md:text-right">Played a pivotal role in curriculum design and student success strategies at PhysicsWallah, BYJU'S, and Toppr.</p>
                     </div>
                 </div>
+
                 <div class="mb-12 relative flex flex-col md:flex-row items-start md:items-center justify-between w-full gs-reveal">
                     <div class="hidden md:block w-[45%] text-right pr-8"></div>
                     <div class="absolute left-[-5.5px] md:left-1/2 md:transform md:-translate-x-1/2 w-3 h-3 rounded-full bg-lime-400 ring-4 ring-[#03120A] z-10 shadow-[0_0_15px_rgba(163,230,53,0.8)] mt-2 md:mt-0"></div>
@@ -316,6 +324,7 @@
                         <p class="text-gray-400 text-sm leading-relaxed text-justify">Currently an esteemed educator at Unacademy, guiding students for Class 9, 10 boards, and competitive Olympiads.</p>
                     </div>
                 </div>
+                
                 <div class="mb-12 relative flex flex-col md:flex-row-reverse items-start md:items-center justify-between w-full gs-reveal">
                     <div class="hidden md:block w-[45%] text-left pl-8"></div>
                     <div class="absolute left-[-6.5px] md:left-1/2 md:transform md:-translate-x-1/2 w-4 h-4 rounded-full bg-white ring-4 ring-emerald-500 z-10 shadow-[0_0_20px_rgba(255,255,255,1)] mt-2 md:mt-0"></div>
@@ -346,6 +355,7 @@
                 </p>
             </div>
 
+            <!-- Top Impact Stats Strip -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mb-12 md:mb-16 gs-reveal">
                 <div class="glass-card glow-border p-4 md:p-5 rounded-2xl text-center group hover:-translate-y-2 transition-all duration-300">
                     <div class="text-2xl md:text-3xl mb-2 group-hover:scale-110 transition-transform flex justify-center">👨‍🎓</div>
@@ -369,7 +379,7 @@
                 </div>
             </div>
 
-            <!-- Main Results Carousel (COMPACT) -->
+            <!-- Main Results Carousel -->
             <div class="relative w-full max-w-5xl mx-auto gs-reveal group" id="results-carousel">
                 <button id="prev-btn" class="absolute left-2 sm:-left-4 md:-left-6 top-[50%] -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full glass-card border border-white/20 flex items-center justify-center text-white hover:bg-white/10 hover:scale-110 transition-all z-20 shadow-[0_0_15px_rgba(0,0,0,0.5)] bg-black/40 backdrop-blur-md">
                     <i data-lucide="chevron-left" class="w-5 h-5 md:w-6 md:h-6"></i>
@@ -477,7 +487,7 @@
             </div>
 
             <div class="grid lg:grid-cols-2 gap-5 md:gap-6">
-                <!-- Course Card 1: Prahaar -->
+                <!-- Course Cards -->
                 <div class="glass-card glow-border rounded-[1.5rem] overflow-hidden flex flex-col sm:flex-row group transition-all duration-300 hover:shadow-[0_0_40px_rgba(16,185,129,0.15)] hover:border-emerald-500/30 gs-reveal bg-[#061e14]/60 border-white/5 h-full">
                     <div class="w-full sm:w-[35%] h-44 sm:h-auto relative overflow-hidden bg-black/40 flex-shrink-0 border-b sm:border-b-0 sm:border-r border-white/5">
                         <img src="prahaar-batch.png" alt="Prahaar Batch" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100">
@@ -497,7 +507,6 @@
                     </div>
                 </div>
 
-                <!-- Course Card 2: Aarambh -->
                 <div class="glass-card glow-border rounded-[1.5rem] overflow-hidden flex flex-col sm:flex-row group transition-all duration-300 hover:shadow-[0_0_40px_rgba(45,212,191,0.15)] hover:border-teal-500/30 gs-reveal bg-[#061e14]/60 border-white/5 h-full" style="transition-delay: 100ms;">
                     <div class="w-full sm:w-[35%] h-44 sm:h-auto relative overflow-hidden bg-black/40 flex-shrink-0 border-b sm:border-b-0 sm:border-r border-white/5">
                         <img src="aarambh-batch.png" alt="Aarambh Batch" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100">
@@ -517,7 +526,6 @@
                     </div>
                 </div>
 
-                <!-- Course Card 3: IIT JEE -->
                 <div class="glass-card glow-border rounded-[1.5rem] overflow-hidden flex flex-col sm:flex-row group transition-all duration-300 hover:shadow-[0_0_40px_rgba(163,230,53,0.15)] hover:border-lime-500/30 gs-reveal bg-[#061e14]/60 border-white/5 h-full">
                     <div class="w-full sm:w-[35%] h-44 sm:h-auto relative overflow-hidden bg-black/40 flex-shrink-0 border-b sm:border-b-0 sm:border-r border-white/5">
                         <img src="nimbus-srg.png" alt="IIT JEE Subscription" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100">
@@ -536,7 +544,6 @@
                     </div>
                 </div>
 
-                <!-- Course Card 4: NEET UG -->
                 <div class="glass-card glow-border rounded-[1.5rem] overflow-hidden flex flex-col sm:flex-row group transition-all duration-300 hover:shadow-[0_0_40px_rgba(45,212,191,0.15)] hover:border-teal-500/30 gs-reveal bg-[#061e14]/60 border-white/5 h-full" style="transition-delay: 100ms;">
                     <div class="w-full sm:w-[35%] h-44 sm:h-auto relative overflow-hidden bg-black/40 flex-shrink-0 border-b sm:border-b-0 sm:border-r border-white/5">
                         <img src="nimbus-top-ranker.png" alt="NEET UG Subscription" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100">
@@ -570,7 +577,6 @@
             </div>
 
             <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Channels... -->
                 <a href="https://www.youtube.com/@10thTitansbyUnacademy" target="_blank" class="glass-card glow-border p-6 rounded-3xl flex flex-col group hover:bg-white/5 transition-all gs-reveal items-center sm:items-start text-center sm:text-left">
                     <div class="w-16 h-16 rounded-full bg-black flex items-center justify-center border border-white/10 mb-4 group-hover:scale-110 transition-transform overflow-hidden shadow-[0_0_15px_rgba(255,0,0,0.3)]">
                         <img src="10th-titans.png" alt="10th Titans" class="w-full h-full object-cover">
@@ -618,7 +624,7 @@
         </div>
     </section>
 
-    <!-- FREE RESOURCES -->
+    <!-- FREE RESOURCES (GATED) -->
     <section id="resources" class="py-20 lg:py-32 px-6 bg-gradient-to-b from-[#020604] to-[#03120A] z-10 relative border-t border-white/5">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16 md:mb-20 gs-reveal">
@@ -628,6 +634,7 @@
             </div>
             
             <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
+                <!-- Added "requires-auth" class to the <a> tags here -->
                 <!-- Resource 1 -->
                 <div class="glass-card p-6 md:p-8 rounded-3xl border-t border-t-white/20 hover:-translate-y-2 transition-transform duration-300 gs-reveal group flex flex-col bg-[#061e14]/40">
                     <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform border border-emerald-500/20">
@@ -635,7 +642,7 @@
                     </div>
                     <h3 class="text-lg md:text-xl font-bold mb-2 md:mb-3 font-display text-white group-hover:text-emerald-300 transition-colors">Handwritten Notes & Mind Maps</h3>
                     <p class="text-gray-400 mb-6 md:mb-8 text-xs md:text-sm text-justify flex-grow">Chapter-wise handwritten notes, mind maps, cheat sheets and quick revision resources.</p>
-                    <a href="https://drive.google.com/file/d/1P4p8BJ5pDlCLT-hlBadFOQkJn0DbZrnz/view?usp=sharing" target="_blank" class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-teal-400 flex items-center gap-1 hover:gap-2 transition-all mt-auto w-max bg-teal-500/10 px-4 py-2 rounded-lg hover:bg-teal-500/20">
+                    <a href="https://drive.google.com/file/d/1P4p8BJ5pDlCLT-hlBadFOQkJn0DbZrnz/view?usp=sharing" class="requires-auth text-[10px] md:text-xs font-bold uppercase tracking-widest text-teal-400 flex items-center gap-1 hover:gap-2 transition-all mt-auto w-max bg-teal-500/10 px-4 py-2 rounded-lg hover:bg-teal-500/20 cursor-pointer">
                         Download Free <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </a>
                 </div>
@@ -647,7 +654,7 @@
                     </div>
                     <h3 class="text-lg md:text-xl font-bold mb-2 md:mb-3 font-display text-white group-hover:text-teal-300 transition-colors">CBSE PYQ Hub</h3>
                     <p class="text-gray-400 mb-6 md:mb-8 text-xs md:text-sm text-justify flex-grow">Official CBSE previous year questions organized chapter-wise with board trend analysis.</p>
-                    <a href="https://www.cbse.gov.in/cbsenew/question-paper.html" target="_blank" class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-emerald-400 flex items-center gap-1 hover:gap-2 transition-all mt-auto w-max bg-emerald-500/10 px-4 py-2 rounded-lg hover:bg-emerald-500/20">
+                    <a href="https://www.cbse.gov.in/cbsenew/question-paper.html" class="requires-auth text-[10px] md:text-xs font-bold uppercase tracking-widest text-emerald-400 flex items-center gap-1 hover:gap-2 transition-all mt-auto w-max bg-emerald-500/10 px-4 py-2 rounded-lg hover:bg-emerald-500/20 cursor-pointer">
                         Access PYQs <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </a>
                 </div>
@@ -659,7 +666,7 @@
                     </div>
                     <h3 class="text-lg md:text-xl font-bold mb-2 md:mb-3 font-display text-white group-hover:text-lime-300 transition-colors">Ultimate CBSE Resource Library</h3>
                     <p class="text-gray-400 mb-6 md:mb-8 text-xs md:text-sm text-justify flex-grow">Access India's most comprehensive collection of CBSE study materials, reference books, PYQs, sample papers, notes, cheat sheets, and exam resources.</p>
-                    <a href="https://drive.google.com/drive/folders/1TwsbbsIlM-AKhzr--pzndzS4Aiwnp1U2?usp=drive_link" target="_blank" class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-teal-400 flex items-center gap-1 hover:gap-2 transition-all mt-auto w-max bg-teal-500/10 px-4 py-2 rounded-lg hover:bg-teal-500/20">
+                    <a href="https://drive.google.com/drive/folders/1TwsbbsIlM-AKhzr--pzndzS4Aiwnp1U2?usp=drive_link" class="requires-auth text-[10px] md:text-xs font-bold uppercase tracking-widest text-teal-400 flex items-center gap-1 hover:gap-2 transition-all mt-auto w-max bg-teal-500/10 px-4 py-2 rounded-lg hover:bg-teal-500/20 cursor-pointer">
                         Explore Library <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </a>
                 </div>
@@ -671,7 +678,7 @@
                     </div>
                     <h3 class="text-lg md:text-xl font-bold mb-2 md:mb-3 font-display text-white group-hover:text-cyan-300 transition-colors">Official CBSE Resources</h3>
                     <p class="text-gray-400 mb-6 md:mb-8 text-xs md:text-sm text-justify flex-grow">Latest CBSE syllabus, sample papers, marking scheme, circulars and examination updates.</p>
-                    <a href="https://www.cbse.gov.in/" target="_blank" class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-emerald-400 flex items-center gap-1 hover:gap-2 transition-all mt-auto w-max bg-emerald-500/10 px-4 py-2 rounded-lg hover:bg-emerald-500/20">
+                    <a href="https://www.cbse.gov.in/" class="requires-auth text-[10px] md:text-xs font-bold uppercase tracking-widest text-emerald-400 flex items-center gap-1 hover:gap-2 transition-all mt-auto w-max bg-emerald-500/10 px-4 py-2 rounded-lg hover:bg-emerald-500/20 cursor-pointer">
                         Visit CBSE <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </a>
                 </div>
@@ -679,7 +686,7 @@
         </div>
     </section>
 
-    <!-- CONTACT SECTION -->
+    <!-- CONTACT SECTION (GATED FORM) -->
     <section id="contact" class="py-20 lg:py-32 px-6 relative z-10 bg-[#010a06] overflow-hidden">
         <div class="absolute top-0 right-0 w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-emerald-600/20 blur-[100px] md:blur-[150px] rounded-full mix-blend-screen pointer-events-none z-0"></div>
         <div class="absolute bottom-0 left-0 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-teal-600/20 blur-[100px] md:blur-[150px] rounded-full mix-blend-screen pointer-events-none z-0"></div>
@@ -794,7 +801,6 @@
                             <li>
                                 <a href="https://t.me/mathsvalebhaiya" target="_blank" class="flex items-center gap-3 md:gap-4 text-gray-300 hover:text-white transition-all group/link">
                                     <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-[#0088cc]/10 flex items-center justify-center group-hover/link:bg-[#0088cc]/20 group-hover/link:scale-110 transition-all border border-[#0088cc]/30 p-2">
-                                        <!-- Telegram Image -->
                                         <img src="telegram.png" alt="Telegram" class="w-full h-full object-contain" onerror="this.src='https://via.placeholder.com/20?text=T'">
                                     </div>
                                     <span class="font-semibold tracking-wide">Telegram Community</span>
@@ -803,7 +809,6 @@
                             <li>
                                 <a href="https://www.youtube.com/@10thTitansbyUnacademy" target="_blank" class="flex items-center gap-3 md:gap-4 text-gray-300 hover:text-white transition-all group/link">
                                     <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-[#FF0000]/10 flex items-center justify-center group-hover/link:bg-[#FF0000]/20 group-hover/link:scale-110 transition-all border border-[#FF0000]/30 p-1.5 md:p-2">
-                                        <!-- YouTube Image -->
                                         <img src="youtube.png" alt="YouTube" class="w-full h-full object-contain" onerror="this.src='https://via.placeholder.com/20?text=Y'">
                                     </div>
                                     <span class="font-semibold tracking-wide">YouTube Lectures</span>
@@ -812,7 +817,6 @@
                             <li>
                                 <a href="https://www.instagram.com/abhinay.rai_unstoppable/" target="_blank" class="flex items-center gap-3 md:gap-4 text-gray-300 hover:text-white transition-all group/link">
                                     <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-[#E1306C]/10 flex items-center justify-center group-hover/link:bg-[#E1306C]/20 group-hover/link:scale-110 transition-all border border-[#E1306C]/30 p-1.5 md:p-2">
-                                        <!-- Instagram Image -->
                                         <img src="instagram.png" alt="Instagram" class="w-full h-full object-contain" onerror="this.src='https://via.placeholder.com/20?text=I'">
                                     </div>
                                     <span class="font-semibold tracking-wide">Instagram Updates</span>
@@ -833,12 +837,210 @@
         </div>
     </footer>
 
-    <!-- Scripts for Logic & Animations -->
-    <script>
+    <!-- FIREBASE & CORE LOGIC SCRIPT -->
+    <script type="module">
         lucide.createIcons();
         gsap.registerPlugin(ScrollTrigger);
 
-        // Mobile Menu
+        // -- FIREBASE CONFIGURATION --
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyDOIDBbvA0zLmCCyxjWE7vi1TjQi7hDjh0",
+          authDomain: "padhle-india.firebaseapp.com",
+          projectId: "padhle-india",
+          storageBucket: "padhle-india.firebasestorage.app",
+          messagingSenderId: "420251652776",
+          appId: "1:420251652776:web:3758004a37ef43f318a89d",
+          measurementId: "G-K2MQCQCGST"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        // -- STATE & DOM ELEMENTS --
+        let currentUser = null;
+        let userPhoneVerified = false;
+        let pendingAction = null;
+
+        const authModal = document.getElementById('auth-modal');
+        const googleSection = document.getElementById('google-login-section');
+        const phoneSection = document.getElementById('phone-section');
+        const googleBtn = document.getElementById('google-signin-btn');
+        const savePhoneBtn = document.getElementById('save-phone-btn');
+        const phoneInput = document.getElementById('user-phone');
+        const closeAuthBtn = document.getElementById('close-auth-btn');
+
+        // -- AUTH STATE LISTENER --
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                const userRef = doc(db, "Users", user.uid);
+                
+                try {
+                    const userSnap = await getDoc(userRef);
+                    if (userSnap.exists() && userSnap.data().phoneNumber) {
+                        userPhoneVerified = true;
+                        closeAuthModal();
+                        
+                        // Execute pending action if any (e.g. downloading PDF or submitting form)
+                        if(pendingAction) {
+                            pendingAction();
+                            pendingAction = null;
+                        }
+                    } else {
+                        userPhoneVerified = false;
+                        // If modal is open, switch to phone section
+                        if(!authModal.classList.contains('pointer-events-none')) {
+                            googleSection.classList.add('hidden');
+                            phoneSection.classList.remove('hidden');
+                        }
+                    }
+                } catch(error) {
+                    console.error("Firestore read error. Make sure your Firestore Rules allow reads.", error);
+                }
+            } else {
+                currentUser = null;
+                userPhoneVerified = false;
+            }
+        });
+
+        // -- MODAL CONTROLS --
+        function showAuthModal(action) {
+            pendingAction = action;
+            authModal.classList.remove('opacity-0', 'pointer-events-none');
+            document.body.style.overflow = 'hidden';
+            
+            if (currentUser && !userPhoneVerified) {
+                googleSection.classList.add('hidden');
+                phoneSection.classList.remove('hidden');
+            } else {
+                googleSection.classList.remove('hidden');
+                phoneSection.classList.add('hidden');
+            }
+        }
+
+        function closeAuthModal() {
+            authModal.classList.add('opacity-0', 'pointer-events-none');
+            document.body.style.overflow = 'auto';
+            pendingAction = null; // Clear action if they close it
+            
+            // Reset sections for next time
+            setTimeout(() => {
+                googleSection.classList.remove('hidden');
+                phoneSection.classList.add('hidden');
+            }, 300);
+        }
+
+        closeAuthBtn.addEventListener('click', closeAuthModal);
+
+        // -- GOOGLE LOGIN --
+        googleBtn.addEventListener('click', () => {
+            signInWithPopup(auth, provider).catch(error => {
+                alert("Login Failed: " + error.message);
+            });
+        });
+
+        // -- PHONE SAVING --
+        savePhoneBtn.addEventListener('click', async () => {
+            const phoneVal = phoneInput.value.trim();
+            if(phoneVal.length < 10) {
+                alert("Please enter a valid phone number!");
+                return;
+            }
+            
+            if(currentUser) {
+                const originalText = savePhoneBtn.innerText;
+                savePhoneBtn.innerText = "Saving...";
+                try {
+                    await setDoc(doc(db, "Users", currentUser.uid), {
+                        name: currentUser.displayName,
+                        email: currentUser.email,
+                        phoneNumber: phoneVal,
+                        joinedAt: new Date()
+                    }, { merge: true });
+
+                    userPhoneVerified = true;
+                    closeAuthModal();
+                    
+                    if(pendingAction) {
+                        pendingAction();
+                        pendingAction = null;
+                    }
+                } catch (error) {
+                    alert("Error saving number: " + error.message);
+                    savePhoneBtn.innerText = originalText;
+                }
+            }
+        });
+
+        // -- INTERCEPT STUDY MATERIAL CLICKS --
+        document.querySelectorAll('.requires-auth').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetUrl = link.getAttribute('href');
+                const action = () => window.open(targetUrl, '_blank');
+                
+                if (currentUser && userPhoneVerified) {
+                    action();
+                } else {
+                    showAuthModal(action);
+                }
+            });
+        });
+
+        // -- INTERCEPT CONTACT FORM SUBMIT --
+        const contactForm = document.getElementById('contact-form');
+        const contactBtn = document.getElementById('contact-submit-btn');
+
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            
+            const submitAction = async () => {
+                const name = document.getElementById('contact-name').value;
+                const email = document.getElementById('contact-email').value;
+                const phone = document.getElementById('contact-phone').value;
+                const message = document.getElementById('contact-message').value;
+
+                if(!name || !email || !message) return;
+
+                const originalText = contactBtn.innerHTML;
+                contactBtn.innerHTML = "Sending... <i data-lucide='loader' class='w-4 h-4 md:w-5 md:h-5 animate-spin'></i>";
+                lucide.createIcons();
+
+                try {
+                    await addDoc(collection(db, "Contact_Messages"), {
+                        name: name,
+                        email: email,
+                        phone: phone,
+                        message: message,
+                        timestamp: new Date()
+                    });
+                    alert("Message Sent Successfully! Team will connect with you soon.");
+                    contactForm.reset();
+                } catch (error) {
+                    alert("Error sending message. Check Firebase Rules.");
+                    console.error(error);
+                } finally {
+                    contactBtn.innerHTML = originalText;
+                    lucide.createIcons();
+                }
+            };
+
+            if (currentUser && userPhoneVerified) {
+                submitAction();
+            } else {
+                showAuthModal(submitAction);
+            }
+        });
+
+        // -- MOBILE MENU LOGIC --
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const closeMenuBtn = document.getElementById('close-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
@@ -846,15 +1048,12 @@
 
         function openMenu() {
             mobileMenu.classList.remove('translate-x-full');
-            if(document.body.style.overflow !== 'hidden') {
-                document.body.style.overflow = 'hidden'; 
-            }
+            document.body.style.overflow = 'hidden'; 
         }
 
         function closeMenu() {
             mobileMenu.classList.add('translate-x-full');
-            const authModal = document.getElementById('auth-modal');
-            if (authModal && authModal.classList.contains('opacity-0')) {
+            if(authModal.classList.contains('opacity-0')) {
                 document.body.style.overflow = 'auto';
             }
         }
@@ -863,7 +1062,7 @@
         if(closeMenuBtn) closeMenuBtn.addEventListener('click', closeMenu);
         mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
 
-        // Background Math 
+        // -- BACKGROUND MATH ANIMATIONS --
         const mathCanvas = document.getElementById('math-canvas');
         const symbols = ["∫", "∑", "π", "√", "∞", "÷", "×", "θ", "Δ", "≈"];
         const isMobile = window.innerWidth < 768;
@@ -885,13 +1084,11 @@
                 duration: 10 + Math.random() * 10,
                 repeat: -1,
                 ease: "linear",
-                modifiers: {
-                    opacity: function() { return Math.sin(Date.now() / 1000) * 0.3 + 0.3; }
-                }
+                modifiers: { opacity: () => Math.sin(Date.now() / 1000) * 0.3 + 0.3 }
             });
         }
 
-        // Hero Anims
+        // -- GSAP ANIMATIONS --
         gsap.to(".hero-content", { opacity: 1, x: 0, duration: 1, ease: "power3.out", delay: 0.2 });
         gsap.to(".hero-visual", { opacity: 1, scale: 1, duration: 1, ease: "power3.out", delay: 0.4 });
 
@@ -906,7 +1103,6 @@
             });
         }
 
-        // Scroll Reveal
         gsap.utils.toArray('.gs-reveal').forEach(function(elem) {
             ScrollTrigger.create({
                 trigger: elem,
@@ -918,7 +1114,6 @@
             });
         });
 
-        // Counters
         document.querySelectorAll('.counter').forEach(counter => {
             ScrollTrigger.create({
                 trigger: counter,
@@ -939,213 +1134,70 @@
             });
         });
 
-        // Carousel Logic
-        document.addEventListener("DOMContentLoaded", () => {
-            const slides = document.querySelectorAll('.carousel-slide');
-            const dotsContainer = document.getElementById('carousel-dots');
-            const prevBtn = document.getElementById('prev-btn');
-            const nextBtn = document.getElementById('next-btn');
-            const carouselContainer = document.getElementById('results-carousel');
-            
-            let currentSlide = 0;
-            let autoSlideInterval;
+        // -- CAROUSEL LOGIC --
+        const slides = document.querySelectorAll('.carousel-slide');
+        const dotsContainer = document.getElementById('carousel-dots');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const carouselContainer = document.getElementById('results-carousel');
+        
+        let currentSlide = 0;
+        let autoSlideInterval;
 
-            slides.forEach((_, i) => {
-                const dot = document.createElement('button');
-                dot.className = `w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-all duration-300 ${i === 0 ? 'bg-emerald-400 scale-125 shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'bg-white/20 hover:bg-white/40'}`;
-                dot.addEventListener('click', () => { goToSlide(i); resetAutoSlide(); });
-                dotsContainer.appendChild(dot);
-            });
+        slides.forEach((_, i) => {
+            const dot = document.createElement('button');
+            dot.className = `w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-all duration-300 ${i === 0 ? 'bg-emerald-400 scale-125 shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'bg-white/20 hover:bg-white/40'}`;
+            dot.addEventListener('click', () => { goToSlide(i); resetAutoSlide(); });
+            dotsContainer.appendChild(dot);
+        });
 
-            const dots = dotsContainer.querySelectorAll('button');
+        const dots = dotsContainer.querySelectorAll('button');
 
-            function goToSlide(index) {
-                slides[currentSlide].classList.replace('opacity-100', 'opacity-0');
-                slides[currentSlide].classList.add('translate-x-10', 'pointer-events-none');
-                slides[currentSlide].classList.remove('z-10');
-                slides[currentSlide].classList.add('z-0');
-                dots[currentSlide].className = 'w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-white/20 transition-all duration-300 hover:bg-white/40';
+        function goToSlide(index) {
+            slides[currentSlide].classList.replace('opacity-100', 'opacity-0');
+            slides[currentSlide].classList.add('translate-x-10', 'pointer-events-none');
+            slides[currentSlide].classList.remove('z-10');
+            slides[currentSlide].classList.add('z-0');
+            dots[currentSlide].className = 'w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-white/20 transition-all duration-300 hover:bg-white/40';
 
-                currentSlide = index;
+            currentSlide = index;
 
-                slides[currentSlide].classList.replace('opacity-0', 'opacity-100');
-                slides[currentSlide].classList.remove('translate-x-10', 'pointer-events-none');
-                slides[currentSlide].classList.remove('z-0');
-                slides[currentSlide].classList.add('z-10');
-                dots[currentSlide].className = 'w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-emerald-400 scale-125 shadow-[0_0_10px_rgba(52,211,153,0.5)] transition-all duration-300';
-            }
+            slides[currentSlide].classList.replace('opacity-0', 'opacity-100');
+            slides[currentSlide].classList.remove('translate-x-10', 'pointer-events-none');
+            slides[currentSlide].classList.remove('z-0');
+            slides[currentSlide].classList.add('z-10');
+            dots[currentSlide].className = 'w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-emerald-400 scale-125 shadow-[0_0_10px_rgba(52,211,153,0.5)] transition-all duration-300';
+        }
 
-            function nextSlide() { goToSlide((currentSlide + 1) % slides.length); }
-            function prevSlide() { goToSlide((currentSlide - 1 + slides.length) % slides.length); }
+        function nextSlide() { goToSlide((currentSlide + 1) % slides.length); }
+        function prevSlide() { goToSlide((currentSlide - 1 + slides.length) % slides.length); }
 
-            nextBtn.addEventListener('click', () => { nextSlide(); resetAutoSlide(); });
-            prevBtn.addEventListener('click', () => { prevSlide(); resetAutoSlide(); });
+        nextBtn.addEventListener('click', () => { nextSlide(); resetAutoSlide(); });
+        prevBtn.addEventListener('click', () => { prevSlide(); resetAutoSlide(); });
 
-            let touchStartX = 0;
-            let touchEndX = 0;
-            
-            carouselContainer.addEventListener('touchstart', e => {
-                touchStartX = e.changedTouches[0].screenX;
-                pauseAutoSlide();
-            }, {passive: true});
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        carouselContainer.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+            pauseAutoSlide();
+        }, {passive: true});
 
-            carouselContainer.addEventListener('touchend', e => {
-                touchEndX = e.changedTouches[0].screenX;
-                if (touchEndX < touchStartX - 50) nextSlide();
-                if (touchEndX > touchStartX + 50) prevSlide();
-                startAutoSlide();
-            }, {passive: true});
-
-            function startAutoSlide() { autoSlideInterval = setInterval(nextSlide, 5000); }
-            function pauseAutoSlide() { clearInterval(autoSlideInterval); }
-            function resetAutoSlide() { pauseAutoSlide(); startAutoSlide(); }
-
-            carouselContainer.addEventListener('mouseenter', pauseAutoSlide);
-            carouselContainer.addEventListener('mouseleave', startAutoSlide);
-
+        carouselContainer.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchEndX < touchStartX - 50) nextSlide();
+            if (touchEndX > touchStartX + 50) prevSlide();
             startAutoSlide();
-        });
-    </script>
+        }, {passive: true});
 
-    <!-- FIREBASE BACKEND LOGIC -->
-    <script type="module">
-        // 1. Firebase SDKs Import
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        function startAutoSlide() { autoSlideInterval = setInterval(nextSlide, 5000); }
+        function pauseAutoSlide() { clearInterval(autoSlideInterval); }
+        function resetAutoSlide() { pauseAutoSlide(); startAutoSlide(); }
 
-        // 2. FIREBASE CONFIGURATION
-        const firebaseConfig = {
-          apiKey: "AIzaSyDOIDBbvA0zLmCCyxjWE7vi1TjQi7hDjh0",
-          authDomain: "padhle-india.firebaseapp.com",
-          projectId: "padhle-india",
-          storageBucket: "padhle-india.firebasestorage.app",
-          messagingSenderId: "420251652776",
-          appId: "1:420251652776:web:3758004a37ef43f318a89d",
-          measurementId: "G-K2MQCQCGST"
-        };
+        carouselContainer.addEventListener('mouseenter', pauseAutoSlide);
+        carouselContainer.addEventListener('mouseleave', startAutoSlide);
 
-        // Initialize Firebase & Analytics
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
-
-        // DOM Elements
-        const authModal = document.getElementById('auth-modal');
-        const googleSection = document.getElementById('google-login-section');
-        const phoneSection = document.getElementById('phone-section');
-        const googleBtn = document.getElementById('google-signin-btn');
-        const savePhoneBtn = document.getElementById('save-phone-btn');
-        const phoneInput = document.getElementById('user-phone');
-
-        // Initial Page Lock (Disable Scrolling until login)
-        document.body.style.overflow = 'hidden';
-
-        // 3. CHECK USER LOGIN STATUS
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                // User logged in via Google, check if Phone Number exists in Firestore DB
-                const userRef = doc(db, "Users", user.uid);
-                const userSnap = await getDoc(userRef);
-
-                if (userSnap.exists() && userSnap.data().phoneNumber) {
-                    // Has phone number - Unlock Website!
-                    authModal.classList.add('opacity-0', 'pointer-events-none');
-                    document.body.style.overflow = 'auto'; // Restore scroll
-                } else {
-                    // Google logged in, but no phone number. Show phone input screen.
-                    googleSection.classList.add('hidden');
-                    phoneSection.classList.remove('hidden');
-                }
-            } else {
-                // Not logged in. Show Login Modal.
-                authModal.classList.remove('opacity-0', 'pointer-events-none');
-                googleSection.classList.remove('hidden');
-                phoneSection.classList.add('hidden');
-            }
-        });
-
-        // 4. GOOGLE SIGN IN BUTTON CLICK
-        googleBtn.addEventListener('click', () => {
-            signInWithPopup(auth, provider).catch(error => {
-                alert("Login Failed: " + error.message);
-            });
-        });
-
-        // 5. SAVE PHONE NUMBER CLICK
-        savePhoneBtn.addEventListener('click', async () => {
-            const phoneVal = phoneInput.value.trim();
-            if(phoneVal.length < 10) {
-                alert("Please enter a valid phone number!");
-                return;
-            }
-            
-            const user = auth.currentUser;
-            if(user) {
-                const originalText = savePhoneBtn.innerText;
-                savePhoneBtn.innerText = "Saving...";
-                try {
-                    // Save user data (Name, Email, Phone) to Firestore
-                    await setDoc(doc(db, "Users", user.uid), {
-                        name: user.displayName,
-                        email: user.email,
-                        phoneNumber: phoneVal,
-                        joinedAt: new Date()
-                    }, { merge: true });
-
-                    // Unlock website
-                    authModal.classList.add('opacity-0', 'pointer-events-none');
-                    document.body.style.overflow = 'auto';
-                } catch (error) {
-                    alert("Error saving number: " + error.message);
-                    savePhoneBtn.innerText = originalText;
-                }
-            }
-        });
-
-        // 6. GET IN TOUCH FORM TO FIREBASE FIRESTORE
-        const contactForm = document.getElementById('contact-form');
-        const contactBtn = document.getElementById('contact-submit-btn');
-
-        contactForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Stop page reload
-            
-            const name = document.getElementById('contact-name').value;
-            const email = document.getElementById('contact-email').value;
-            const phone = document.getElementById('contact-phone').value;
-            const message = document.getElementById('contact-message').value;
-
-            if(!name || !email || !message) {
-                alert("Please fill all details!"); 
-                return;
-            }
-
-            const originalText = contactBtn.innerHTML;
-            contactBtn.innerHTML = "Sending... <i data-lucide='loader' class='w-4 h-4 md:w-5 md:h-5 animate-spin'></i>";
-            lucide.createIcons();
-
-            try {
-                // Save to 'Contact_Messages' collection
-                await addDoc(collection(db, "Contact_Messages"), {
-                    name: name,
-                    email: email,
-                    phone: phone,
-                    message: message,
-                    timestamp: new Date()
-                });
-
-                alert("Message Sent Successfully! Team will connect with you soon.");
-                contactForm.reset();
-            } catch (error) {
-                alert("Error sending message: " + error.message);
-            } finally {
-                contactBtn.innerHTML = originalText;
-                lucide.createIcons();
-            }
-        });
+        startAutoSlide();
     </script>
 </body>
 </html>
