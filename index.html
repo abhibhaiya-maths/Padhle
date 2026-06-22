@@ -38,15 +38,29 @@
     <style>
         body { background-color: #020617; color: white; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .text-gradient { background: linear-gradient(135deg, #60a5fa 0%, #a855f7 50%, #ec4899 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s ease; }
+        .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s ease; }
         .glow-border { position: relative; transition: all 0.4s ease; }
         .glow-border::before { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; background: linear-gradient(135deg, rgba(96,165,250,0.5), rgba(168,85,247,0.2)); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; opacity: 0; transition: opacity 0.5s ease; }
         .glow-border:hover::before { opacity: 1; }
+        
+        /* Navbar Links */
         .nav-link { position: relative; }
         .nav-link::after { content: ''; position: absolute; width: 0; height: 2px; bottom: -4px; left: 50%; background: linear-gradient(90deg, #60a5fa, #a855f7); transition: all 0.3s ease; transform: translateX(-50%); border-radius: 2px; }
         .nav-link:hover::after { width: 100%; }
-        #math-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; opacity: 0.12; }
-        .math-symbol { position: absolute; color: #3b82f6; font-weight: 700; font-size: 2rem; user-select: none; }
+        
+        /* Hardware Accelerated Background Blobs to reduce lag */
+        .bg-blob { will-change: transform; transform: translateZ(0); pointer-events: none; }
+        
+        /* Pure CSS Math Animation (Zero lag) */
+        #math-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; opacity: 0.15; }
+        .math-symbol { position: absolute; color: #3b82f6; font-weight: 700; font-size: 2rem; animation: floatMath linear infinite; will-change: transform, opacity; }
+        @keyframes floatMath {
+            0% { transform: translateY(100vh) rotate(0deg) scale(0.8); opacity: 0; }
+            20% { opacity: 0.6; }
+            80% { opacity: 0.6; }
+            100% { transform: translateY(-20vh) rotate(360deg) scale(1.2); opacity: 0; }
+        }
+
         .carousel-slide { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.03); border-radius: 6px; }
@@ -1022,19 +1036,23 @@
         if(closeMenuBtn) closeMenuBtn.addEventListener('click', closeMenu);
         mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
 
-        // -- BACKGROUND MATH ANIMATIONS --
+        // -- SUPER-FAST BACKGROUND MATH ANIMATIONS (ZERO LAG) --
         const mathCanvas = document.getElementById('math-canvas');
         if(mathCanvas) {
             const symbols = ["∫", "∑", "π", "√", "∞", "÷", "×", "θ", "Δ", "≈"];
-            const symbolCount = window.innerWidth < 768 ? 10 : 20;
+            const isMobile = window.innerWidth < 768;
+            const symbolCount = isMobile ? 8 : 15; // Reduced count for mobile speed
+
             for (let i = 0; i < symbolCount; i++) {
                 let el = document.createElement('div');
                 el.className = 'math-symbol';
                 el.innerText = symbols[Math.floor(Math.random() * symbols.length)];
                 el.style.left = Math.random() * 100 + 'vw';
-                el.style.top = Math.random() * 100 + 'vh';
+                // CSS Animation Duration (Random between 15s and 30s)
+                el.style.animationDuration = (Math.random() * 15 + 15) + 's';
+                // CSS Animation Delay
+                el.style.animationDelay = '-' + (Math.random() * 20) + 's';
                 mathCanvas.appendChild(el);
-                gsap.to(el, { y: () => -200 - Math.random() * 200, x: () => -50 + Math.random() * 100, rotation: () => Math.random() * 360, opacity: 0, duration: 10 + Math.random() * 10, repeat: -1, ease: "linear", modifiers: { opacity: () => Math.sin(Date.now() / 1000) * 0.3 + 0.3 } });
             }
         }
 
