@@ -76,28 +76,68 @@
     <!-- LOGIN & AUTHENTICATION OVERLAY (GATED WALL) -->
     <div id="auth-modal" class="fixed inset-0 z-[1000] bg-[#020617]/80 backdrop-blur-2xl flex items-center justify-center transition-all duration-400 opacity-0 pointer-events-none">
         <div class="glass-card glow-border p-8 md:p-10 rounded-[2rem] w-[90%] max-w-md bg-[#0a0f1f]/95 text-center relative overflow-hidden shadow-[0_0_50px_rgba(59,130,246,0.3)]">
-            <button id="close-auth-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-all hover:rotate-90"><i data-lucide="x" class="w-6 h-6"></i></button>
             
+            <button id="close-auth-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-all hover:rotate-90">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+
+            <!-- 1. Google Login Section -->
             <div id="google-login-section">
-                <div class="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-500/30"><i data-lucide="lock" class="w-8 h-8 text-blue-400"></i></div>
+                <div class="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-500/30">
+                    <i data-lucide="lock" class="w-8 h-8 text-blue-400"></i>
+                </div>
                 <h3 class="text-2xl font-bold font-display text-white mb-2 tracking-tight">Join Unstoppables</h3>
                 <p class="text-gray-300 text-sm mb-6 font-medium">Login to access premium courses, notes, and previous year question papers.</p>
                 
                 <div class="flex items-start gap-3 text-left mb-6 bg-white/5 p-3.5 rounded-xl border border-white/10 hover:border-white/20 transition-colors group">
                     <input type="checkbox" id="login-tc-agree" checked class="mt-0.5 w-4 h-4 rounded border-white/20 bg-black/50 accent-blue-500 focus:ring-blue-500 cursor-pointer flex-shrink-0">
-                    <label for="login-tc-agree" class="text-xs text-gray-300 leading-tight cursor-pointer group-hover:text-gray-200 transition-colors">By continuing you are accepting our <span class="open-tc-btn text-blue-400 hover:text-blue-300 font-bold underline transition-colors">Privacy Policy and T&C</span></label>
+                    <label for="login-tc-agree" class="text-xs text-gray-300 leading-tight cursor-pointer group-hover:text-gray-200 transition-colors">
+                        By continuing you are accepting our 
+                        <span class="open-tc-btn text-blue-400 hover:text-blue-300 font-bold underline transition-colors decoration-blue-500/30 hover:decoration-blue-400">Privacy Policy and T&C</span>
+                    </label>
                 </div>
+
                 <button id="google-signin-btn" class="w-full bg-white text-black font-bold py-3.5 rounded-xl flex items-center justify-center gap-3 transition-all hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:bg-gray-100">
-                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">Continue with Google
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
+                    Continue with Google
                 </button>
             </div>
 
+            <!-- 2. Phone Number Section (OTP Bhejne ke liye) -->
             <div id="phone-section" class="hidden">
-                <div class="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-purple-500/30"><i data-lucide="phone" class="w-8 h-8 text-purple-400"></i></div>
-                <h3 class="text-2xl font-bold font-display text-white mb-2 tracking-tight">Almost there!</h3>
-                <p class="text-gray-300 text-sm mb-6 font-medium">Please verify your phone number to unlock complete access.</p>
-                <input type="tel" id="user-phone" placeholder="Enter Phone Number" class="w-full bg-black/50 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-blue-500 mb-4 text-center tracking-widest font-semibold" required>
-                <button id="save-phone-btn" class="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3.5 rounded-xl hover:scale-[1.03] transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)]">Unlock Access</button>
+                <div class="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-purple-500/30">
+                    <i data-lucide="phone" class="w-8 h-8 text-purple-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold font-display text-white mb-2 tracking-tight">Verify Mobile</h3>
+                <p class="text-gray-300 text-sm mb-6 font-medium">Please enter your 10-digit number to receive an OTP.</p>
+                
+                <div class="relative flex items-center mb-4">
+                    <span class="absolute left-4 text-gray-300 font-bold border-r border-white/20 pr-3">+91</span>
+                    <input type="tel" id="user-phone" placeholder="Enter Phone Number" maxlength="10" class="w-full bg-black/50 border border-white/10 rounded-xl pl-16 pr-5 py-4 text-white focus:outline-none focus:border-blue-500 text-left tracking-widest font-semibold" required>
+                </div>
+                
+                <!-- Invisible Recaptcha container for Firebase -->
+                <div id="recaptcha-container"></div>
+                
+                <button id="send-otp-btn" class="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3.5 rounded-xl hover:scale-[1.03] transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                    Send OTP
+                </button>
+            </div>
+
+            <!-- 3. OTP Verification Section -->
+            <div id="otp-section" class="hidden">
+                <div class="w-16 h-16 bg-pink-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-pink-500/30">
+                    <i data-lucide="message-square" class="w-8 h-8 text-pink-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold font-display text-white mb-2 tracking-tight">Enter OTP</h3>
+                <p class="text-gray-300 text-sm mb-6 font-medium">We have sent a 6-digit OTP to your number.</p>
+                
+                <input type="text" id="user-otp" placeholder="Enter 6-digit OTP" maxlength="6" class="w-full bg-black/50 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-pink-500 mb-4 text-center tracking-[0.5em] text-lg font-bold" required>
+                
+                <button id="verify-otp-btn" class="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-3.5 rounded-xl hover:scale-[1.03] transition-all shadow-[0_0_20px_rgba(236,72,153,0.4)]">
+                    Verify & Unlock
+                </button>
+                <button id="resend-otp-btn" class="mt-4 text-sm text-gray-400 hover:text-white transition-colors underline">Change Number / Resend</button>
             </div>
         </div>
     </div>
@@ -689,14 +729,15 @@
             </div>
         </div>
     </footer>
-    <!-- FIREBASE & CORE LOGIC SCRIPT -->
+    <!-- FIREBASE & CORE LOGIC SCRIPT (WITH OTP VERIFICATION) -->
     <script type="module">
         lucide.createIcons();
         gsap.registerPlugin(ScrollTrigger);
 
+        // -- FIREBASE SDKs --
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, RecaptchaVerifier, linkWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -715,6 +756,7 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
+        // -- STATE & DOM ELEMENTS --
         let currentUser = null;
         let userPhoneVerified = false;
         let pendingAction = null;
@@ -722,79 +764,61 @@
         const authModal = document.getElementById('auth-modal');
         const googleSection = document.getElementById('google-login-section');
         const phoneSection = document.getElementById('phone-section');
+        const otpSection = document.getElementById('otp-section');
+        
         const googleBtn = document.getElementById('google-signin-btn');
-        const savePhoneBtn = document.getElementById('save-phone-btn');
+        const sendOtpBtn = document.getElementById('send-otp-btn');
+        const verifyOtpBtn = document.getElementById('verify-otp-btn');
+        const resendOtpBtn = document.getElementById('resend-otp-btn');
         const phoneInput = document.getElementById('user-phone');
+        const otpInput = document.getElementById('user-otp');
         const closeAuthBtn = document.getElementById('close-auth-btn');
 
+        // Checkbox Logic
         const loginTcCheckbox = document.getElementById('login-tc-agree');
         const contactTcCheckbox = document.getElementById('contact-tc-agree');
         const tcCheckboxes = [loginTcCheckbox, contactTcCheckbox];
-        
-        const openTcBtns = document.querySelectorAll('.open-tc-btn');
-        const closeTcBtn = document.getElementById('close-tc-btn');
-        const acceptTcBtn = document.getElementById('accept-tc-btn');
         const tcPopup = document.getElementById('tc-popup');
         const contactSubmitBtn = document.getElementById('contact-submit-btn');
-
         let currentTcTarget = null;
 
         if(loginTcCheckbox) {
             loginTcCheckbox.addEventListener('change', (e) => {
                 if(e.target.checked) {
-                    googleBtn.disabled = false;
-                    googleBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    googleBtn.disabled = false; googleBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                 } else {
-                    googleBtn.disabled = true;
-                    googleBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    googleBtn.disabled = true; googleBtn.classList.add('opacity-50', 'cursor-not-allowed');
                 }
             });
         }
-
         if(contactTcCheckbox) {
             contactTcCheckbox.addEventListener('change', (e) => {
                 if(e.target.checked) {
-                    contactSubmitBtn.disabled = false;
-                    contactSubmitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    contactSubmitBtn.classList.add('hover:scale-[1.02]', 'shadow-[0_0_20px_rgba(59,130,246,0.4)]');
+                    contactSubmitBtn.disabled = false; contactSubmitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                 } else {
-                    contactSubmitBtn.disabled = true;
-                    contactSubmitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    contactSubmitBtn.classList.remove('hover:scale-[1.02]', 'shadow-[0_0_20px_rgba(59,130,246,0.4)]');
+                    contactSubmitBtn.disabled = true; contactSubmitBtn.classList.add('opacity-50', 'cursor-not-allowed');
                 }
             });
         }
-
-        openTcBtns.forEach(btn => {
+        document.querySelectorAll('.open-tc-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                if(e.target.closest('#auth-modal')) currentTcTarget = loginTcCheckbox;
-                else currentTcTarget = contactTcCheckbox;
+                currentTcTarget = e.target.closest('#auth-modal') ? loginTcCheckbox : contactTcCheckbox;
                 tcPopup.classList.remove('opacity-0', 'pointer-events-none');
             });
         });
+        document.getElementById('close-tc-btn').addEventListener('click', () => tcPopup.classList.add('opacity-0', 'pointer-events-none'));
+        document.getElementById('accept-tc-btn').addEventListener('click', () => {
+            if(currentTcTarget) { currentTcTarget.checked = true; currentTcTarget.dispatchEvent(new Event('change')); } 
+            else { tcCheckboxes.forEach(cb => { if(cb) { cb.checked = true; cb.dispatchEvent(new Event('change')); } }); }
+            tcPopup.classList.add('opacity-0', 'pointer-events-none');
+        });
 
-        if(closeTcBtn) closeTcBtn.addEventListener('click', () => tcPopup.classList.add('opacity-0', 'pointer-events-none'));
-
-        if(acceptTcBtn) {
-            acceptTcBtn.addEventListener('click', () => {
-                if(currentTcTarget) {
-                    currentTcTarget.checked = true;
-                    currentTcTarget.dispatchEvent(new Event('change')); 
-                } else {
-                    tcCheckboxes.forEach(cb => {
-                        if(cb) { cb.checked = true; cb.dispatchEvent(new Event('change')); }
-                    });
-                }
-                tcPopup.classList.add('opacity-0', 'pointer-events-none');
-            });
-        }
-
+        // -- AUTH STATE LISTENER --
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                const userRef = doc(db, "Users", user.uid);
                 try {
-                    const userSnap = await getDoc(userRef);
+                    const userSnap = await getDoc(doc(db, "Users", user.uid));
                     if (userSnap.exists() && userSnap.data().phoneNumber) {
                         userPhoneVerified = true;
                         closeAuthModal();
@@ -802,8 +826,7 @@
                     } else {
                         userPhoneVerified = false;
                         if(authModal && !authModal.classList.contains('pointer-events-none')) {
-                            googleSection.classList.add('hidden');
-                            phoneSection.classList.remove('hidden');
+                            showSection('phone');
                         }
                     }
                 } catch(error) { console.error("Firestore Error: ", error); }
@@ -812,56 +835,139 @@
             }
         });
 
+        // -- MODAL CONTROLS --
+        function showSection(section) {
+            googleSection.classList.add('hidden');
+            phoneSection.classList.add('hidden');
+            otpSection.classList.add('hidden');
+            
+            if(section === 'google') googleSection.classList.remove('hidden');
+            if(section === 'phone') phoneSection.classList.remove('hidden');
+            if(section === 'otp') otpSection.classList.remove('hidden');
+        }
+
         function showAuthModal(action) {
             pendingAction = action;
             authModal.classList.remove('opacity-0', 'pointer-events-none');
             document.body.style.overflow = 'hidden';
+            
             if (currentUser && !userPhoneVerified) {
-                googleSection.classList.add('hidden'); phoneSection.classList.remove('hidden');
+                showSection('phone');
             } else {
-                googleSection.classList.remove('hidden'); phoneSection.classList.add('hidden');
+                showSection('google');
             }
         }
 
         function closeAuthModal() {
             if(authModal) authModal.classList.add('opacity-0', 'pointer-events-none');
-            document.body.style.overflow = 'auto'; pendingAction = null; 
-            setTimeout(() => {
-                if(googleSection) googleSection.classList.remove('hidden');
-                if(phoneSection) phoneSection.classList.add('hidden');
-                if(tcPopup) tcPopup.classList.add('opacity-0', 'pointer-events-none');
-            }, 300);
+            document.body.style.overflow = 'auto';
+            pendingAction = null; 
+            setTimeout(() => { showSection('google'); }, 300);
         }
 
         if(closeAuthBtn) closeAuthBtn.addEventListener('click', closeAuthModal);
 
+        // -- GOOGLE LOGIN --
         if(googleBtn) {
             googleBtn.addEventListener('click', () => {
-                if (!loginTcCheckbox.checked) return alert("Please agree to the Privacy Policy and T&C before continuing.");
+                if (!loginTcCheckbox.checked) return alert("Please agree to the Privacy Policy and T&C.");
                 signInWithPopup(auth, provider).catch(error => console.log("Login Cancelled"));
             });
         }
 
-        if(savePhoneBtn) {
-            savePhoneBtn.addEventListener('click', async () => {
-                const phoneVal = phoneInput.value.trim();
-                if(phoneVal.length < 10) return alert("Please enter a valid phone number!");
-                if(currentUser) {
-                    const originalText = savePhoneBtn.innerText;
-                    savePhoneBtn.innerText = "Saving...";
-                    try {
-                        await setDoc(doc(db, "Users", currentUser.uid), {
-                            name: currentUser.displayName, email: currentUser.email, phoneNumber: phoneVal, joinedAt: new Date()
-                        }, { merge: true });
-                        userPhoneVerified = true; closeAuthModal();
-                        if(pendingAction) { pendingAction(); pendingAction = null; }
-                    } catch (error) {
-                        alert("Error saving number."); savePhoneBtn.innerText = originalText;
+        // -- FIREBASE OTP LOGIC --
+        let recaptchaVerifier;
+        
+        function setupRecaptcha() {
+            if (!recaptchaVerifier) {
+                recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                    'size': 'invisible',
+                    'callback': (response) => {
+                        // reCAPTCHA solved
                     }
+                });
+            }
+        }
+
+        if(sendOtpBtn) {
+            sendOtpBtn.addEventListener('click', () => {
+                const phoneVal = phoneInput.value.trim();
+                if(phoneVal.length !== 10 || isNaN(phoneVal)) {
+                    return alert("Please enter a valid 10-digit Indian mobile number!");
                 }
+                
+                const phoneNumber = "+91" + phoneVal; // Prefixing +91 for India
+                const originalText = sendOtpBtn.innerText;
+                sendOtpBtn.innerHTML = "Sending SMS... <i data-lucide='loader' class='w-4 h-4 animate-spin'></i>";
+                lucide.createIcons();
+
+                setupRecaptcha();
+
+                // Link Phone with existing Google Account
+                linkWithPhoneNumber(currentUser, phoneNumber, recaptchaVerifier)
+                    .then((confirmationResult) => {
+                        window.confirmationResult = confirmationResult;
+                        sendOtpBtn.innerText = originalText;
+                        showSection('otp'); // Go to OTP Screen
+                    }).catch((error) => {
+                        console.error("SMS Error:", error);
+                        alert("Error sending SMS. Please try again. (Maybe too many requests or number already registered).");
+                        sendOtpBtn.innerText = originalText;
+                        // Reset Recaptcha on error
+                        recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
+                    });
             });
         }
 
+        // -- VERIFY OTP & SAVE TO DATABASE --
+        if(verifyOtpBtn) {
+            verifyOtpBtn.addEventListener('click', () => {
+                const code = otpInput.value.trim();
+                if(code.length !== 6) return alert("Please enter the 6-digit OTP.");
+                
+                const originalText = verifyOtpBtn.innerText;
+                verifyOtpBtn.innerHTML = "Verifying... <i data-lucide='loader' class='w-4 h-4 animate-spin'></i>";
+                lucide.createIcons();
+
+                window.confirmationResult.confirm(code).then(async (result) => {
+                    // OTP Correct! Save to Database
+                    try {
+                        const phoneVal = phoneInput.value.trim();
+                        await setDoc(doc(db, "Users", currentUser.uid), {
+                            name: currentUser.displayName,
+                            email: currentUser.email,
+                            phoneNumber: phoneVal,
+                            joinedAt: new Date()
+                        }, { merge: true });
+
+                        userPhoneVerified = true;
+                        closeAuthModal();
+                        
+                        // Execute pending action (download PDF etc.)
+                        if(pendingAction) {
+                            pendingAction();
+                            pendingAction = null;
+                        }
+                    } catch(error) {
+                        console.error(error);
+                        alert("Verified but failed to save data. Check Firestore rules.");
+                    }
+                }).catch((error) => {
+                    alert("Invalid OTP! Please try again.");
+                    verifyOtpBtn.innerText = originalText;
+                });
+            });
+        }
+
+        // Resend OTP / Change Number
+        if(resendOtpBtn) {
+            resendOtpBtn.addEventListener('click', () => {
+                otpInput.value = "";
+                showSection('phone');
+            });
+        }
+
+        // -- INTERCEPT STUDY MATERIAL CLICKS --
         document.querySelectorAll('.requires-auth').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -871,12 +977,13 @@
             });
         });
 
+        // -- INTERCEPT CONTACT FORM SUBMIT --
         const contactForm = document.getElementById('contact-form');
         if(contactForm) {
             contactForm.addEventListener('submit', async (e) => {
                 e.preventDefault(); 
                 if (!contactTcCheckbox.checked) return alert("Please agree to the Privacy Policy and T&C.");
-                
+
                 const submitAction = async () => {
                     const name = document.getElementById('contact-name').value;
                     const email = document.getElementById('contact-email').value;
@@ -886,7 +993,7 @@
                     if(!name || !email || !message) return;
 
                     const originalText = contactSubmitBtn.innerHTML;
-                    contactSubmitBtn.innerHTML = "Sending... <i data-lucide='loader' class='w-4 h-4 animate-spin'></i>";
+                    contactSubmitBtn.innerHTML = "Sending... <i data-lucide='loader' class='w-4 h-4 md:w-5 md:h-5 animate-spin'></i>";
                     lucide.createIcons();
 
                     try {
@@ -895,13 +1002,19 @@
                         });
                         alert("Message Sent Successfully! Team will connect with you soon.");
                         contactForm.reset();
-                    } catch (error) { alert("Error sending message."); } 
-                    finally { contactSubmitBtn.innerHTML = originalText; lucide.createIcons(); }
+                    } catch (error) {
+                        alert("Error sending message. Check Firebase Rules.");
+                    } finally {
+                        contactSubmitBtn.innerHTML = originalText;
+                        lucide.createIcons();
+                    }
                 };
+
                 (currentUser && userPhoneVerified) ? submitAction() : showAuthModal(submitAction);
             });
         }
 
+        // -- MOBILE MENU LOGIC --
         const mobileMenuBtn = document.getElementById('mobile-menu-btn'), closeMenuBtn = document.getElementById('close-menu-btn'), mobileMenu = document.getElementById('mobile-menu'), mobileLinks = document.querySelectorAll('.mobile-link');
         function openMenu() { if(mobileMenu) mobileMenu.classList.remove('translate-x-full'); document.body.style.overflow = 'hidden'; }
         function closeMenu() { if(mobileMenu) mobileMenu.classList.add('translate-x-full'); if(authModal && authModal.classList.contains('opacity-0') && tcPopup && tcPopup.classList.contains('opacity-0')) document.body.style.overflow = 'auto'; }
@@ -909,6 +1022,7 @@
         if(closeMenuBtn) closeMenuBtn.addEventListener('click', closeMenu);
         mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
 
+        // -- BACKGROUND MATH ANIMATIONS --
         const mathCanvas = document.getElementById('math-canvas');
         if(mathCanvas) {
             const symbols = ["∫", "∑", "π", "√", "∞", "÷", "×", "θ", "Δ", "≈"];
@@ -924,31 +1038,35 @@
             }
         }
 
+        // -- GSAP ANIMATIONS --
         gsap.to(".hero-content", { opacity: 1, x: 0, duration: 1, ease: "power3.out", delay: 0.2 });
         gsap.to(".hero-visual", { opacity: 1, scale: 1, duration: 1, ease: "power3.out", delay: 0.4 });
-
         if (window.innerWidth >= 768) {
             document.addEventListener("mousemove", (e) => {
                 const x = (window.innerWidth - e.pageX) / 50; const y = (window.innerHeight - e.pageY) / 50;
-                document.querySelectorAll(".floating-element").forEach(el => gsap.to(el, { x: x * el.getAttribute("data-speed"), y: y * el.getAttribute("data-speed"), duration: 1, ease: "power1.out" }));
+                document.querySelectorAll(".floating-element").forEach(el => { gsap.to(el, { x: x * el.getAttribute("data-speed"), y: y * el.getAttribute("data-speed"), duration: 1, ease: "power1.out" }); });
             });
         }
+        gsap.utils.toArray('.gs-reveal').forEach(function(elem) {
+            ScrollTrigger.create({ trigger: elem, start: "top 85%", onEnter: function() { gsap.fromTo(elem, { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "power3.out", overwrite: "auto" }); }, once: true });
+        });
+        document.querySelectorAll('.counter').forEach(counter => {
+            ScrollTrigger.create({ trigger: counter, start: "top 90%", once: true, onEnter: () => { const target = parseFloat(counter.getAttribute('data-target')); const hasDecimals = target % 1 !== 0; gsap.to({ val: 0 }, { val: target, duration: 2, ease: "power2.out", onUpdate: function() { counter.innerHTML = hasDecimals ? this.targets()[0].val.toFixed(1) : Math.floor(this.targets()[0].val); } }); } });
+        });
 
-        gsap.utils.toArray('.gs-reveal').forEach(elem => ScrollTrigger.create({ trigger: elem, start: "top 85%", onEnter: () => gsap.fromTo(elem, { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "power3.out", overwrite: "auto" }), once: true }));
-        document.querySelectorAll('.counter').forEach(counter => ScrollTrigger.create({ trigger: counter, start: "top 90%", once: true, onEnter: () => gsap.to({ val: 0 }, { val: parseFloat(counter.getAttribute('data-target')), duration: 2, ease: "power2.out", onUpdate: function() { counter.innerHTML = parseFloat(counter.getAttribute('data-target')) % 1 !== 0 ? this.targets()[0].val.toFixed(1) : Math.floor(this.targets()[0].val); } }) }));
-
-        const slides = document.querySelectorAll('.carousel-slide'), dotsContainer = document.getElementById('carousel-dots'), prevBtn = document.getElementById('prev-btn'), nextBtn = document.getElementById('next-btn'), carouselContainer = document.getElementById('results-carousel');
-        let currentSlide = 0, autoSlideInterval;
-
+        // -- CAROUSEL LOGIC --
+        const slides = document.querySelectorAll('.carousel-slide');
+        const dotsContainer = document.getElementById('carousel-dots');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const carouselContainer = document.getElementById('results-carousel');
+        let currentSlide = 0; let autoSlideInterval;
         if(slides.length > 0 && dotsContainer) {
             slides.forEach((_, i) => {
-                const dot = document.createElement('button');
-                dot.className = `w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-all duration-300 ${i === 0 ? 'bg-blue-400 scale-125 shadow-[0_0_10px_rgba(96,165,250,0.5)]' : 'bg-white/20 hover:bg-white/40'}`;
-                dot.addEventListener('click', () => { goToSlide(i); resetAutoSlide(); });
-                dotsContainer.appendChild(dot);
+                const dot = document.createElement('button'); dot.className = `w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-all duration-300 ${i === 0 ? 'bg-blue-400 scale-125 shadow-[0_0_10px_rgba(96,165,250,0.5)]' : 'bg-white/20 hover:bg-white/40'}`;
+                dot.addEventListener('click', () => { goToSlide(i); resetAutoSlide(); }); dotsContainer.appendChild(dot);
             });
             const dots = dotsContainer.querySelectorAll('button');
-
             function goToSlide(index) {
                 if(!slides.length) return;
                 slides[currentSlide].classList.replace('opacity-100', 'opacity-0'); slides[currentSlide].classList.add('translate-x-10', 'pointer-events-none', 'z-0'); slides[currentSlide].classList.remove('z-10');
@@ -957,18 +1075,17 @@
                 slides[currentSlide].classList.replace('opacity-0', 'opacity-100'); slides[currentSlide].classList.remove('translate-x-10', 'pointer-events-none', 'z-0'); slides[currentSlide].classList.add('z-10');
                 if(dots[currentSlide]) dots[currentSlide].className = 'w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-blue-400 scale-125 shadow-[0_0_10px_rgba(96,165,250,0.5)] transition-all duration-300';
             }
-
-            if(nextBtn) nextBtn.addEventListener('click', () => { if(slides.length) goToSlide((currentSlide + 1) % slides.length); resetAutoSlide(); });
-            if(prevBtn) prevBtn.addEventListener('click', () => { if(slides.length) goToSlide((currentSlide - 1 + slides.length) % slides.length); resetAutoSlide(); });
-
-            let touchStartX = 0, touchEndX = 0;
+            function nextSlide() { if(slides.length) goToSlide((currentSlide + 1) % slides.length); }
+            function prevSlide() { if(slides.length) goToSlide((currentSlide - 1 + slides.length) % slides.length); }
+            if(nextBtn) nextBtn.addEventListener('click', () => { nextSlide(); resetAutoSlide(); });
+            if(prevBtn) prevBtn.addEventListener('click', () => { prevSlide(); resetAutoSlide(); });
+            let touchStartX = 0; let touchEndX = 0;
             if(carouselContainer) {
                 carouselContainer.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; pauseAutoSlide(); }, {passive: true});
-                carouselContainer.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; if (touchEndX < touchStartX - 50) goToSlide((currentSlide + 1) % slides.length); if (touchEndX > touchStartX + 50) goToSlide((currentSlide - 1 + slides.length) % slides.length); startAutoSlide(); }, {passive: true});
+                carouselContainer.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; if (touchEndX < touchStartX - 50) nextSlide(); if (touchEndX > touchStartX + 50) prevSlide(); startAutoSlide(); }, {passive: true});
                 carouselContainer.addEventListener('mouseenter', pauseAutoSlide); carouselContainer.addEventListener('mouseleave', startAutoSlide);
             }
-
-            function startAutoSlide() { if(slides.length) autoSlideInterval = setInterval(() => goToSlide((currentSlide + 1) % slides.length), 5000); }
+            function startAutoSlide() { if(slides.length) autoSlideInterval = setInterval(nextSlide, 5000); }
             function pauseAutoSlide() { clearInterval(autoSlideInterval); }
             function resetAutoSlide() { pauseAutoSlide(); startAutoSlide(); }
             startAutoSlide();
