@@ -454,14 +454,24 @@
                 </div>
                 
                 <div class="grid sm:grid-cols-2 gap-6 md:gap-8">
-                    <div class="glass-card glow-border p-5 md:p-6 rounded-2xl bg-gradient-to-br from-[#0a0f1f] to-[#1e1b4b] border-blue-500/30 shadow-[0_0_30px_rgba(59,130,246,0.15)] relative overflow-hidden group">
+                    <!-- Academics Highlight Box (Updated for Perfect Balance) -->
+                    <div class="glass-card glow-border p-5 md:p-6 rounded-2xl bg-gradient-to-br from-[#0a0f1f] to-[#1e1b4b] border-blue-500/30 shadow-[0_0_30px_rgba(59,130,246,0.15)] relative overflow-hidden group flex flex-col h-full">
                         <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/20 blur-[50px] rounded-full group-hover:bg-blue-400/30 transition-all duration-500"></div>
-                        <h4 class="text-white font-bold mb-4 md:mb-6 uppercase text-xs md:text-sm font-display relative z-10 flex items-center gap-2"><i data-lucide="book-open-check" class="w-4 h-4 text-blue-400"></i> Academics</h4>
-                        <ul class="space-y-3 md:space-y-4 text-xs md:text-sm relative z-10 font-semibold">
-                            <li><a href="#programs" class="text-gray-300 hover:text-blue-300 transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3"></i> Class 10 Foundation</a></li>
-                            <li><a href="#programs" class="text-gray-300 hover:text-blue-300 transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3"></i> Class 9 Programs</a></li>
-                            <li><a href="#programs" class="text-gray-300 hover:text-blue-300 transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3"></i> IIT JEE Preparation</a></li>
-                            <li><a href="#programs" class="text-gray-300 hover:text-blue-300 transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3"></i> NEET UG Preparation</a></li>
+                        
+                        <h4 class="text-white font-bold mb-4 md:mb-6 uppercase text-xs md:text-sm font-display relative z-10 flex items-center gap-2">
+                            <i data-lucide="book-open-check" class="w-4 h-4 text-blue-400"></i> Academics
+                        </h4>
+                        
+                        <!-- Gap badha diya gaya hai (space-y-4 md:space-y-5) taaki box perfectly fill ho -->
+                        <ul class="space-y-4 md:space-y-5 text-xs md:text-sm relative z-10 font-semibold flex-grow">
+                            <li><a href="#programs" class="text-gray-300 hover:text-blue-300 transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-blue-400/70"></i> Class 10 Foundation</a></li>
+                            <li><a href="#programs" class="text-gray-300 hover:text-blue-300 transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-blue-400/70"></i> Class 9 Programs</a></li>
+                            <li><a href="#programs" class="text-gray-300 hover:text-blue-300 transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-blue-400/70"></i> IIT JEE Preparation</a></li>
+                            <li><a href="#programs" class="text-gray-300 hover:text-blue-300 transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-blue-400/70"></i> NEET UG Preparation</a></li>
+                            
+                            <!-- Naye Add Kiye Gaye Links -->
+                            <li><a href="#ecosystem" class="text-gray-300 hover:text-blue-300 transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-blue-400/70"></i> YouTube Ecosystem</a></li>
+                            <li><a href="#resources" class="text-gray-300 hover:text-blue-300 transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3.5 h-3.5 text-blue-400/70"></i> Free Study Material</a></li>
                         </ul>
                     </div>
                     
@@ -472,6 +482,15 @@
                             <li><a href="https://t.me/mathsvalebhaiya" target="_blank" class="flex items-center gap-3 md:gap-4 text-gray-300 hover:text-white transition-all group/link"><div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-500/10 flex items-center justify-center group-hover/link:bg-blue-500/20 group-hover/link:scale-110 transition-transform border border-blue-500/30 p-2.5"><img src="telegram.png" alt="Telegram" class="w-full h-full object-contain" onerror="this.src='https://via.placeholder.com/20?text=T'"></div><span class="tracking-wide group-hover/link:text-blue-200 transition-colors">Telegram Community</span></a></li>
                             <li><a href="https://www.youtube.com/@10thTitansbyUnacademy" target="_blank" class="flex items-center gap-3 md:gap-4 text-gray-300 hover:text-white transition-all group/link"><div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-red-500/10 flex items-center justify-center group-hover/link:bg-red-500/20 group-hover/link:scale-110 transition-transform border border-red-500/30 p-2"><img src="youtube.png" alt="YouTube" class="w-full h-full object-contain" onerror="this.src='https://via.placeholder.com/20?text=Y'"></div><span class="tracking-wide group-hover/link:text-red-200 transition-colors">YouTube Lectures</span></a></li>
                             <li><a href="https://www.instagram.com/abhinay.rai_unstoppable/" target="_blank" class="flex items-center gap-3 md:gap-4 text-gray-300 hover:text-white transition-all group/link"><div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-pink-500/10 flex items-center justify-center group-hover/link:bg-pink-500/20 group-hover/link:scale-110 transition-transform border border-pink-500/30 p-2"><img src="instagram.png" alt="Instagram" class="w-full h-full object-contain" onerror="this.src='https://via.placeholder.com/20?text=I'"></div><span class="tracking-wide group-hover/link:text-pink-200 transition-colors">Instagram Updates</span></a></li>
+                        <li>
+                                <a href="https://whatsapp.com/channel/0029VbAwk0BAO7RCsvzkGZ1B" target="_blank" class="flex items-center gap-3 md:gap-4 text-gray-300 hover:text-white transition-all group/link">
+                                    <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-emerald-500/10 flex items-center justify-center group-hover/link:bg-emerald-500/20 group-hover/link:scale-110 transition-transform border border-emerald-500/30 p-2">
+                                        <!-- WhatsApp Image -->
+                                        <img src="whatsapp.png" alt="WhatsApp" class="w-full h-full object-contain" onerror="this.style.display='none'">
+                                    </div>
+                                    <span class="tracking-wide group-hover/link:text-emerald-200 transition-colors">Unacademy Foundation Official</span>
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>
