@@ -60,33 +60,133 @@
         .ambient-orb-blue { background: radial-gradient(circle, rgba(37,99,235,0.15) 0%, transparent 70%); will-change: transform; transform: translateZ(0); pointer-events: none; }
         .ambient-orb-purple { background: radial-gradient(circle, rgba(147,51,234,0.15) 0%, transparent 70%); will-change: transform; transform: translateZ(0); pointer-events: none; }
         #math-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; opacity: 0.1; }
-        .math-symbol { position: absolute; color: #3b82f6; font-weight: 700; font-size: 2rem; user-select: none; animation: floatMath linear infinite; will-change: transform; }
+        .math-symbol { 
+            position: absolute; 
+            color: #3b82f6; 
+            font-weight: 700; 
+            font-size: 2rem; 
+            user-select: none; 
+            pointer-events: none;
+            /* Added smooth native browser animation */
+            animation: floatMath linear infinite; 
+            /* GPU hardware acceleration trigger */
+            will-change: transform, opacity; 
+        }
         @keyframes floatMath { 0% { transform: translateY(100vh) rotate(0deg); opacity: 0; } 20% { opacity: 0.5; } 80% { opacity: 0.5; } 100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; } }
         .carousel-slide { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); border-radius: 6px;}
         .custom-scrollbar::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #60a5fa, #a855f7); border-radius: 6px; }
-    /* Chatbot Content formatting overrides */
-        .chat-bubble-content p { margin-bottom: 12px; line-height: 1.6; }
+        
+        /* Chatbot Content formatting overrides (Pro Spacing & Typography) */
+        .chat-bubble-content { overflow-x: auto; max-width: 100%; }
+        .chat-bubble-content p { margin-bottom: 12px; line-height: 1.6; font-size: 13px; }
         .chat-bubble-content p:last-child { margin-bottom: 0; }
-        .chat-bubble-content ul, .chat-bubble-content ol { padding-left: 20px; margin-bottom: 12px; }
+        .chat-bubble-content ul, .chat-bubble-content ol { padding-left: 20px; margin-bottom: 12px; font-size: 13px; }
         .chat-bubble-content ul { list-style-type: disc; }
         .chat-bubble-content ol { list-style-type: decimal; }
         .chat-bubble-content li { margin-bottom: 6px; }
         .chat-bubble-content strong { color: white; font-weight: 700; }
+        
+        /* Spacing for headers (Prevents giant font sizes inside chat) */
+        .chat-bubble-content h1, .chat-bubble-content h2, .chat-bubble-content h3, .chat-bubble-content h4 { 
+            font-weight: 800; 
+            color: white; 
+            margin-top: 16px; 
+            margin-bottom: 8px; 
+            font-family: 'Outfit', sans-serif;
+        }
+        .chat-bubble-content h1 { font-size: 18px; }
+        .chat-bubble-content h2 { font-size: 16px; }
+        .chat-bubble-content h3 { font-size: 14px; }
+        .chat-bubble-content h4 { font-size: 13px; }
+
+        /* Premium Responsive LaTeX Math Tables rendering */
+        .chat-bubble-content table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 12px; color: #cbd5e1; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.01); border-radius: 8px; overflow: hidden; }
+        .chat-bubble-content th, .chat-bubble-content td { border: 1px solid rgba(255, 255, 255, 0.08); padding: 10px 12px; text-align: left; }
+        .chat-bubble-content th { background: rgba(255, 255, 255, 0.04); font-weight: 700; color: white; text-transform: uppercase; font-size: 11px; tracking-wider: 0.05em; }
+        .chat-bubble-content tr:hover { background: rgba(255, 255, 255, 0.02); }
+
         /* Single line break handling */
         .chat-bubble-content br { content: ""; display: block; margin: 6px 0; }
         /* Prevent math display overflow on mobile */
         .katex-display { overflow-x: auto; overflow-y: hidden; padding: 6px 0; margin: 8px 0; }
+        /* Maximized Chat Window Styling (Smooth Transition) */
+        #chat-window.maximized {
+            width: 90vw !important;
+            max-width: 900px !important;
+            height: 80vh !important;
+            max-height: 700px !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @media (max-width: 640px) {
+            #chat-window.maximized {
+                width: 95vw !important;
+                height: 80vh !important;
+                max-height: none !important;
+            }
+        }
     </style>
     <!-- KaTeX CSS & JS (Synchronous loading - 100% reliable) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <!-- GOLDBAR ADDITION: Auto-Render script required for browser math typesetting -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
 
     <!-- Marked.js (Markdown Engine) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
-<!-- ABHI BHAIYA AI CHATBOT WIDGET -->
+
+<body class="antialiased selection:bg-blue-500 selection:text-white" id="home">
+
+    <!-- GLOBAL T&C POPUP MODAL -->
+    <div id="tc-popup" class="fixed inset-0 bg-[#020617]/90 backdrop-blur-3xl z-[2000] flex justify-center items-center opacity-0 pointer-events-none transition-opacity duration-300 px-4">
+        <div class="glass-card glow-border p-6 sm:p-8 rounded-[2rem] w-full max-w-md bg-[#0a0f1f]/95 text-center relative shadow-[0_0_50px_rgba(59,130,246,0.3)]">
+            <button id="close-tc-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-all hover:rotate-90"><i data-lucide="x" class="w-6 h-6"></i></button>
+            <div class="w-12 h-12 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/30"><i data-lucide="shield-check" class="w-6 h-6 text-blue-400"></i></div>
+            <h3 class="text-2xl font-bold font-display text-white mb-4">Terms & Conditions</h3>
+            <div class="text-[13px] text-gray-300 text-justify leading-relaxed space-y-4 max-h-48 overflow-y-auto custom-scrollbar pr-4 mb-6 bg-black/30 p-5 rounded-xl border border-white/5 font-medium">
+                <p>I hereby confirm that I have read and understood the Unacademy Terms, Unacademy Ranker Reward Program Terms & Conditions, and Privacy Policy. I consent to the same and to provide and receive information from Unacademy in this regard, including about its products and services, for the purpose of the Unacademy Ranker Reward Program, news and blog articles via email, SMS and/or phone call.</p>
+                <p class="font-bold text-white text-center text-sm pt-2">I accept and consent.</p>
+            </div>
+            <button id="accept-tc-btn" class="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_0_15px_rgba(59,130,246,0.4)] hover:scale-[1.02]">I Agree to the Terms</button>
+        </div>
+    </div>
+
+    <!-- LOGIN & AUTHENTICATION OVERLAY (GATED WALL) -->
+    <div id="auth-modal" class="fixed inset-0 z-[1000] bg-[#020617]/80 backdrop-blur-2xl flex items-center justify-center transition-all duration-400 opacity-0 pointer-events-none px-4">
+        <div class="glass-card glow-border p-8 md:p-10 rounded-[2rem] w-[90%] max-w-md bg-[#0a0f1f]/95 text-center relative overflow-hidden shadow-[0_0_50px_rgba(59,130,246,0.3)]">
+            <button id="close-auth-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-all hover:rotate-90"><i data-lucide="x" class="w-6 h-6"></i></button>
+
+            <!-- Google Login Section -->
+            <div id="google-login-section">
+                <div class="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-500/30"><i data-lucide="lock" class="w-8 h-8 text-blue-400"></i></div>
+                <h3 class="text-2xl font-bold font-display text-white mb-2 tracking-tight">Join Unstoppables</h3>
+                <p class="text-gray-300 text-sm mb-6 font-medium">Login to access premium courses, notes, and previous year question papers.</p>
+                <div class="flex items-start gap-3 text-left mb-6 bg-white/5 p-3.5 rounded-xl border border-white/10 hover:border-white/20 transition-colors group">
+                    <input type="checkbox" id="login-tc-agree" checked class="mt-0.5 w-4 h-4 rounded bg-black/50 accent-blue-500 cursor-pointer flex-shrink-0">
+                    <label for="login-tc-agree" class="text-xs text-gray-300 leading-tight cursor-pointer group-hover:text-gray-200 transition-colors">By continuing you are accepting our <span class="open-tc-btn text-blue-400 hover:text-blue-300 font-bold underline transition-colors">Privacy Policy and T&C</span></label>
+                </div>
+                <button id="google-signin-btn" class="w-full bg-white text-black font-bold py-3.5 rounded-xl flex items-center justify-center gap-3 transition-all hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:bg-gray-100">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">Continue with Google
+                </button>
+            </div>
+
+            <!-- Phone Number Section -->
+            <div id="phone-section" class="hidden">
+                <div class="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-purple-500/30"><i data-lucide="phone" class="w-8 h-8 text-purple-400"></i></div>
+                <h3 class="text-2xl font-bold font-display text-white mb-2 tracking-tight">Almost there!</h3>
+                <p class="text-gray-300 text-sm mb-6 font-medium">Please verify your phone number to unlock complete access.</p>
+                <div class="relative flex items-center mb-6">
+                    <span class="absolute left-4 text-gray-400 font-bold border-r border-white/20 pr-3">+91</span>
+                    <input type="tel" id="user-phone" placeholder="Phone Number" maxlength="10" class="w-full bg-black/50 border border-white/10 rounded-xl pl-16 pr-5 py-4 text-white focus:outline-none focus:border-blue-500 tracking-widest font-semibold" required>
+                </div>
+                <button id="save-phone-btn" class="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3.5 rounded-xl hover:scale-[1.03] transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)]">Unlock Access</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABHI BHAIYA AI CHATBOT WIDGET -->
     <div id="ai-chat-container" class="fixed bottom-20 md:bottom-6 right-6 z-[1500] flex flex-col items-end">
         
         <!-- Toggle Chat Button -->
@@ -99,6 +199,7 @@
         <div id="chat-window" class="hidden w-[90vw] sm:w-[380px] h-[480px] rounded-2xl glass-card border border-white/10 bg-[#0a0f1f]/95 shadow-[0_10px_40px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden mb-4 transition-all duration-300 transform scale-95 translate-y-4 opacity-0">
             
             <!-- Header -->
+            <!-- Header (Updated with Maximize Button) -->
             <div class="p-4 border-b border-white/5 bg-gradient-to-r from-blue-600/10 to-purple-600/10 flex items-center gap-3">
                 <div class="relative w-10 h-10 rounded-full border border-blue-500/30 flex items-center justify-center overflow-hidden bg-blue-500/10">
                     <img src="hero-photo.png" alt="Abhi Bhaiya" class="w-full h-full object-cover" onerror="this.src='logo-nav.png'">
@@ -108,15 +209,21 @@
                     <h4 class="text-sm font-bold font-display text-white">Ask ABHI Bhaiya AI</h4>
                     <p class="text-[10px] text-gray-400 font-medium">Online | Ready to guide you</p>
                 </div>
+                
+                <!-- GOLDBAR ADDITION: Beautiful Maximize / FullScreen Button -->
+                <button id="chat-maximize-btn" class="ml-auto text-gray-400 hover:text-white transition-all p-1.5 hover:bg-white/5 rounded-lg flex items-center justify-center" title="Toggle Fullscreen">
+                    <i data-lucide="maximize-2" id="max-icon" class="w-4 h-4"></i>
+                    <i data-lucide="minimize-2" id="min-icon" class="w-4 h-4 hidden"></i>
+                </button>
             </div>
 
-            <!-- Messages Stream -->
+           <!-- Messages Stream (Dynamic Name Capture) -->
             <div id="chat-stream" class="flex-grow overflow-y-auto p-4 space-y-3 custom-scrollbar text-xs leading-relaxed font-medium">
-                <!-- System Welcome Message -->
-                <div class="flex gap-2 items-start max-w-[85%]">
+                <!-- Welcome Message Bubble -->
+                <div class="flex gap-2 items-start max-w-[85%]" id="welcome-bubble-container">
                     <div class="w-6 h-6 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 text-[10px]">🤖</div>
-                    <div class="bg-white/5 border border-white/5 rounded-2xl p-3 text-gray-200">
-                    Hey Warrior! Math ya science me koi concept pareshan kar raha hai? Mujhe batao, milkar solve karte hain! 🎯
+                    <div class="bg-white/5 border border-white/5 rounded-2xl p-4 text-gray-200 w-full" id="welcome-content">
+                        <!-- Script will dynamically insert welcome message or name input here -->
                     </div>
                 </div>
             </div>
@@ -131,7 +238,7 @@
         </div>
     </div>
 
-    <!-- CHATBOT INTERACTIVE SCRIPT -->
+    <!-- CHATBOT INTERACTIVE SCRIPT (FINAL VERSION - ALL MATH FIXES INTEGRATED) -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const chatToggleBtn = document.getElementById('chat-toggle-btn');
@@ -142,13 +249,18 @@
             const chatSendBtn = document.getElementById('chat-send-btn');
             const chatStream = document.getElementById('chat-stream');
 
-            // REPLACEMENT REQUIRED: Put your deployed Cloudflare Worker URL here
-            const WORKER_URL = "https://lively-sunset-7378.raiabhinaykumar.workers.dev"; 
-
+            // Deployed Cloudflare Worker URL
+            const WORKER_URL = "https://padhleindia.raiabhinaykumar.workers.dev";
             let chatHistory = [];
             let isChatOpen = false;
 
-            // Toggle Open/Close
+            // Toggle Open/Close Chat Window & Maximize Logic
+            const chatMaximizeBtn = document.getElementById('chat-maximize-btn');
+            const maxIcon = document.getElementById('max-icon');
+            const minIcon = document.getElementById('min-icon');
+            let isMaximized = false;
+
+            // Toggle Open/Close Event
             chatToggleBtn.addEventListener('click', () => {
                 isChatOpen = !isChatOpen;
                 if (isChatOpen) {
@@ -162,13 +274,84 @@
                 } else {
                     chatWindow.classList.remove('scale-100', 'translate-y-0', 'opacity-100');
                     chatWindow.classList.add('scale-95', 'translate-y-4', 'opacity-0');
-                    setTimeout(() => chatWindow.classList.add('hidden'), 300);
+                    setTimeout(() => {
+                        chatWindow.classList.add('hidden');
+                        // Auto-reset size to small when chat is closed
+                        isMaximized = false;
+                        chatWindow.classList.remove('maximized');
+                        maxIcon.classList.remove('hidden');
+                        minIcon.classList.add('hidden');
+                    }, 300);
                     openIcon.classList.remove('hidden');
                     closeIcon.classList.add('hidden');
                 }
             });
 
-            // Send Message Logic
+            // Maximize / FullScreen Trigger Action
+            if (chatMaximizeBtn) {
+                chatMaximizeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevents close trigger propagation
+                    isMaximized = !isMaximized;
+                    
+                    if (isMaximized) {
+                        chatWindow.classList.add('maximized');
+                        maxIcon.classList.add('hidden');
+                        minIcon.classList.remove('hidden');
+                    } else {
+                        chatWindow.classList.remove('maximized');
+                        maxIcon.classList.remove('hidden');
+                        minIcon.classList.add('hidden');
+                    }
+                    
+                    // Keep scroll focused on latest message after resize
+                    chatStream.scrollTop = chatStream.scrollHeight;
+                });
+            }
+
+            // BADLAAV 2: Interactive Welcome Message (LocalStorage Check)
+            function initializeWelcomeMessage() {
+                const welcomeContainer = document.getElementById('welcome-content');
+                const savedName = localStorage.getItem('warrior_name');
+
+                if (savedName) {
+                    // Agar name saved hai, to direct personal high-energy greeting dikhao
+                    welcomeContainer.innerHTML = `Hey <strong>${savedName} Warrior!</strong> Math ya science me koi concept pareshan kar raha hai? Mujhe batao, milkar solve karte hain! 🎯`;
+                } else {
+                    // Agar name saved nahi hai, to dynamic interactive form dikhao
+                    welcomeContainer.innerHTML = `
+                        <div class="space-y-3" id="welcome-form-block">
+                            <p class="font-semibold">Hey Warrior! Math ya science me koi concept pareshan kar raha hai? Sawaal puchne se pehle, apna naam batao bacha taaki bhaiya aapko naam se bula sakein: 🎯</p>
+                            <div class="flex gap-2 mt-2">
+                                <input type="text" id="warrior-name-input" placeholder="Type your name..." class="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 flex-grow font-semibold">
+                                <button type="button" id="save-warrior-name-btn" class="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold px-4 py-2 rounded-xl text-xs hover:scale-105 transition-all">Let's Study! 🚀</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Attach click listener to the save button
+                    setTimeout(() => {
+                        const saveBtn = document.getElementById('save-warrior-name-btn');
+                        const nameInput = document.getElementById('warrior-name-input');
+                        if (saveBtn && nameInput) {
+                            saveBtn.addEventListener('click', () => {
+                                const nameVal = nameInput.value.trim();
+                                if (nameVal) {
+                                    localStorage.setItem('warrior_name', nameVal);
+                                    // Smoothly replace form with welcome message
+                                    document.getElementById('welcome-form-block').innerHTML = `Hey <strong>${nameVal} Warrior!</strong> Math ya science me koi concept pareshan kar raha hai? Mujhe batao, milkar solve karte hain! 🎯`;
+                                } else {
+                                    alert("Warrior, please enter your name first!");
+                                }
+                            });
+                        }
+                    }, 100);
+                }
+            }
+
+            // Run welcome message setup on page load
+            initializeWelcomeMessage();
+
+            // Send Message Logic (BADLAAV 3: Passing Dynamic Student Details)
             async function sendMessage() {
                 const messageText = chatInput.value.trim();
                 if (!messageText) return;
@@ -183,14 +366,32 @@
                 const loaderId = appendBubble("bot", "Abhi bhaiya soch rahe hain... ⚡", true);
 
                 try {
+                    // Safe Evaluation inside the try block to catch any structural errors
+                    const savedName = localStorage.getItem('warrior_name') || "Warrior";
+                    
+                    // Access window property directly to prevent "ReferenceError" if undefined
+                    const activeClass = window.activeTargetClass || "10"; 
+                    
+                    const studentData = {
+                        name: savedName,
+                        class: activeClass === '10' ? "Class 10" : (activeClass === '9' ? "Class 9" : "Olympiad/JEE Foundation"),
+                        target: activeClass === '10' ? "95%+ in Board Exams 🎯" : "Olympiad Rank & Strong Foundation 🏆"
+                    };
+
                     const response = await fetch(WORKER_URL, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
                             message: messageText,
-                            history: chatHistory
+                            history: chatHistory,
+                            student: studentData // Safe dynamic payload
                         })
                     });
+
+                    // Handle raw HTTP status errors before parsing JSON
+                    if (!response.ok) {
+                        throw new Error(`Server returned status ${response.status}`);
+                    }
 
                     const data = await response.json();
 
@@ -206,6 +407,7 @@
                     if (chatHistory.length > 20) chatHistory.shift();
 
                 } catch (error) {
+                    console.error("Chat Error Details: ", error);
                     removeLoader(loaderId);
                     appendBubble("bot", "Lagta hai technical issues hain, dobara koshish karo Champion!");
                 }
@@ -219,34 +421,98 @@
             });
         }
 
-        // Custom 100% secure Math Parser (Bypasses browser file security blocks)
-        function renderMathCustom(text) {
-            if (!window.katex) {
-                console.warn("KaTeX library not loaded yet.");
+// SMART MATH PROTECTION ENGINE (WITH AUTOMATIC AI-LATEX ERROR CORRECTION)
+        function renderMarkdownAndMath(text) {
+            if (!window.katex || !window.marked) {
                 return text;
             }
-            
-            // 1. Parse Block Math: $$ ... $$
-            let processed = text.replace(/\$\$([\s\S]+?)\$\$/g, (match, math) => {
+
+            const mathBlocks = [];
+            let processedText = text;
+
+            // Helper to automatically fix AI equations starting with ^ or _ without a base
+            const cleanMath = (mathStr) => {
+                let m = mathStr.trim();
+                // 1. If equation starts with ^ or _ (e.g. ^4_2 He), prepend empty group {}
+                m = m.replace(/^([\^_])/, '{}$1');
+                // 2. If ^ or _ is preceded by whitespace
+                m = m.replace(/(\s)([\^_])/g, '$1{}$2');
+                // 3. If ^ or _ is preceded by operators (+, -, =, /)
+                m = m.replace(/([\+\-\=\/\|\*\<\>])\s*([\^_])/g, '$1{}$2');
+                // 4. If ^ or _ is preceded by LaTeX arrows
+                m = m.replace(/(\\rightarrow|\\to|\\leftarrow|\\Rightarrow|\\Leftarrow|\\leftrightarrow|\\Leftrightarrow)\s*([\^_])/g, '$1{}$2');
+                return m;
+            };
+
+            // 1. Protect & Compile Block Environments: \begin{array} ... \end{array} etc.
+            processedText = processedText.replace(/(\\begin\{([a-zA-Z\*]+)\}[\s\S]+?\\end\{\2\})/g, (match) => {
+                const placeholder = `%%MATH_BLOCK_${mathBlocks.length}%%`;
                 try {
-                    return katex.renderToString(math.trim(), { displayMode: true, throwOnError: false });
+                    const html = '<div class="katex-display">' + katex.renderToString(cleanMath(match), { displayMode: true, throwOnError: false }) + '</div>';
+                    mathBlocks.push({ placeholder, html });
+                    return placeholder;
                 } catch (e) {
-                    console.error("Block math error:", e);
                     return match;
                 }
             });
 
-            // 2. Parse Inline Math: $ ... $
-            processed = processed.replace(/\$([^\$\n]+?)\$/g, (match, math) => {
+            // 2. Protect & Compile Block Math: \[ ... \] (Standard OpenAI Block Delimiter)
+            processedText = processedText.replace(/\\\[([\s\S]+?)\\\]/g, (match, math) => {
+                const placeholder = `%%MATH_BLOCK_${mathBlocks.length}%%`;
                 try {
-                    return katex.renderToString(math.trim(), { displayMode: false, throwOnError: false });
+                    const html = '<div class="katex-display">' + katex.renderToString(cleanMath(math), { displayMode: true, throwOnError: false }) + '</div>';
+                    mathBlocks.push({ placeholder, html });
+                    return placeholder;
                 } catch (e) {
-                    console.error("Inline math error:", e);
                     return match;
                 }
             });
 
-            return processed;
+            // 3. Protect & Compile Block Math: $$ ... $$
+            processedText = processedText.replace(/\$\$([\s\S]+?)\$\$/g, (match, math) => {
+                const placeholder = `%%MATH_BLOCK_${mathBlocks.length}%%`;
+                try {
+                    const html = '<div class="katex-display">' + katex.renderToString(cleanMath(math), { displayMode: true, throwOnError: false }) + '</div>';
+                    mathBlocks.push({ placeholder, html });
+                    return placeholder;
+                } catch (e) {
+                    return match;
+                }
+            });
+
+            // 4. Protect & Compile Inline Math: \( ... \) (Standard OpenAI Inline Delimiter)
+            processedText = processedText.replace(/\\\(([\s\S]+?)\\\)/g, (match, math) => {
+                const placeholder = `%%MATH_BLOCK_${mathBlocks.length}%%`;
+                try {
+                    const html = katex.renderToString(cleanMath(math), { displayMode: false, throwOnError: false });
+                    mathBlocks.push({ placeholder, html });
+                    return placeholder;
+                } catch (e) {
+                    return match;
+                }
+            });
+
+            // 5. Protect & Compile Inline Math: $ ... $
+            processedText = processedText.replace(/\$([^\$\n]+?)\$/g, (match, math) => {
+                const placeholder = `%%MATH_BLOCK_${mathBlocks.length}%%`;
+                try {
+                    const html = katex.renderToString(cleanMath(math), { displayMode: false, throwOnError: false });
+                    mathBlocks.push({ placeholder, html });
+                    return placeholder;
+                } catch (e) {
+                    return match;
+                }
+            });
+
+            // Step 6: Run Markdown Parser on the protected text
+            let htmlResult = marked.parse(processedText);
+
+            // Step 7: Inject beautifully compiled KaTeX math HTML back into placeholders
+            mathBlocks.forEach(({ placeholder, html }) => {
+                htmlResult = htmlResult.replace(placeholder, html);
+            });
+
+            return htmlResult;
         }
 
         function appendBubble(role, text, isLoading = false) {
@@ -266,14 +532,8 @@
                 
                 let contentHTML = text;
                 if (!isLoading) {
-                    // Step A: Parse Math equations securely first
-                    let parsedMath = renderMathCustom(text);
-                    // Step B: Convert Markdown layout (lists, spacing, bold text)
-                    if (window.marked) {
-                        contentHTML = marked.parse(parsedMath);
-                    } else {
-                        contentHTML = parsedMath;
-                    }
+                    // Use the ultimate Smart Math Protection Parser
+                    contentHTML = renderMarkdownAndMath(text); 
                 }
 
                 bubbleWrapper.innerHTML = `
@@ -289,7 +549,6 @@
 
             return bubbleId;
         }
-
             function removeLoader(id) {
                 const loaderEl = document.getElementById(id);
                 if (loaderEl) loaderEl.remove();
@@ -525,19 +784,19 @@
                 <div class="flex items-center justify-center w-48 md:w-64 h-20 md:h-24 rounded-2xl bg-white transition-all duration-300 cursor-default shadow-[0_4px_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] group flex-shrink-0 hover:-translate-y-1">
                     <img src="unacademy.png" alt="Unacademy" class="h-10 md:h-14 w-auto object-contain group-hover:scale-110 transition-transform duration-300 px-4">
                 </div>
-                <div class="flex items-center justify-center w-48 md:w-64 h-20 md:h-24 rounded-2xl bg-white transition-all duration-300 cursor-default shadow-[0_4px_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_30px_rgba(234,179,8,0.6)] group flex-shrink-0 hover:-translate-y-1">
+                <div class="flex items-center justify-center w-48 md:w-64 h-20 md:h-24 rounded-2xl bg-white transition-all duration-300 cursor-default shadow-[0_4px_15px_rgba(234,179,8,0.6)] group flex-shrink-0 hover:-translate-y-1">
                     <img src="pw.png" alt="PhysicsWallah" class="h-8 md:h-12 w-auto object-contain group-hover:scale-110 transition-transform duration-300 px-4">
                 </div>
-                <div class="flex items-center justify-center w-48 md:w-64 h-20 md:h-24 rounded-2xl bg-white transition-all duration-300 cursor-default shadow-[0_4px_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] group flex-shrink-0 hover:-translate-y-1">
+                <div class="flex items-center justify-center w-48 md:w-64 h-20 md:h-24 rounded-2xl bg-white transition-all duration-300 cursor-default shadow-[0_4px_15px_rgba(168,85,247,0.6)] group flex-shrink-0 hover:-translate-y-1">
                     <img src="byjus.png" alt="BYJU'S" class="h-7 md:h-10 w-auto object-contain group-hover:scale-110 transition-transform duration-300 px-4">
                 </div>
-                <div class="flex items-center justify-center w-48 md:w-64 h-20 md:h-24 rounded-2xl bg-white transition-all duration-300 cursor-default shadow-[0_4px_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_30px_rgba(96,165,250,0.6)] group flex-shrink-0 hover:-translate-y-1">
+                <div class="flex items-center justify-center w-48 md:w-64 h-20 md:h-24 rounded-2xl bg-white transition-all duration-300 cursor-default shadow-[0_4px_15px_rgba(96,165,250,0.6)] group flex-shrink-0 hover:-translate-y-1">
                     <img src="toppr.png" alt="Toppr" class="h-7 md:h-10 w-auto object-contain group-hover:scale-110 transition-transform duration-300 px-4">
                 </div>
-                <div class="flex items-center justify-center w-48 md:w-64 h-20 md:h-24 rounded-2xl bg-white transition-all duration-300 cursor-default shadow-[0_4px_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_30px_rgba(255,255,255,0.6)] group flex-shrink-0 hover:-translate-y-1">
+                <div class="flex items-center justify-center w-48 md:w-64 h-20 md:h-24 rounded-2xl bg-white transition-all duration-300 cursor-default shadow-[0_4px_15px_rgba(255,255,255,0.6)] group flex-shrink-0 hover:-translate-y-1">
                     <img src="google-news.png" alt="Google News" class="h-8 md:h-11 w-auto object-contain group-hover:scale-110 transition-transform duration-300 px-4">
                 </div>
-                <div class="flex items-center justify-center w-48 md:w-64 h-20 md:h-24 rounded-2xl bg-white transition-all duration-300 cursor-default shadow-[0_4px_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_30px_rgba(14,165,233,0.6)] group flex-shrink-0 hover:-translate-y-1">
+                <div class="flex items-center justify-center w-48 md:w-64 h-20 md:h-24 rounded-2xl bg-white transition-all duration-300 cursor-default shadow-[0_4px_15px_rgba(14,165,233,0.6)] group flex-shrink-0 hover:-translate-y-1">
                     <img src="filo.png" alt="Filo" class="h-8 md:h-11 w-auto object-contain group-hover:scale-110 transition-transform duration-300 px-4">
                 </div>
             </div>
@@ -550,7 +809,7 @@
             <div class="text-center mb-16 md:mb-20 gs-reveal">
                 <span class="text-blue-500 font-bold tracking-[0.2em] uppercase text-sm font-display mb-4 block">About Your Mentor</span>
                 <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-6 font-display leading-tight tracking-tight">A Legacy of Academic <br class="hidden sm:block"/><span class="text-gradient">Excellence and Mentorship</span></h2>
-                <p class="text-gray-300 text-base md:text-lg leading-relaxed mb-6 text-justify font-medium">From clearing structural national engineering exams to designing mathematics curriculums at India's largest learning systems, Abhinay Rai brings over a decade of verified pedagogical expertise.</p>
+                <p class="text-gray-300 text-base md:text-lg leading-relaxed mb-6 text-justify font-medium">From clearing national competitive engineering exams to designing mathematics curriculums at India's largest learning platforms, Abhinay Rai brings over a decade of profound pedagogical expertise.</p>
                 <p class="text-gray-400 text-base md:text-lg font-medium italic text-justify">"True education is not about memorizing formulas; it is about cultivating analytical thinking and problem-solving skills that last a lifetime."</p>
             </div>
             <div class="relative border-l border-white/5 ml-4 md:ml-0 md:border-l-0">
@@ -1119,6 +1378,8 @@
         // -- EXPOSE TARGET CLASS FOR ONBOARDING DOCK --
         window.setTargetClass = function(classVal) {
             activeTargetClass = classVal;
+            // BADLAAV: Expose active target class state globally
+            window.activeTargetClass = classVal;
             const tab10 = document.getElementById('tab-class-10');
             const tab9 = document.getElementById('tab-class-9');
             const tabOly = document.getElementById('tab-class-oly');
@@ -1441,31 +1702,24 @@
         if(closeMenuBtn) closeMenuBtn.addEventListener('click', closeMenu);
         mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
 
-        // -- BACKGROUND MATH ANIMATIONS --
+ // -- BACKGROUND MATH ANIMATIONS (NATIVE CSS POWERED - 0% JS CPU OVERHEAD) --
         const mathCanvas = document.getElementById('math-canvas');
         if(mathCanvas) {
             const symbols = ["∫", "∑", "π", "√", "∞", "÷", "×", "θ", "Δ", "≈"];
             const isMobile = window.innerWidth < 768;
-            const symbolCount = isMobile ? 10 : 20;
+            const symbolCount = isMobile ? 5 : 12; // Kept optimal for rendering performance
 
             for (let i = 0; i < symbolCount; i++) {
                 let el = document.createElement('div');
                 el.className = 'math-symbol';
                 el.innerText = symbols[Math.floor(Math.random() * symbols.length)];
                 el.style.left = Math.random() * 100 + 'vw';
-                el.style.top = Math.random() * 100 + 'vh';
+                
+                // Automatically randomize native CSS animation parameters
+                el.style.animationDuration = (10 + Math.random() * 10) + 's';
+                el.style.animationDelay = (Math.random() * 8) + 's';
+                
                 mathCanvas.appendChild(el);
-
-                gsap.to(el, {
-                    y: () => -200 - Math.random() * 200,
-                    x: () => -50 + Math.random() * 100,
-                    rotation: () => Math.random() * 360,
-                    opacity: 0,
-                    duration: 10 + Math.random() * 10,
-                    repeat: -1,
-                    ease: "linear",
-                    modifiers: { opacity: () => Math.sin(Date.now() / 1000) * 0.3 + 0.3 }
-                });
             }
         }
 
@@ -1484,15 +1738,31 @@
             });
         }
 
+       // -- SNAPPY SCROLL ANIMATIONS (ON-TIME RENDERING) --
         gsap.utils.toArray('.gs-reveal').forEach(function(elem) {
-            ScrollTrigger.create({
-                trigger: elem,
-                start: "top 85%",
-                onEnter: function() {
-                    gsap.fromTo(elem, { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "power3.out", overwrite: "auto" });
-                },
-                once: true
-            });
+            elem.style.willChange = 'transform, opacity';
+            
+            // Smart Check: Agar element pehle se hi screen par visible hai, to scroll ka wait mat karo
+            const rect = elem.getBoundingClientRect();
+            if (rect.top < window.innerHeight) {
+                gsap.fromTo(elem, 
+                    { y: 15, opacity: 0 }, 
+                    { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }
+                );
+            } else {
+                // For lower sections, trigger instantly as they enter from bottom of viewport
+                ScrollTrigger.create({
+                    trigger: elem,
+                    start: "top 100%", // Trigger immediately when top enters the viewport
+                    onEnter: function() {
+                        gsap.fromTo(elem, 
+                            { y: 15, opacity: 0 }, 
+                            { y: 0, opacity: 1, duration: 0.3, ease: "power2.out", overwrite: "auto" }
+                        );
+                    },
+                    once: true
+                });
+            }
         });
 
         document.querySelectorAll('.counter').forEach(counter => {
