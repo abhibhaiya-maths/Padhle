@@ -78,15 +78,125 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); border-radius: 6px;}
         .custom-scrollbar::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #60a5fa, #a855f7); border-radius: 6px; }
         
-        /* Chatbot Content formatting overrides (Pro Spacing & Typography) */
-        .chat-bubble-content { overflow-x: auto; max-width: 100%; }
-        .chat-bubble-content p { margin-bottom: 12px; line-height: 1.6; font-size: 13px; }
-        .chat-bubble-content p:last-child { margin-bottom: 0; }
-        .chat-bubble-content ul, .chat-bubble-content ol { padding-left: 20px; margin-bottom: 12px; font-size: 13px; }
-        .chat-bubble-content ul { list-style-type: disc; }
-        .chat-bubble-content ol { list-style-type: decimal; }
-        .chat-bubble-content li { margin-bottom: 6px; }
-        .chat-bubble-content strong { color: white; font-weight: 700; }
+        /* ==========================================
+           CHATBOT CONTENT FORMATTING OVERRIDES (PREMIUM COGNITIVE READING & JUSTIFIED ALIGNMENT)
+           ========================================== */
+        .chat-bubble-content { 
+            overflow-x: auto; 
+            max-width: 100%; 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #cbd5e1; /* Soft slate gray for primary text to prevent glare */
+            letter-spacing: 0.015em;
+        }
+        /* User bubble typography matching bot replies (Perfect Sizing & Justification) */
+        .user-bubble-content {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 13.5px;
+            line-height: 1.75;
+            letter-spacing: 0.015em;
+            text-align: justify;
+            text-justify: inter-word;
+            color: #ffffff; /* High-contrast white on blue background */
+        }
+        /* Breathing room between paragraphs with perfect left & right alignment */
+        .chat-bubble-content p { 
+            margin-bottom: 16px; 
+            line-height: 1.75; 
+            font-size: 13.5px; 
+            /* Aligns text perfectly on both left and right edges */
+            text-align: justify;
+            text-justify: inter-word; /* Distributes word spacing evenly on mobile */
+        }
+        .chat-bubble-content p:last-child { 
+            margin-bottom: 0; 
+        }
+        
+        /* Lists with elegant bullet points and spacing */
+        .chat-bubble-content ul, .chat-bubble-content ol { 
+            padding-left: 20px; 
+            margin-bottom: 16px; 
+            font-size: 13.5px; 
+        }
+        .chat-bubble-content ul { 
+            list-style-type: disc; 
+        }
+        .chat-bubble-content ol { 
+            list-style-type: decimal; 
+        }
+        .chat-bubble-content li { 
+            margin-bottom: 8px; 
+            line-height: 1.7; 
+            /* Aligns bullet points lists perfectly on both edges */
+            text-align: justify;
+            text-justify: inter-word;
+        }
+        .chat-bubble-content li:last-child { 
+            margin-bottom: 0; 
+        }
+        
+        /* Make bold/highlighted words pop clearly */
+        .chat-bubble-content strong { 
+            color: #f8fafc; /* Crisp near-white for high emphasis */
+            font-weight: 700; 
+        }
+        
+        /* Single line break handling */
+        .chat-bubble-content br { 
+            content: ""; 
+            display: block; 
+            margin: 6px 0; 
+        }
+        
+        /* Headers (Prominent with spacious margins) */
+        .chat-bubble-content h1, .chat-bubble-content h2, .chat-bubble-content h3, .chat-bubble-content h4 { 
+            font-weight: 800; 
+            color: #ffffff; 
+            margin-top: 24px; 
+            margin-bottom: 12px; 
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: -0.01em;
+        }
+        .chat-bubble-content h1 { font-size: 18px; }
+        .chat-bubble-content h2 { font-size: 16px; }
+        .chat-bubble-content h3 { font-size: 14.5px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; }
+        .chat-bubble-content h4 { font-size: 13px; }
+
+        /* Premium Responsive LaTeX Math Tables rendering */
+        .chat-bubble-content table { 
+            border-collapse: collapse; 
+            width: 100%; 
+            margin: 16px 0; 
+            font-size: 12px; 
+            color: #cbd5e1; 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            background: rgba(255, 255, 255, 0.01); 
+            border-radius: 8px; 
+            overflow: hidden; 
+        }
+        .chat-bubble-content th, .chat-bubble-content td { 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            padding: 10px 12px; 
+            text-align: left; 
+        }
+        .chat-bubble-content th { 
+            background: rgba(255, 255, 255, 0.04); 
+            font-weight: 700; 
+            color: white; 
+            text-transform: uppercase; 
+            font-size: 11px; 
+            tracking-wider: 0.05em; 
+        }
+        .chat-bubble-content tr:hover { 
+            background: rgba(255, 255, 255, 0.02); 
+        }
+
+        /* Prevent math display overflow on mobile screens */
+        .katex-display { 
+            overflow-x: auto; 
+            overflow-y: hidden; 
+            padding: 6px 0; 
+            margin: 12px 0; 
+        }
         
         /* Spacing for headers (Prevents giant font sizes inside chat) */
         .chat-bubble-content h1, .chat-bubble-content h2, .chat-bubble-content h3, .chat-bubble-content h4 { 
@@ -196,7 +306,8 @@
         </button>
 
         <!-- Chat Window Card -->
-        <div id="chat-window" class="hidden w-[90vw] sm:w-[380px] h-[480px] rounded-2xl glass-card border border-white/10 bg-[#0a0f1f]/95 shadow-[0_10px_40px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden mb-4 transition-all duration-300 transform scale-95 translate-y-4 opacity-0">
+        <!-- Chat Window Card (Upgraded Solid High-Contrast Theme) -->
+        <div id="chat-window" class="hidden w-[90vw] sm:w-[380px] h-[480px] rounded-2xl border border-slate-800 bg-[#070b19] shadow-[0_25px_60px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden mb-4 transition-all duration-300 transform scale-95 translate-y-4 opacity-0">
             
             <!-- Header -->
             <!-- Header (Updated with Maximize Button) -->
@@ -238,7 +349,7 @@
         </div>
     </div>
 
-    <!-- CHATBOT INTERACTIVE SCRIPT (FINAL VERSION - ALL MATH FIXES INTEGRATED) -->
+<!-- CHATBOT INTERACTIVE SCRIPT (FINAL VERSION - ALL MATH & LANGUAGE FIXES INTEGRATED) -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const chatToggleBtn = document.getElementById('chat-toggle-btn');
@@ -253,14 +364,13 @@
             const WORKER_URL = "https://padhleindia.raiabhinaykumar.workers.dev";
             let chatHistory = [];
             let isChatOpen = false;
+            let isMaximized = false;
 
             // Toggle Open/Close Chat Window & Maximize Logic
             const chatMaximizeBtn = document.getElementById('chat-maximize-btn');
             const maxIcon = document.getElementById('max-icon');
             const minIcon = document.getElementById('min-icon');
-            let isMaximized = false;
 
-            // Toggle Open/Close Event
             chatToggleBtn.addEventListener('click', () => {
                 isChatOpen = !isChatOpen;
                 if (isChatOpen) {
@@ -351,7 +461,52 @@
             // Run welcome message setup on page load
             initializeWelcomeMessage();
 
-            // Send Message Logic (BADLAAV 3: Passing Dynamic Student Details)
+            // Client-Side Deterministic Script Detector (0% CPU/API Overhead)
+            function detectScript(text) {
+                const devanagariPattern = /[\u0900-\u097F]/;
+                if (devanagariPattern.test(text)) {
+                    return "Devanagari";
+                }
+                return "Latin";
+            }
+
+           // Client-Side Deterministic Language Detector (Hinglish Stopword Engine)
+            function detectLanguage(text, script) {
+                if (script === "Devanagari") {
+                    return "Hindi";
+                }
+                
+                // Clean up math syntax & lowercase everything
+                const cleanText = text.toLowerCase().replace(/[^a-z\s]/g, " ").trim();
+                const words = cleanText.split(/\s+/).filter(w => w.length > 0);
+                
+                if (words.length === 0) return "Hinglish";
+
+                // Standard Hinglish conversational stopwords used by Indian students
+                const hinglishStopwords = new Set([
+                    "kya", "kyu", "kyun", "kaise", "samjhao", "batao", "nikalo", "nikalte", "hota", "hoti", 
+                    "hai", "hain", "ye", "yeh", "wo", "woh", "ko", "se", "me", "mein", "par", "aur", "hi", 
+                    "toh", "to", "hum", "ham", "bhai", "bhaiya", "bol", "bole", "bata", "karo", "karna", 
+                    "kar", "ki", "ka", "ke", "sahi", "galat", "hoga", "hogi", "nahi", "na", "mat", "lo", "le"
+                ]);
+
+                // Count how many Hinglish keywords are present in the query
+                let hinglishWordCount = 0;
+                words.forEach(word => {
+                    if (hinglishStopwords.has(word)) {
+                        hinglishWordCount++;
+                    }
+                });
+
+                // If even ONE Hinglish keyword is matched, classify the query as Hinglish
+                if (hinglishWordCount > 0) {
+                    return "Hinglish";
+                }
+                
+                return "English";
+            }
+
+            // Send Message Logic (With decoupled dynamic language & script payloads)
             async function sendMessage() {
                 const messageText = chatInput.value.trim();
                 if (!messageText) return;
@@ -366,16 +521,36 @@
                 const loaderId = appendBubble("bot", "Abhi bhaiya soch rahe hain... ⚡", true);
 
                 try {
-                    // Safe Evaluation inside the try block to catch any structural errors
                     const savedName = localStorage.getItem('warrior_name') || "Warrior";
-                    
-                    // Access window property directly to prevent "ReferenceError" if undefined
                     const activeClass = window.activeTargetClass || "10"; 
                     
-                    const studentData = {
+                    // Increment and track session numbers natively in local storage
+                    let sessionCount = parseInt(localStorage.getItem('session_count') || "1");
+                    localStorage.setItem('session_count', sessionCount + 1);
+
+                    // Grab previous question topic from local memory to create thread continuity
+                    const prevTopic = localStorage.getItem('last_discussed_topic') || "Introductory Concepts";
+                    localStorage.setItem('last_discussed_topic', messageText.substring(0, 30)); // Save current brief
+
+                    // Decoupled Frontend Language and Script Detection
+                    const detectedScr = detectScript(messageText);
+                    const detectedLang = detectLanguage(messageText, detectedScr);
+                    const prevConvLang = localStorage.getItem('conversation_language') || "Hinglish";
+                    localStorage.setItem('conversation_language', detectedLang); 
+// Dynamic Student Profile Payload (Dynamic Script/Language Injection)
+                    const studentProfile = {
                         name: savedName,
                         class: activeClass === '10' ? "Class 10" : (activeClass === '9' ? "Class 9" : "Olympiad/JEE Foundation"),
-                        target: activeClass === '10' ? "95%+ in Board Exams 🎯" : "Olympiad Rank & Strong Foundation 🏆"
+                        board: "CBSE",
+                        target: activeClass === '10' ? "95%+ in Board Exams 🎯" : "Olympiad Rank & Strong Foundation 🏆",
+                        languagePreference: localStorage.getItem('preferred_language') || "Auto",
+                        detectedLanguage: detectedLang,   // English, Hindi, or Hinglish
+                        detectedScript: detectedScr,       // Latin or Devanagari
+                        conversationLanguage: prevConvLang,
+                        weakTopics: activeClass === '10' ? ["Trigonometry Identities", "Quadratic Roots"] : ["Polynomials", "Number Systems"],
+                        recentMistakes: activeClass === '10' ? ["Formula signs", "Square roots calculation"] : ["Fraction divisions"],
+                        sessionNumber: sessionCount,
+                        previousTopic: prevTopic
                     };
 
                     const response = await fetch(WORKER_URL, {
@@ -384,7 +559,7 @@
                         body: JSON.stringify({
                             message: messageText,
                             history: chatHistory,
-                            student: studentData // Safe dynamic payload
+                            student: studentProfile // Dynamic decoupled payload
                         })
                     });
 
@@ -414,141 +589,139 @@
             }
 
             // Global configuration for Marked.js (Forces single \n to render as clean <br> tags)
-        if (window.marked) {
-            marked.setOptions({
-                breaks: true, // Convert single line breaks to <br> tags
-                gfm: true
-            });
-        }
-
-// SMART MATH PROTECTION ENGINE (WITH AUTOMATIC AI-LATEX ERROR CORRECTION)
-        function renderMarkdownAndMath(text) {
-            if (!window.katex || !window.marked) {
-                return text;
+            if (window.marked) {
+                marked.setOptions({
+                    breaks: true, // Convert single line breaks to <br> tags
+                    gfm: true
+                });
             }
 
-            const mathBlocks = [];
-            let processedText = text;
-
-            // Helper to automatically fix AI equations starting with ^ or _ without a base
-            const cleanMath = (mathStr) => {
-                let m = mathStr.trim();
-                // 1. If equation starts with ^ or _ (e.g. ^4_2 He), prepend empty group {}
-                m = m.replace(/^([\^_])/, '{}$1');
-                // 2. If ^ or _ is preceded by whitespace
-                m = m.replace(/(\s)([\^_])/g, '$1{}$2');
-                // 3. If ^ or _ is preceded by operators (+, -, =, /)
-                m = m.replace(/([\+\-\=\/\|\*\<\>])\s*([\^_])/g, '$1{}$2');
-                // 4. If ^ or _ is preceded by LaTeX arrows
-                m = m.replace(/(\\rightarrow|\\to|\\leftarrow|\\Rightarrow|\\Leftarrow|\\leftrightarrow|\\Leftrightarrow)\s*([\^_])/g, '$1{}$2');
-                return m;
-            };
-
-            // 1. Protect & Compile Block Environments: \begin{array} ... \end{array} etc.
-            processedText = processedText.replace(/(\\begin\{([a-zA-Z\*]+)\}[\s\S]+?\\end\{\2\})/g, (match) => {
-                const placeholder = `%%MATH_BLOCK_${mathBlocks.length}%%`;
-                try {
-                    const html = '<div class="katex-display">' + katex.renderToString(cleanMath(match), { displayMode: true, throwOnError: false }) + '</div>';
-                    mathBlocks.push({ placeholder, html });
-                    return placeholder;
-                } catch (e) {
-                    return match;
+            // SMART MATH PROTECTION ENGINE (100% Bulletproof LaTeX + Markdown Hybrid Parser)
+            function renderMarkdownAndMath(text) {
+                if (!window.katex || !window.marked) {
+                    return text;
                 }
-            });
 
-            // 2. Protect & Compile Block Math: \[ ... \] (Standard OpenAI Block Delimiter)
-            processedText = processedText.replace(/\\\[([\s\S]+?)\\\]/g, (match, math) => {
-                const placeholder = `%%MATH_BLOCK_${mathBlocks.length}%%`;
-                try {
-                    const html = '<div class="katex-display">' + katex.renderToString(cleanMath(math), { displayMode: true, throwOnError: false }) + '</div>';
-                    mathBlocks.push({ placeholder, html });
-                    return placeholder;
-                } catch (e) {
-                    return match;
-                }
-            });
+                const mathBlocks = [];
+                let processedText = text;
 
-            // 3. Protect & Compile Block Math: $$ ... $$
-            processedText = processedText.replace(/\$\$([\s\S]+?)\$\$/g, (match, math) => {
-                const placeholder = `%%MATH_BLOCK_${mathBlocks.length}%%`;
-                try {
-                    const html = '<div class="katex-display">' + katex.renderToString(cleanMath(math), { displayMode: true, throwOnError: false }) + '</div>';
-                    mathBlocks.push({ placeholder, html });
-                    return placeholder;
-                } catch (e) {
-                    return match;
-                }
-            });
+                // Helper to automatically fix AI equations starting with ^ or _ without a base (preventing red errors)
+                const cleanMath = (mathStr) => {
+                    let m = mathStr.trim();
+                    m = m.replace(/^([\^_])/, '{}$1');
+                    m = m.replace(/(\s)([\^_])/g, '$1{}$2');
+                    m = m.replace(/([\+\-\=\/\|\*\<\>])\s*([\^_])/g, '$1{}$2');
+                    m = m.replace(/(\\rightarrow|\\to|\\leftarrow|\\Rightarrow|\\Leftarrow|\\leftrightarrow|\\Leftrightarrow)\s*([\^_])/g, '$1{}$2');
+                    return m;
+                };
 
-            // 4. Protect & Compile Inline Math: \( ... \) (Standard OpenAI Inline Delimiter)
-            processedText = processedText.replace(/\\\(([\s\S]+?)\\\)/g, (match, math) => {
-                const placeholder = `%%MATH_BLOCK_${mathBlocks.length}%%`;
-                try {
-                    const html = katex.renderToString(cleanMath(math), { displayMode: false, throwOnError: false });
-                    mathBlocks.push({ placeholder, html });
-                    return placeholder;
-                } catch (e) {
-                    return match;
-                }
-            });
+                // 1. Protect & Compile Block Environments: \begin{array} ... \end{array} (Resilient to multiple backslashes)
+                processedText = processedText.replace(/\\+begin\{([a-zA-Z\*]+)\}([\s\S]+?)\\+end\{\1\}/g, (match) => {
+                    const placeholder = `%%MATH_BLOCK_${mathBlocks.length}%%`;
+                    try {
+                        const html = '<div class="katex-display">' + katex.renderToString(cleanMath(match), { displayMode: true, throwOnError: false }) + '</div>';
+                        mathBlocks.push({ placeholder, html });
+                        return placeholder;
+                    } catch (e) {
+                        return match;
+                    }
+                });
 
-            // 5. Protect & Compile Inline Math: $ ... $
-            processedText = processedText.replace(/\$([^\$\n]+?)\$/g, (match, math) => {
-                const placeholder = `%%MATH_BLOCK_${mathBlocks.length}%%`;
-                try {
-                    const html = katex.renderToString(cleanMath(math), { displayMode: false, throwOnError: false });
-                    mathBlocks.push({ placeholder, html });
-                    return placeholder;
-                } catch (e) {
-                    return match;
-                }
-            });
+                // 2. Protect & Compile Block Math: \[ ... \] (Resilient to multiple backslashes)
+                processedText = processedText.replace(/\\+\[([\s\S]+?)\\+\]/g, (match, math) => {
+                    const placeholder = `%%MATH_BLOCK_${mathBlocks.length}%%`;
+                    try {
+                        const html = '<div class="katex-display">' + katex.renderToString(cleanMath(math), { displayMode: true, throwOnError: false }) + '</div>';
+                        mathBlocks.push({ placeholder, html });
+                        return placeholder;
+                    } catch (e) {
+                        return match;
+                    }
+                });
 
-            // Step 6: Run Markdown Parser on the protected text
-            let htmlResult = marked.parse(processedText);
+                // 3. Protect & Compile Block Math: $$ ... $$
+                processedText = processedText.replace(/\$\$([\s\S]+?)\$\$/g, (match, math) => {
+                    const placeholder = `%%MATH_BLOCK_${mathBlocks.length}%%`;
+                    try {
+                        const html = '<div class="katex-display">' + katex.renderToString(cleanMath(math), { displayMode: true, throwOnError: false }) + '</div>';
+                        mathBlocks.push({ placeholder, html });
+                        return placeholder;
+                    } catch (e) {
+                        return match;
+                    }
+                });
 
-            // Step 7: Inject beautifully compiled KaTeX math HTML back into placeholders
-            mathBlocks.forEach(({ placeholder, html }) => {
-                htmlResult = htmlResult.replace(placeholder, html);
-            });
+                // 4. Protect & Compile Inline Math: \( ... \) (Resilient to multiple backslashes)
+                processedText = processedText.replace(/\\+\(([\s\S]+?)\\+\)/g, (match, math) => {
+                    const placeholder = `%%MATH_BLOCK_${mathBlocks.length}%%`;
+                    try {
+                        const html = katex.renderToString(cleanMath(math), { displayMode: false, throwOnError: false });
+                        mathBlocks.push({ placeholder, html });
+                        return placeholder;
+                    } catch (e) {
+                        return match;
+                    }
+                });
 
-            return htmlResult;
-        }
+                // 5. Protect & Compile Inline Math: $ ... $
+                processedText = processedText.replace(/\$([^\$\n]+?)\$/g, (match, math) => {
+                    const placeholder = `%%MATH_BLOCK_${mathBlocks.length}%%`;
+                    try {
+                        const html = katex.renderToString(cleanMath(math), { displayMode: false, throwOnError: false });
+                        mathBlocks.push({ placeholder, html });
+                        return placeholder;
+                    } catch (e) {
+                        return match;
+                    }
+                });
 
-        function appendBubble(role, text, isLoading = false) {
-            const bubbleId = 'bubble-' + Date.now();
-            const bubbleWrapper = document.createElement('div');
-            
-            if (role === 'user') {
+                // Step 6: Run Markdown Parser on the protected text
+                let htmlResult = marked.parse(processedText);
+
+                // Step 7: Inject beautifully compiled KaTeX math HTML back into placeholders
+                mathBlocks.forEach(({ placeholder, html }) => {
+                    htmlResult = htmlResult.replace(placeholder, html);
+                });
+
+                return htmlResult;
+            }
+
+            function appendBubble(role, text, isLoading = false) {
+                const bubbleId = 'bubble-' + Date.now();
+                const bubbleWrapper = document.createElement('div');
+                
+                if (role === 'user') {
                 bubbleWrapper.className = "flex justify-end w-full";
                 bubbleWrapper.innerHTML = `
-                    <div class="bg-blue-600 text-white rounded-2xl p-3 max-w-[85%] border border-blue-500/30">
+                    <div class="bg-blue-600 text-white rounded-2xl p-3 max-w-[85%] border border-blue-500/30 user-bubble-content">
                         ${text}
                     </div>
                 `;
             } else {
-                bubbleWrapper.id = bubbleId;
-                bubbleWrapper.className = "flex gap-2 items-start max-w-[85%]";
-                
-                let contentHTML = text;
-                if (!isLoading) {
-                    // Use the ultimate Smart Math Protection Parser
-                    contentHTML = renderMarkdownAndMath(text); 
+                    bubbleWrapper.id = bubbleId;
+                    bubbleWrapper.className = "flex gap-2 items-start max-w-[85%]";
+                    
+                    let contentHTML = text;
+                    if (!isLoading) {
+                        // Use the ultimate Smart Math Protection Parser
+                        contentHTML = renderMarkdownAndMath(text); 
+                    }
+
+                    // Upgraded with Solid bg-slate-900 and border-slate-800 for pristine text contrast
+                    bubbleWrapper.innerHTML = `
+                        <div class="w-6 h-6 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0 text-[10px]">🎓</div>
+                        <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 text-slate-100 chat-bubble-content max-w-full shadow-inner">
+                            ${contentHTML}
+                        </div>
+                    `;
                 }
 
-                bubbleWrapper.innerHTML = `
-                    <div class="w-6 h-6 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0 text-[10px]">🎓</div>
-                    <div class="bg-white/5 border border-white/5 rounded-2xl p-3 text-gray-200 chat-bubble-content max-w-full">
-                        ${contentHTML}
-                    </div>
-                `;
+                chatStream.appendChild(bubbleWrapper);
+                chatStream.scrollTop = chatStream.scrollHeight;
+
+                return bubbleId;
             }
 
-            chatStream.appendChild(bubbleWrapper);
-            chatStream.scrollTop = chatStream.scrollHeight;
-
-            return bubbleId;
-        }
             function removeLoader(id) {
                 const loaderEl = document.getElementById(id);
                 if (loaderEl) loaderEl.remove();
