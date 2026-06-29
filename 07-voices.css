@@ -1,0 +1,109 @@
+/* ====================================================================
+   TESTIMONIALS — organic floating layout, varied card sizes.
+
+   Instead of identical marquee cards, testimonials sit in a loose
+   masonry arrangement with deliberately different sizes (one large
+   "hero" quote, several smaller ones), each gently bobbing at a
+   different phase so the section feels alive without being busy.
+   ==================================================================== */
+
+.voices {
+  background: var(--navy-2);
+  padding: var(--space-8) 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.voices-head {
+  max-width: 40rem;
+  margin: 0 auto var(--space-7);
+  text-align: center;
+}
+.voices-title {
+  font-family: 'Fraunces', serif;
+  font-weight: 460;
+  font-size: clamp(2rem, 4vw, 3rem);
+  color: var(--ink-1);
+  margin-bottom: var(--space-3);
+}
+.voices-sub { color: var(--ink-2); font-size: 0.95rem; line-height: 1.6; }
+
+.voices-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  max-width: 1180px;
+  margin: 0 auto;
+}
+@media (min-width: 768px) {
+  .voices-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1100px) {
+  .voices-grid {
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: auto auto;
+  }
+}
+
+.voice-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--navy-3);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  animation: voiceBob 7s ease-in-out infinite;
+}
+@keyframes voiceBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* explicit size variety via spans on the 6-col grid (desktop only) */
+@media (min-width: 1100px) {
+  .voice-card.span-3 { grid-column: span 3; }
+  .voice-card.span-2 { grid-column: span 2; }
+  .voice-card.span-4 { grid-column: span 4; }
+  .voice-card.size-lg { padding: var(--space-5); }
+}
+
+.voice-card.featured {
+  background: linear-gradient(155deg, rgba(217,164,65,0.10), var(--navy-3) 60%);
+  border-color: var(--line-gold);
+}
+
+.voice-mark {
+  font-family: 'Fraunces', serif;
+  font-size: 2.5rem;
+  color: var(--gold);
+  opacity: 0.5;
+  line-height: 1;
+  margin-bottom: 0.2rem;
+}
+.voice-card.featured .voice-mark { font-size: 3.5rem; }
+
+.voice-text {
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: var(--ink-1);
+  flex-grow: 1;
+  margin-bottom: var(--space-3);
+}
+.voice-card.featured .voice-text {
+  font-family: 'Fraunces', serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.voice-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.voice-foot .name { color: var(--gold-l); }

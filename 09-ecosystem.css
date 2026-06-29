@@ -1,0 +1,153 @@
+/* ====================================================================
+   ECOSYSTEM — orbiting layout, not a 4-card row.
+
+   A central "hub" node (the brand) sits in the middle on desktop, with
+   the four channel nodes positioned around it on slowly drifting
+   orbits, connected by thin lines — visually framing the channels as
+   one connected ecosystem rather than four unrelated tiles. Collapses
+   to a clean vertical list on mobile where orbiting has no room to work.
+   ==================================================================== */
+
+.ecosystem {
+  background: var(--navy-2);
+  padding: var(--space-8) 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.ecosystem-head {
+  text-align: center;
+  max-width: 38rem;
+  margin: 0 auto var(--space-7);
+}
+.ecosystem-title {
+  font-family: 'Fraunces', serif;
+  font-weight: 460;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  color: var(--ink-1);
+  margin-bottom: var(--space-3);
+}
+.ecosystem-sub { color: var(--ink-2); font-size: 0.95rem; line-height: 1.6; }
+
+.orbit-shell {
+  position: relative;
+  display: none;
+}
+@media (min-width: 1024px) {
+  .orbit-shell {
+    display: block;
+    height: 620px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+}
+
+.orbit-ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  border: 1px dashed var(--line);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.orbit-ring.r1 { width: 360px; height: 360px; }
+.orbit-ring.r2 { width: 600px; height: 600px; }
+
+.orbit-hub {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 168px; height: 168px;
+  border-radius: 50%;
+  background: var(--navy-3);
+  border: 1px solid var(--line-gold);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 0 60px -10px rgba(217,164,65,0.25);
+  z-index: 2;
+}
+.orbit-hub img { height: 2rem; margin-bottom: 0.4rem; object-fit: contain; }
+.orbit-hub span {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  padding: 0 0.6rem;
+}
+
+.orbit-node {
+  position: absolute;
+  width: 168px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 3;
+  animation: orbitDrift 9s ease-in-out infinite;
+}
+.orbit-node .node-badge {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: var(--navy);
+  border: 2px solid var(--line-strong);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  margin-bottom: 0.6rem;
+  transition: border-color 0.3s ease, transform 0.3s ease;
+}
+.orbit-node .node-badge img { width: 100%; height: 100%; object-fit: cover; }
+.orbit-node:hover .node-badge { border-color: var(--gold); transform: scale(1.08); }
+.orbit-node h4 {
+  font-family: 'Fraunces', serif;
+  font-size: 0.95rem;
+  color: var(--ink-1);
+  margin-bottom: 0.2rem;
+}
+.orbit-node p {
+  font-size: 0.68rem;
+  color: var(--ink-3);
+  line-height: 1.4;
+}
+@keyframes orbitDrift {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.orbit-node.n1 { top: 2%; left: 50%; margin-left: -84px; animation-delay: 0s; }
+.orbit-node.n2 { top: 50%; right: 0%; margin-top: -84px; animation-delay: 1.5s; }
+.orbit-node.n3 { bottom: 0%; left: 50%; margin-left: -84px; animation-delay: 3s; }
+.orbit-node.n4 { top: 50%; left: 0%; margin-top: -84px; animation-delay: 4.5s; }
+
+/* ---- Mobile/tablet fallback: clean vertical list ---- */
+.ecosystem-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 32rem;
+  margin: 0 auto;
+}
+@media (min-width: 1024px) { .ecosystem-list { display: none; } }
+
+.ecosystem-list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--navy-3);
+}
+.ecosystem-list-item .badge {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid var(--line-strong);
+}
+.ecosystem-list-item .badge img { width: 100%; height: 100%; object-fit: cover; }
+.ecosystem-list-item h4 { font-family: 'Fraunces', serif; color: var(--ink-1); font-size: 1rem; margin-bottom: 0.15rem; }
+.ecosystem-list-item p { font-size: 0.75rem; color: var(--ink-3); }
+.ecosystem-list-item svg { width: 16px; height: 16px; color: var(--ink-3); margin-left: auto; flex-shrink: 0; }

@@ -1,0 +1,158 @@
+/* ====================================================================
+   PADHLE INDIA — DESIGN TOKENS
+   "Quiet Confidence" direction.
+
+   This is not a SaaS dashboard and not a generic Indian ed-tech page.
+   The reference point is an annual report for a mentor's track record:
+   deep navy/emerald ink, a single warm gold for achievement, electric
+   cyan reserved for one signature motif (the connecting thread), and
+   huge confident serif typography that does the emotional work instead
+   of gradients and glow doing it for free.
+
+   Palette (named, not improvised per-component):
+     --navy        #060B14   page ink, deepest layer
+     --navy-2      #0B1424   raised surface (cards, second layer)
+     --navy-3      #101C30   third layer / hovo states
+     --emerald     #0E6F5C   trust, growth — used for dividers + small accents
+     --emerald-l   #1C9C7E   lighter emerald for text-on-dark
+     --royal       #2F5FE0   interactive / links / focus
+     --gold        #D9A441   the ONE achievement colour — scores, proof, CTAs
+     --gold-l      #F0C778   lighter gold for hover states
+     --cyan        #49E5D9   signature thread colour ONLY — not decoration
+     --paper       #F5F2EA   light surface used sparingly (proof strip)
+     --ink-1       #F4F2EC   primary text on dark
+     --ink-2       #9AA6B8   secondary text on dark
+     --ink-3       #5C6A80   tertiary / disabled
+   ==================================================================== */
+
+:root {
+  --navy: #060B14;
+  --navy-2: #0B1424;
+  --navy-3: #101C30;
+  --navy-4: #16243B;
+
+  --emerald: #0E6F5C;
+  --emerald-l: #2BB695;
+  --emerald-dim: #0A4F42;
+
+  --royal: #2F5FE0;
+  --royal-l: #6E8EFF;
+
+  --gold: #D9A441;
+  --gold-l: #F0C778;
+  --gold-dim: #A67C2E;
+
+  --cyan: #49E5D9;
+  --cyan-dim: #1F8C82;
+
+  --paper: #F5F2EA;
+  --paper-dim: #E7E1D2;
+
+  --ink-1: #F4F2EC;
+  --ink-2: #9AA6B8;
+  --ink-3: #5C6A80;
+
+  --line: rgba(244, 242, 236, 0.09);
+  --line-strong: rgba(244, 242, 236, 0.18);
+  --line-gold: rgba(217, 164, 65, 0.35);
+
+  /* spacing — 8pt grid, named for intent rather than raw numbers so
+     section code reads as "section-gap" not "ad-hoc 96px" */
+  --space-1: 0.5rem;
+  --space-2: 0.75rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2rem;
+  --space-6: 3rem;
+  --space-7: 4.5rem;
+  --space-8: 6rem;
+  --space-9: 9rem;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.75rem;
+  --radius-xl: 2.5rem;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 0.2s;
+  --dur-base: 0.45s;
+  --dur-slow: 0.9s;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  background: var(--navy);
+  overflow-x: hidden;
+  max-width: 100vw;
+  overscroll-behavior-x: none;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--navy);
+  color: var(--ink-1);
+  overflow-x: hidden;
+  max-width: 100vw;
+  overscroll-behavior-x: none;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img, video { max-width: 100%; height: auto; display: block; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; background: none; border: none; color: inherit; }
+input, textarea { font-family: inherit; color: inherit; }
+ul, ol { list-style: none; margin: 0; padding: 0; }
+h1, h2, h3, h4, p { margin: 0; }
+
+::selection { background: var(--gold); color: var(--navy); }
+
+/* ---- Typography roles ----
+   Display: Fraunces — a characterful serif with real optical-size
+   personality, used ONLY for headlines, never for body copy or UI
+   chrome. This single choice is what keeps the page from reading as
+   "another Inter/Space-Grotesk SaaS template."
+   Body: Inter — quiet, legible, gets out of the way.
+   Mono: JetBrains Mono — reserved for numerals/data (scores, stats). */
+.f-display { font-family: 'Fraunces', serif; font-optical-sizing: auto; }
+.f-body { font-family: 'Inter', sans-serif; }
+.f-mono { font-family: 'JetBrains Mono', monospace; letter-spacing: -0.01em; }
+
+.num { font-variant-numeric: tabular-nums; }
+
+/* Utility classes used across section stylesheets */
+.container { max-width: 1280px; margin: 0 auto; padding-left: var(--space-4); padding-right: var(--space-4); }
+@media (min-width: 768px) { .container { padding-left: var(--space-6); padding-right: var(--space-6); } }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+.is-hidden { display: none !important; }
+
+/* Visible keyboard focus everywhere — never suppressed */
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Reduced motion: every animated module in every section file checks
+   this same query, so a single OS-level preference turns the whole
+   site calm without any per-component toggle logic. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

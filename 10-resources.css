@@ -1,0 +1,106 @@
+/* ====================================================================
+   RESOURCES — staggered stepped row, alternating offsets, not a flat
+   4-up grid. Each card sits at a slightly different vertical position
+   and reveals on scroll in sequence, like turning pages.
+   ==================================================================== */
+
+.resources {
+  background: var(--navy);
+  padding: var(--space-8) 0;
+  position: relative;
+}
+
+.resources-head {
+  max-width: 38rem;
+  text-align: center;
+  margin: 0 auto var(--space-7);
+}
+.resources-title {
+  font-family: 'Fraunces', serif;
+  font-weight: 460;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  color: var(--ink-1);
+  margin-bottom: var(--space-3);
+}
+.resources-title em { font-style: italic; color: var(--gold-l); font-weight: 380; }
+.resources-sub { color: var(--ink-2); font-size: 0.95rem; line-height: 1.6; }
+
+.resource-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+@media (min-width: 768px) {
+  .resource-row { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1100px) {
+  .resource-row { grid-template-columns: repeat(4, 1fr); gap: var(--space-3); }
+}
+
+.resource-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--navy-2);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.4s var(--ease-out), border-color 0.3s ease;
+}
+@media (min-width: 1100px) {
+  .resource-card:nth-child(odd)  { transform: translateY(-14px); }
+  .resource-card:nth-child(even) { transform: translateY(14px); }
+}
+.resource-card:hover {
+  border-color: var(--line-gold);
+}
+@media (min-width: 1100px) {
+  .resource-card:nth-child(odd):hover  { transform: translateY(-22px); }
+  .resource-card:nth-child(even):hover { transform: translateY(6px); }
+}
+
+.resource-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--ink-3);
+  margin-bottom: var(--space-3);
+}
+.resource-icon {
+  width: 2.6rem; height: 2.6rem;
+  border-radius: var(--radius-sm);
+  background: rgba(217,164,65,0.10);
+  border: 1px solid var(--line-gold);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: var(--space-3);
+}
+.resource-icon svg { width: 1.3rem; height: 1.3rem; color: var(--gold); }
+
+.resource-card h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.15rem;
+  color: var(--ink-1);
+  margin-bottom: var(--space-2);
+}
+.resource-card p {
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+  flex-grow: 1;
+  margin-bottom: var(--space-3);
+}
+
+.resource-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--navy);
+  background: var(--gold);
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  align-self: flex-start;
+}
+.resource-action:hover { background: var(--gold-l); }
+.resource-action svg { width: 13px; height: 13px; }

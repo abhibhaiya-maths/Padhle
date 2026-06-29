@@ -1,0 +1,308 @@
+/* ====================================================================
+   HERO — asymmetric, not a centered headline-over-CTA template.
+
+   Layout: the headline sits large and left-aligned on its own visual
+   plane; the mentor photo is NOT inside a card — it breaks out of its
+   column, overlapping the headline block and bleeding past the section
+   boundary into the trust strip below, anchored by a soft emerald glow
+   that mimics the actual photo background colour. A mesh-gradient +
+   noise backdrop gives the dark navy depth instead of flatness.
+   ==================================================================== */
+
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding-top: 7rem;
+  padding-bottom: 4rem;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Mesh gradient backdrop — three soft colour blooms, fixed positions,
+   not random per-load, so the composition is deliberate. */
+.hero::before {
+  content: "";
+  position: absolute; inset: 0; z-index: -1;
+  background:
+    radial-gradient(ellipse 55% 45% at 8% 8%, rgba(14,111,92,0.35), transparent 60%),
+    radial-gradient(ellipse 50% 50% at 95% 15%, rgba(217,164,65,0.10), transparent 55%),
+    radial-gradient(ellipse 60% 55% at 50% 100%, rgba(47,95,224,0.12), transparent 60%),
+    var(--navy);
+}
+
+.hero-grid {
+  position: relative;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+  align-items: center;
+}
+@media (min-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 2rem;
+  }
+}
+
+.hero-content-col { min-width: 0; }
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold-l);
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--line-gold);
+  border-radius: 999px;
+  background: rgba(217,164,65,0.06);
+  margin-bottom: var(--space-4);
+}
+.hero-eyebrow .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+}
+
+.hero-headline {
+  font-family: 'Fraunces', serif;
+  font-optical-sizing: auto;
+  font-weight: 480;
+  font-size: clamp(2.75rem, 6.4vw, 5.25rem);
+  line-height: 0.98;
+  letter-spacing: -0.015em;
+  color: var(--ink-1);
+  margin-bottom: var(--space-5);
+  max-width: 14ch;
+}
+.hero-headline em {
+  font-style: italic;
+  font-weight: 380;
+  color: var(--gold-l);
+}
+.hero-headline .strike-wrap {
+  position: relative;
+  display: inline-block;
+}
+.hero-headline .strike-wrap::after {
+  content: "";
+  position: absolute;
+  left: -2%; right: -2%; top: 48%;
+  height: 0.07em;
+  background: var(--ink-2);
+  transform: rotate(-2deg);
+  opacity: 0.6;
+}
+
+.hero-sub {
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  line-height: 1.65;
+  color: var(--ink-2);
+  max-width: 38ch;
+  margin-bottom: var(--space-5);
+}
+.hero-sub strong { color: var(--ink-1); font-weight: 700; }
+
+.hero-credentials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: var(--space-6);
+}
+.hero-credential {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink-1);
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--navy-2);
+}
+.hero-credential svg { width: 14px; height: 14px; color: var(--gold); flex-shrink: 0; }
+
+/* ---- Lead capture card: deliberately understated relative to the
+       headline — a quiet utility object, not a glowing CTA box. ---- */
+.hero-lead {
+  max-width: 30rem;
+  border: 1px solid var(--line);
+  background: var(--navy-2);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+.hero-lead-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: var(--space-2);
+}
+.hero-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  margin-bottom: var(--space-3);
+}
+.hero-tab {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.6rem 0.4rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--navy-3);
+  color: var(--ink-2);
+  transition: all 0.25s ease;
+  text-align: center;
+}
+.hero-tab.is-active {
+  border-color: var(--gold);
+  background: rgba(217,164,65,0.14);
+  color: var(--ink-1);
+}
+
+.hero-input-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+.hero-input-prefix {
+  position: absolute; left: 0.9rem;
+  font-size: 0.75rem; font-weight: 700;
+  color: var(--ink-3);
+  border-right: 1px solid var(--line);
+  padding-right: 0.6rem;
+}
+.hero-input {
+  width: 100%;
+  background: var(--navy);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem 0.75rem 4.3rem;
+  font-size: 0.8rem;
+  color: var(--ink-1);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.hero-input:focus { outline: none; border-color: var(--gold); }
+.hero-input::placeholder { color: var(--ink-3); }
+
+.btn-primary {
+  width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  background: var(--gold);
+  color: var(--navy);
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 0.85rem;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 10px 28px -12px rgba(217,164,65,0.45);
+}
+.btn-primary:hover { background: var(--gold-l); }
+.btn-primary svg { width: 15px; height: 15px; }
+
+/* ---- Hero visual: photo breaks its own frame ---- */
+.hero-visual {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.hero-photo-stage {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 4/5;
+}
+.hero-photo-glow {
+  position: absolute;
+  inset: 6% 8% -10% 8%;
+  border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%;
+  background: radial-gradient(circle at 50% 35%, rgba(14,111,92,0.55), transparent 70%);
+  filter: blur(36px);
+  z-index: 0;
+}
+.hero-photo {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 110%;
+  object-fit: contain;
+  object-position: bottom;
+  filter: drop-shadow(0 30px 60px rgba(0,0,0,0.55));
+}
+/* Floating label chips orbiting the photo — small, factual, not
+   decorative icons-for-icons-sake */
+.hero-chip {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(11,20,36,0.85);
+  border: 1px solid var(--line-strong);
+  backdrop-filter: blur(12px);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink-1);
+  box-shadow: 0 12px 30px -10px rgba(0,0,0,0.5);
+  animation: chipFloat 6s ease-in-out infinite;
+}
+.hero-chip svg { width: 13px; height: 13px; color: var(--gold); }
+.hero-chip.chip-a { top: 4%; left: -8%; animation-delay: 0s; }
+.hero-chip.chip-b { bottom: 18%; right: -10%; animation-delay: 1.4s; }
+.hero-chip.chip-c { bottom: -2%; left: 6%; animation-delay: 2.8s; }
+@keyframes chipFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+
+/* ---- Proof strip below photo: small ledger of headline numbers,
+       laid out horizontally as a single thin strip, not a card grid ---- */
+.hero-proof {
+  display: flex;
+  width: 100%;
+  max-width: 420px;
+  margin-top: var(--space-5);
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-3);
+}
+.hero-proof-item {
+  flex: 1;
+  text-align: center;
+  border-right: 1px solid var(--line);
+  padding: 0 0.4rem;
+}
+.hero-proof-item:last-child { border-right: none; }
+.hero-proof-num {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(1.3rem, 2vw, 1.7rem);
+  color: var(--ink-1);
+  display: block;
+}
+.hero-proof-num span { color: var(--gold); }
+.hero-proof-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 700;
+}
+
+@media (max-width: 1023px) {
+  .hero-headline, .hero-sub, .hero-credentials { margin-left: auto; margin-right: auto; text-align: center; }
+  .hero-eyebrow { margin-left: auto; margin-right: auto; }
+  .hero-lead { margin-left: auto; margin-right: auto; }
+  .hero-headline { max-width: none; }
+}

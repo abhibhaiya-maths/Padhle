@@ -1,0 +1,145 @@
+/* ====================================================================
+   PROGRAMS — asymmetric bento grid, not 4 equal cards.
+
+   The Class 10 batch (highest-intent, nearest exam) gets a large
+   horizontal hero tile with full copy and a bigger image; the other
+   three sit as smaller tiles beside/below it. Visual weight matches
+   actual priority instead of every course looking equally important.
+   ==================================================================== */
+
+.programs {
+  background: var(--navy);
+  padding: var(--space-8) 0;
+  position: relative;
+}
+
+.programs-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 42rem;
+  margin: 0 auto var(--space-7);
+}
+.programs-title {
+  font-family: 'Fraunces', serif;
+  font-weight: 460;
+  font-size: clamp(2rem, 4.2vw, 3.4rem);
+  color: var(--ink-1);
+  margin-bottom: var(--space-3);
+}
+.programs-title em { font-style: italic; color: var(--gold-l); font-weight: 380; }
+.programs-sub { color: var(--ink-2); font-size: 0.95rem; line-height: 1.6; }
+
+.bento {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+@media (min-width: 900px) {
+  .bento {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto auto;
+  }
+}
+
+.bento-card {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--navy-2);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.4s var(--ease-out), border-color 0.4s ease;
+}
+.bento-card:hover { transform: translateY(-6px); border-color: var(--line-strong); }
+
+.bento-card.featured {
+  grid-column: span 2;
+  flex-direction: column;
+}
+@media (min-width: 900px) {
+  .bento-card.featured { flex-direction: row; }
+}
+
+.bento-media {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16/9;
+  background: var(--navy-3);
+}
+.bento-card.featured .bento-media {
+  aspect-ratio: 16/9;
+}
+@media (min-width: 900px) {
+  .bento-card.featured .bento-media { width: 55%; aspect-ratio: auto; }
+}
+.bento-media img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s var(--ease-out);
+}
+.bento-card:hover .bento-media img { transform: scale(1.05); }
+
+.bento-body {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.bento-card.featured .bento-body { padding: var(--space-5); justify-content: center; }
+
+.bento-tagrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+.bento-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(217,164,65,0.14);
+  color: var(--gold-l);
+  border: 1px solid var(--line-gold);
+}
+.bento-year {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--ink-3);
+}
+
+.bento-body h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.3rem;
+  color: var(--ink-1);
+  margin-bottom: 0.5rem;
+}
+.bento-card.featured .bento-body h3 { font-size: 1.9rem; }
+
+.bento-body p {
+  font-size: 0.83rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+  flex-grow: 1;
+  margin-bottom: var(--space-3);
+}
+
+.bento-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-1);
+  align-self: flex-start;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--line-strong);
+  transition: border-color 0.25s ease, color 0.25s ease, gap 0.25s ease;
+}
+.bento-link:hover { color: var(--gold-l); border-color: var(--gold-l); gap: 0.6rem; }
+.bento-link svg { width: 14px; height: 14px; }

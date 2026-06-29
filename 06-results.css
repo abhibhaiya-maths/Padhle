@@ -1,0 +1,157 @@
+/* ====================================================================
+   RESULTS — full-bleed giant-number showcase, not a stat-card row.
+
+   One enormous animated counter dominates the section; supporting
+   stats sit as small ledger lines beside it. The carousel of actual
+   result screenshots is presented as an overlapping stack of photos
+   (like cards tossed on a desk) rather than a flat slider — it reads
+   as evidence being laid out for you, not a generic testimonial UI.
+   ==================================================================== */
+
+.results {
+  background: var(--navy);
+  padding: var(--space-8) 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.results-hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+  align-items: center;
+  margin-bottom: var(--space-8);
+}
+@media (min-width: 1024px) {
+  .results-hero { grid-template-columns: 1.3fr 1fr; }
+}
+
+.results-big-num {
+  font-family: 'Fraunces', serif;
+  font-weight: 420;
+  font-size: clamp(5rem, 16vw, 11rem);
+  line-height: 0.85;
+  color: var(--ink-1);
+  letter-spacing: -0.02em;
+}
+.results-big-num .unit {
+  font-size: 0.32em;
+  color: var(--gold);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  vertical-align: super;
+}
+.results-big-label {
+  font-size: 1rem;
+  color: var(--ink-2);
+  margin-top: var(--space-2);
+  max-width: 28ch;
+}
+.results-big-label strong { color: var(--ink-1); }
+
+.results-ledger {
+  border-left: 2px solid var(--line);
+  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.results-ledger-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+.results-ledger-row .label {
+  font-size: 0.82rem;
+  color: var(--ink-2);
+  font-weight: 600;
+}
+.results-ledger-row .value {
+  font-family: 'Fraunces', serif;
+  font-size: 1.8rem;
+  color: var(--ink-1);
+  white-space: nowrap;
+}
+.results-ledger-row .value span { color: var(--gold); }
+
+/* ---- Overlapping evidence stack ---- */
+.evidence-shell {
+  position: relative;
+}
+.evidence-stage {
+  position: relative;
+  height: clamp(320px, 48vw, 560px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.evidence-card {
+  position: absolute;
+  width: min(82%, 620px);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  background: var(--navy-2);
+  box-shadow: 0 40px 80px -30px rgba(0,0,0,0.7);
+  transition: transform 0.6s var(--ease-out), opacity 0.6s var(--ease-out), filter 0.6s ease;
+  cursor: grab;
+}
+.evidence-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  aspect-ratio: 16/9;
+}
+.evidence-card .evidence-caption {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: var(--space-3) var(--space-4);
+  background: linear-gradient(to top, rgba(6,11,20,0.92), transparent);
+}
+.evidence-caption .tag {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold-l);
+  display: block;
+  margin-bottom: 0.2rem;
+}
+.evidence-caption h4 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.05rem;
+  color: var(--ink-1);
+}
+
+/* Stack depth states applied via inline transform/z-index from JS,
+   base styles below cover the resting (non-active) look */
+.evidence-card.depth-back-2 { filter: brightness(0.55) blur(1px); }
+.evidence-card.depth-back-1 { filter: brightness(0.75); }
+.evidence-card.depth-front { filter: none; }
+
+.evidence-controls {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+.evidence-btn {
+  width: 2.75rem; height: 2.75rem;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-1);
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+.evidence-btn:hover { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+
+.evidence-progress {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--ink-3);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.evidence-progress .current { color: var(--gold-l); font-weight: 700; }

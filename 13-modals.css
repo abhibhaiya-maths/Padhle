@@ -1,0 +1,129 @@
+/* ====================================================================
+   MODALS — T&C popup + auth gate. Functional, quiet, consistent with
+   the rest of the palette but without marketing flourish: these exist
+   to get out of the user's way as fast as possible.
+   ==================================================================== */
+
+.modal-overlay {
+  position: fixed; inset: 0;
+  z-index: 200;
+  background: rgba(6,11,20,0.82);
+  backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.modal-overlay.is-open { opacity: 1; pointer-events: auto; }
+
+.modal-panel {
+  width: 100%;
+  max-width: 28rem;
+  background: var(--navy-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  position: relative;
+  text-align: center;
+}
+@media (min-width: 640px) { .modal-panel { padding: var(--space-6); } }
+
+.modal-close {
+  position: absolute;
+  top: var(--space-3); right: var(--space-3);
+  width: 2.2rem; height: 2.2rem;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  color: var(--ink-3);
+}
+.modal-close:hover { color: var(--ink-1); background: var(--line); }
+
+.modal-icon {
+  width: 3.5rem; height: 3.5rem;
+  border-radius: 50%;
+  background: rgba(217,164,65,0.10);
+  border: 1px solid var(--line-gold);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto var(--space-4);
+}
+.modal-icon svg { width: 1.6rem; height: 1.6rem; color: var(--gold); }
+.modal-icon.icon-royal { background: rgba(47,95,224,0.10); border-color: rgba(47,95,224,0.35); }
+.modal-icon.icon-royal svg { color: var(--royal-l); }
+
+.modal-panel h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.5rem;
+  color: var(--ink-1);
+  margin-bottom: var(--space-2);
+}
+.modal-panel > p.modal-sub {
+  font-size: 0.85rem;
+  color: var(--ink-2);
+  margin-bottom: var(--space-4);
+}
+
+.tc-body {
+  text-align: left;
+  font-size: 0.78rem;
+  line-height: 1.65;
+  color: var(--ink-2);
+  max-height: 12rem;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.tc-body .confirm { font-weight: 700; color: var(--ink-1); text-align: center; margin-top: var(--space-2); }
+
+.modal-btn-google {
+  width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  background: var(--ink-1);
+  color: var(--navy);
+  font-weight: 700;
+  padding: 0.85rem;
+  border-radius: var(--radius-sm);
+}
+.modal-btn-google img { width: 1.1rem; height: 1.1rem; }
+.modal-btn-google:hover { background: var(--paper-dim); }
+.modal-btn-google:disabled { opacity: 0.5; cursor: not-allowed; }
+.modal-btn-google:disabled:hover { background: var(--ink-1); }
+
+.modal-phone-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+.modal-phone-prefix {
+  position: absolute; left: var(--space-3);
+  font-size: 0.85rem; font-weight: 700;
+  color: var(--ink-3);
+  border-right: 1px solid var(--line);
+  padding-right: 0.6rem;
+}
+.modal-phone-row input {
+  width: 100%;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem 0.85rem 4.5rem;
+  color: var(--ink-1);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.modal-phone-row input:focus { outline: none; border-color: var(--royal); }
+.modal-phone-row input.has-error { border-color: #E2574C; }
+
+@keyframes errorShake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+.error-shake { animation: errorShake 0.5s cubic-bezier(.36,.07,.19,.97) both; }

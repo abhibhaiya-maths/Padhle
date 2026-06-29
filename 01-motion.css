@@ -1,0 +1,162 @@
+/* ====================================================================
+   SIGNATURE + SHARED MOTION PRIMITIVES
+
+   Signature element: "The Thread" — a thin glowing cyan line that runs
+   down the left edge of the page through the storytelling sections
+   (About → Results → Programs), pulsing past whichever section is in
+   view. It represents one mentor's continuous path from student to
+   teacher, and gives the page a spine instead of being a stack of
+   unrelated cards. Implemented as a single fixed-position element
+   controlled by scroll progress — not repeated per-section.
+   ==================================================================== */
+
+#thread-rail {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  z-index: 40;
+  pointer-events: none;
+  background: var(--line);
+  display: none; /* enabled only on lg+ where the rail has room to read */
+}
+@media (min-width: 1024px) {
+  #thread-rail { display: block; left: 28px; }
+}
+#thread-rail .thread-fill {
+  position: absolute;
+  left: 0; top: 0;
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(180deg, var(--cyan), var(--royal));
+  box-shadow: 0 0 12px rgba(73, 229, 217, 0.6);
+  transition: height 0.1s linear;
+}
+#thread-rail .thread-node {
+  position: absolute;
+  left: -5px;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--navy);
+  border: 2px solid var(--line-strong);
+  transition: border-color 0.4s var(--ease-out), background 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);
+}
+#thread-rail .thread-node.active {
+  border-color: var(--cyan);
+  background: var(--cyan);
+  box-shadow: 0 0 16px rgba(73, 229, 217, 0.7);
+}
+
+/* ---- Spotlight cursor: a soft radial light that follows the pointer
+       inside hero + a couple of dark feature sections only — applied
+       via a data attribute on the section, not globally, since a
+       spotlight that follows you everywhere stops feeling special. ---- */
+[data-spotlight] {
+  position: relative;
+}
+[data-spotlight]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    480px circle at var(--spot-x, 50%) var(--spot-y, 30%),
+    rgba(217, 164, 65, 0.12),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+[data-spotlight].spotlight-active::before { opacity: 1; }
+
+/* ---- Magnetic buttons: JS sets --mx/--my (a small pixel offset);
+       CSS just applies it as a transform so the effect is GPU-only. ---- */
+.btn-magnetic {
+  --mx: 0px; --my: 0px;
+  transform: translate(var(--mx), var(--my));
+  transition: transform 0.18s var(--ease-out), box-shadow 0.3s ease, background 0.3s ease;
+  will-change: transform;
+}
+
+/* ---- Light-sweep: a diagonal highlight that sweeps across on hover.
+       Pure CSS, one pseudo-element, no JS. ---- */
+.sweep { position: relative; overflow: hidden; isolation: isolate; }
+.sweep::after {
+  content: "";
+  position: absolute;
+  top: -50%; left: -60%;
+  width: 40%; height: 200%;
+  background: linear-gradient(115deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-20deg) translateX(-120%);
+  transition: transform 0.7s var(--ease-out);
+  pointer-events: none;
+}
+.sweep:hover::after { transform: skewX(-20deg) translateX(280%); }
+
+/* ---- Card tilt: JS sets rotation vars on mousemove within a card. ---- */
+.tilt {
+  --rx: 0deg; --ry: 0deg;
+  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.15s ease-out;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* ---- Scroll reveal: JS toggles .is-visible via IntersectionObserver.
+       translate distance varies by data-reveal-from for directionality. ---- */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+}
+.reveal[data-reveal-from="left"] { transform: translateX(-36px); }
+.reveal[data-reveal-from="right"] { transform: translateX(36px); }
+.reveal[data-reveal-from="scale"] { transform: scale(0.94); }
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+html.no-js-motion .reveal { opacity: 1; transform: none; }
+
+/* ---- Infinite marquee (trust strip + testimonials use the same
+       mechanism, different speed/direction) ---- */
+.marquee-viewport {
+  width: 100%;
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marqueeScroll var(--marquee-dur, 36s) linear infinite;
+  animation-direction: var(--marquee-dir, normal);
+}
+.marquee-track:hover { animation-play-state: paused; }
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* ---- Noise overlay: a single shared grain texture used at very low
+       opacity across dark sections so backgrounds never look like flat
+       vector fills, without each section re-declaring its own SVG. ---- */
+.grain { position: relative; }
+.grain::after {
+  content: "";
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1 !important; transform: none !important; }
+  .marquee-track { animation: none; }
+  .btn-magnetic { transform: none !important; }
+  .tilt { transform: none !important; }
+  [data-spotlight]::before { display: none; }
+  .sweep::after { display: none; }
+}
