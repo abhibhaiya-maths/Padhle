@@ -229,31 +229,23 @@
         /* Chatbot attention cue: a bright light that travels around the
            button's edge. The button itself is an opaque filled circle sitting
            ON TOP of this disc, so only the ~6px rim of the spinning gradient
-           shows — i.e. a moving ring. Earlier this used a CSS mask, but iOS
-           Safari refuses to animate a masked subtree (it composites the mask as
-           one static layer), so on iPhone the ring rendered but never spun.
-           Dropping the mask and spinning a plain conic-gradient disc animates
-           reliably on iOS, Android and desktop alike. */
+           shows — i.e. a moving ring. The rotation is driven from JavaScript
+           (requestAnimationFrame) rather than a CSS @keyframes animation,
+           because iOS Safari was leaving the CSS-animated gradient static
+           (and a CSS animation is also silenced entirely when the phone has
+           "Reduce Motion" turned on). A rAF loop paints reliably on iOS. */
         #chat-glow-ring {
             background: conic-gradient(from 0deg, transparent 0%, transparent 65%, var(--signal) 85%, #fff 92%, var(--signal) 99%, transparent 100%);
             border-radius: 9999px;
-            animation: chatGlowSpin 2.4s linear infinite;
             will-change: transform;
-        }
-        @keyframes chatGlowSpin {
-            to { transform: rotate(360deg); }
         }
         @keyframes teaserIn {
             from { opacity: 0; transform: translateY(8px) scale(0.97); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* Respect reduced-motion, but keep a gentle breathing glow rather than a
-           dead-static ring so the cue still reads as "live". */
-        @keyframes chatGlowPulse { 0%,100% { opacity: .35; } 50% { opacity: .9; } }
         @media (prefers-reduced-motion: reduce) {
             .gs-reveal { opacity: 1 !important; transform: none !important; }
-            #chat-glow-ring { animation: chatGlowPulse 2.6s ease-in-out infinite !important; }
             #chat-teaser { animation: none !important; }
         }
 
@@ -2135,5 +2127,28 @@
         });
     </script>
 
+    <!-- Chat-ring rotation: driven in JS so it animates on iOS Safari and
+         keeps spinning regardless of CSS-animation quirks. Pauses when the
+         ring is hidden (chat opened) to save battery. -->
+    <script>
+        (function () {
+            var ring = document.getElementById('chat-glow-ring');
+            if (!ring || !window.requestAnimationFrame) return;
+            var angle = 0, last = null;
+            var SPEED = 360 / 2400; // degrees per ms -> one revolution every 2.4s
+            function frame(now) {
+                if (last === null) last = now;
+                var dt = now - last;
+                last = now;
+                // Skip painting while the ring is hidden (display:none after chat opens)
+                if (ring.offsetParent !== null) {
+                    angle = (angle + dt * SPEED) % 360;
+                    ring.style.transform = 'rotate(' + angle + 'deg)';
+                }
+                requestAnimationFrame(frame);
+            }
+            requestAnimationFrame(frame);
+        })();
+    </script>
 </body>
 </html>
