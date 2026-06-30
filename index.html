@@ -156,6 +156,105 @@
             box-shadow: 0 0 0 1px rgba(242,169,59,0.12), 0 16px 50px -10px rgba(242,169,59,0.35);
         }
 
+        /* ============================================================
+           FOOTER LEGAL PILLS — glowing, animated gradient-border tabs
+           (Privacy / Terms / Disclaimer / Refund / About / Contact)
+           ============================================================ */
+        .legal-pill {
+            position: relative;
+            isolation: isolate;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 15px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            line-height: 1;
+            color: var(--ink-text-dim);
+            background: transparent;
+            border: 0;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: color .25s ease, transform .25s ease, box-shadow .35s ease;
+            animation: legalGlowPulse 4s ease-in-out infinite;
+        }
+        .legal-pill:hover {
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 0 16px rgba(242,169,59,0.38), 0 0 30px rgba(76,124,255,0.22);
+            animation: none;
+        }
+        /* animated gradient ring */
+        .legal-pill::before {
+            content: "";
+            position: absolute; inset: 0;
+            border-radius: inherit;
+            padding: 1.3px;
+            background: linear-gradient(120deg, var(--signal), var(--cobalt), var(--signal));
+            background-size: 220% 220%;
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+                    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+                    mask-composite: exclude;
+            animation: legalBorderFlow 4.5s linear infinite;
+            z-index: -1;
+        }
+        /* dark fill that sits inside the ring */
+        .legal-pill::after {
+            content: "";
+            position: absolute; inset: 1.3px;
+            border-radius: inherit;
+            background: rgba(255,255,255,0.035);
+            z-index: -1;
+        }
+        @keyframes legalBorderFlow {
+            0%   { background-position: 0% 50%; }
+            100% { background-position: 220% 50%; }
+        }
+        @keyframes legalGlowPulse {
+            0%,100% { box-shadow: 0 0 5px rgba(242,169,59,0.10), 0 0 11px rgba(76,124,255,0.07); }
+            50%     { box-shadow: 0 0 11px rgba(242,169,59,0.26), 0 0 20px rgba(76,124,255,0.15); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .legal-pill, .legal-pill::before { animation: none; }
+        }
+
+        /* Keep the footer legal pills clear of the floating chat button
+           (fixed at bottom-right, z-1500) so all tabs stay clickable when
+           scrolled to the very bottom of the page. */
+        @media (min-width: 768px) {
+            .legal-pill-row { margin-right: 6rem; }   /* desktop: shift left, out from under the chat FAB */
+        }
+        @media (max-width: 767px) {
+            .legal-footer-bar { padding-bottom: 5rem; } /* mobile: chat FAB sits higher, so lift the bar up */
+        }
+
+        /* ===== Legal modal body typography ===== */
+        .legal-body h4 {
+            color: #fff; font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px; font-weight: 700; letter-spacing: -0.01em;
+            margin: 20px 0 9px;
+        }
+        .legal-body h4:first-child { margin-top: 0; }
+        .legal-body p { font-size: 13px; line-height: 1.72; margin-bottom: 12px; font-weight: 500; }
+        .legal-body .legal-lead { color: var(--ink-text); font-size: 14px; font-weight: 600; line-height: 1.6; }
+        .legal-body ul { margin: 0 0 15px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+        .legal-body li {
+            font-size: 13px; line-height: 1.55; font-weight: 500;
+            padding-left: 20px; position: relative;
+        }
+        .legal-body li::before {
+            content: ""; position: absolute; left: 1px; top: 7px;
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--signal); box-shadow: 0 0 7px rgba(242,169,59,0.65);
+        }
+        .legal-body a { color: var(--signal); font-weight: 700; word-break: break-word; }
+        .legal-body a:hover { color: #fcd34d; text-decoration: underline; }
+        .legal-body strong { color: #fff; font-weight: 700; }
+        .legal-body .legal-divider { height: 1px; background: var(--line); margin: 18px 0; border: 0; }
+
         .underline-grow { position: relative; }
         .underline-grow::after {
             content: ''; position: absolute; left: 0; bottom: -4px;
@@ -341,6 +440,27 @@
                 <p class="font-bold text-white text-center text-sm pt-2">I accept and consent.</p>
             </div>
             <button id="accept-tc-btn" class="w-full bg-[var(--signal)] hover:bg-[var(--signal-dim)] text-black font-bold py-3.5 rounded-xl transition-all">I Agree to the Terms</button>
+        </div>
+    </div>
+
+    <!-- FOOTER LEGAL / POLICY MODAL (reusable: About, Privacy, Terms, Disclaimer, Refund, Contact) -->
+    <div id="legal-modal" class="fixed inset-0 bg-black/80 backdrop-blur-2xl z-[2000] flex justify-center items-center opacity-0 pointer-events-none transition-opacity duration-300 px-4">
+        <div class="card rounded-3xl w-full max-w-2xl bg-[var(--ink-2)] relative overflow-hidden flex flex-col" style="max-height:86vh; box-shadow:0 0 0 1px rgba(242,169,59,0.14), 0 25px 70px rgba(0,0,0,0.6), 0 0 70px -22px rgba(76,124,255,0.45);">
+            <div class="flex items-center gap-3 p-5 sm:p-6 border-b border-white/[0.08] bg-white/[0.02]">
+                <div id="legal-modal-icon-wrap" class="w-11 h-11 flex-shrink-0 bg-[var(--signal)]/10 rounded-full flex items-center justify-center border border-[rgba(242,169,59,0.30)]">
+                    <i id="legal-modal-icon" data-lucide="shield-check" class="w-5 h-5 text-signal"></i>
+                </div>
+                <div class="flex-grow min-w-0">
+                    <h3 id="legal-modal-title" class="text-lg sm:text-xl font-bold f-display text-white leading-tight truncate">Privacy Policy</h3>
+                    <p class="text-[11px] text-[var(--ink-text-dim)] font-medium tracking-wide">Padhle India · Official Policy</p>
+                </div>
+                <button id="legal-modal-close" class="flex-shrink-0 text-[var(--ink-text-dim)] hover:text-white transition-all p-1.5 hover:bg-white/5 rounded-lg" aria-label="Close"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div id="legal-modal-body" class="legal-body overflow-y-auto custom-scrollbar p-5 sm:p-7 text-[var(--ink-text-dim)]"></div>
+            <div class="px-5 sm:px-7 py-4 border-t border-white/[0.08] bg-white/[0.02] flex items-center justify-between gap-3">
+                <span class="text-[10px] text-gray-500 font-medium flex items-center gap-1.5"><i data-lucide="lock" class="w-3 h-3"></i> Last updated 2026</span>
+                <button id="legal-modal-ok" class="bg-[var(--signal)] hover:bg-[var(--signal-dim)] text-black font-bold text-sm py-2.5 px-6 rounded-xl transition-all">Got it</button>
+            </div>
         </div>
     </div>
 
@@ -1061,9 +1181,16 @@
                     </div>
                 </div>
             </div>
-            <div class="border-t border-white/10 pt-6 md:pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] md:text-xs text-gray-500 font-medium text-center md:text-left">
-                <p>© 2026 Padhle India. All rights reserved. Made in India.</p>
-                <div class="flex items-center gap-4 md:gap-6"><a href="#" class="hover:text-white transition-colors">Privacy Policy</a><a href="#" class="hover:text-white transition-colors">Terms &amp; Conditions</a></div>
+            <div class="legal-footer-bar border-t border-white/10 pt-6 md:pt-8 flex flex-col md:flex-row justify-between items-center gap-5 text-[10px] md:text-xs text-gray-500 font-medium text-center md:text-left">
+                <p class="order-2 md:order-1">© 2026 Padhle India. All rights reserved. Made in India.</p>
+                <div class="legal-pill-row order-1 md:order-2 flex flex-wrap items-center justify-center gap-2 md:gap-2.5">
+                    <button type="button" class="legal-pill" data-legal="about"><i data-lucide="info" class="w-3 h-3"></i> About Us</button>
+                    <button type="button" class="legal-pill" data-legal="privacy"><i data-lucide="shield-check" class="w-3 h-3"></i> Privacy Policy</button>
+                    <button type="button" class="legal-pill" data-legal="terms"><i data-lucide="file-text" class="w-3 h-3"></i> Terms &amp; Conditions</button>
+                    <button type="button" class="legal-pill" data-legal="disclaimer"><i data-lucide="triangle-alert" class="w-3 h-3"></i> Disclaimer</button>
+                    <button type="button" class="legal-pill" data-legal="refund"><i data-lucide="receipt" class="w-3 h-3"></i> Refund Policy</button>
+                    <button type="button" class="legal-pill" data-legal="contact"><i data-lucide="mail" class="w-3 h-3"></i> Contact Us</button>
+                </div>
             </div>
         </div>
     </footer>
@@ -1331,6 +1458,201 @@
                 tcPopup.classList.add('opacity-0', 'pointer-events-none');
             });
         }
+
+        // ============================================================
+        //  FOOTER LEGAL / POLICY MODALS
+        //  One reusable modal, content swapped per footer pill.
+        // ============================================================
+        const LEGAL_CONTENT = {
+            about: {
+                icon: 'info',
+                title: 'About Us',
+                html: `
+                    <p class="legal-lead">Empowering every student through quality education.</p>
+                    <p>Padhle India is a modern educational platform committed to making high-quality learning accessible, engaging, and outcome-driven for students across India. Founded by <strong>Abhinay Rai</strong>, the platform was created with a single clear vision — to simplify complex concepts and help students build lasting academic confidence through conceptual learning.</p>
+                    <p>Whether you are preparing for CBSE Board Examinations, strengthening fundamentals, or building a foundation for competitive exams, Padhle India provides structured learning resources designed to help you achieve your academic goals with confidence.</p>
+                    <h4>Our Journey</h4>
+                    <p>With over a decade of teaching experience, Abhinay Rai has mentored millions of students through classroom programmes, online platforms, and live educational sessions. This journey has been defined by:</p>
+                    <ul>
+                        <li><strong>38+ Million</strong> students guided</li>
+                        <li><strong>10+ Years</strong> of teaching experience</li>
+                        <li>Former educator at leading Indian EdTech platforms</li>
+                        <li>Trusted by students and parents across the country</li>
+                    </ul>
+                    <h4>Our Mission</h4>
+                    <p>Our mission is to make quality education simple, accessible, and meaningful for every learner. We believe education should encourage understanding rather than memorisation — by focusing on conceptual clarity and logical thinking, we help students develop confidence that extends well beyond examinations.</p>
+                    <h4>What We Offer</h4>
+                    <ul>
+                        <li>Concept-based video lectures</li>
+                        <li>Complete CBSE notes &amp; NCERT solutions</li>
+                        <li>Previous year question papers &amp; sample papers</li>
+                        <li>Practice questions &amp; AI-powered learning assistance</li>
+                        <li>Exam updates and study resources</li>
+                    </ul>
+                    <h4>Our Vision</h4>
+                    <p>To become one of India's most trusted digital learning platforms by delivering high-quality education that is accessible, reliable, and focused on long-term student success. Every concept understood today becomes the foundation for tomorrow's success.</p>
+                `
+            },
+            privacy: {
+                icon: 'shield-check',
+                title: 'Privacy Policy',
+                html: `
+                    <p class="legal-lead">Your privacy matters.</p>
+                    <p>Padhle India values the privacy of every learner and is committed to protecting the personal information shared with us. This policy explains how information is collected, used, stored, and protected when you access our website or educational services.</p>
+                    <h4>Information We Collect</h4>
+                    <ul>
+                        <li>Name, email address &amp; mobile number</li>
+                        <li>Academic information (class, board, preferences)</li>
+                        <li>Device and browser information</li>
+                        <li>Cookies and usage data</li>
+                        <li>Learning progress and platform activity, where applicable</li>
+                    </ul>
+                    <h4>How We Use Your Information</h4>
+                    <ul>
+                        <li>To provide and improve our educational services</li>
+                        <li>To personalise your learning experience</li>
+                        <li>To respond to support requests and communicate important updates</li>
+                        <li>To analyse performance and enhance platform security</li>
+                    </ul>
+                    <p>We <strong>do not sell or rent</strong> your personal information to third parties.</p>
+                    <h4>Cookies</h4>
+                    <p>We use cookies and similar technologies to improve functionality, remember preferences, and analyse traffic. You may disable cookies through your browser settings, although certain features may not function as intended.</p>
+                    <h4>Data Security</h4>
+                    <p>We implement reasonable administrative, technical, and organisational measures to protect personal information against unauthorised access, alteration, or disclosure. While we maintain high security standards, no online system can guarantee absolute security.</p>
+                    <h4>Third-Party Services</h4>
+                    <p>Our platform may integrate trusted third-party services including Google Analytics, authentication services, payment gateways, Cloudflare, and AI services. These operate under their respective privacy policies.</p>
+                    <h4>Contact</h4>
+                    <p>For questions regarding this policy, please contact us at <a href="mailto:support@padhleindia.com">support@padhleindia.com</a>.</p>
+                `
+            },
+            terms: {
+                icon: 'file-text',
+                title: 'Terms & Conditions',
+                html: `
+                    <h4>Acceptance of Terms</h4>
+                    <p>By accessing or using Padhle India, you acknowledge that you have read, understood, and agreed to be bound by these Terms &amp; Conditions.</p>
+                    <h4>Educational Purpose</h4>
+                    <p>All educational materials, videos, notes, practice questions, and other resources available on the platform are intended solely for learning and educational purposes.</p>
+                    <h4>Intellectual Property Rights</h4>
+                    <p>Unless otherwise stated, all content published on Padhle India — including videos, study materials, graphics, branding, and website design — is the intellectual property of Padhle India and is protected under applicable copyright laws. Unauthorised copying, reproduction, distribution, resale, or commercial use of any content is strictly prohibited.</p>
+                    <h4>User Responsibilities</h4>
+                    <ul>
+                        <li>Provide accurate information while using the platform</li>
+                        <li>Respect applicable laws and platform policies</li>
+                        <li>Refrain from any activity that may disrupt or compromise the website</li>
+                        <li>Avoid unauthorised access to restricted systems or resources</li>
+                    </ul>
+                    <h4>AI-Powered Assistance</h4>
+                    <p>The AI learning assistant is designed to provide educational guidance and conceptual support. While every effort is made to ensure accuracy, users are encouraged to verify important academic information through official educational resources where necessary.</p>
+                    <h4>Modifications</h4>
+                    <p>Padhle India reserves the right to update or modify these Terms &amp; Conditions at any time. Continued use of the platform following such updates constitutes acceptance of the revised terms.</p>
+                `
+            },
+            disclaimer: {
+                icon: 'triangle-alert',
+                title: 'Disclaimer',
+                html: `
+                    <p>The information, study materials, videos, notes, and other educational resources available on Padhle India are provided solely for educational and informational purposes.</p>
+                    <p>While reasonable efforts are made to ensure the accuracy and relevance of all content, Padhle India does not guarantee that all information is complete, current, or free from errors.</p>
+                    <p>Academic performance, examination results, and admissions depend upon several factors, including individual preparation and effort. Accordingly, Padhle India <strong>does not guarantee specific marks, ranks, admissions, or examination outcomes.</strong></p>
+                    <p>Users are encouraged to verify important academic information through official sources wherever appropriate.</p>
+                `
+            },
+            refund: {
+                icon: 'receipt',
+                title: 'Refund & Cancellation Policy',
+                html: `
+                    <p class="legal-lead">Trust and transparency form the foundation of every learning experience.</p>
+                    <p>This Refund &amp; Cancellation Policy outlines the terms governing purchases made through our platform and is intended to ensure clarity for all users.</p>
+                    <h4>Current Services</h4>
+                    <p>At present, the majority of educational resources available on Padhle India are offered <strong>free of cost</strong>. As we introduce premium courses, subscriptions, digital products, or mentorship programmes in the future, the terms below shall apply unless otherwise specified at the time of purchase.</p>
+                    <h4>Refund Eligibility</h4>
+                    <p>Refund requests will be considered only in accordance with the refund terms communicated during the purchase process. Unless explicitly stated otherwise, refunds are generally not applicable once access to digital content, recorded lectures, downloadable resources, or subscription-based services has been provided, as these products cannot be returned after delivery.</p>
+                    <h4>Subscription Cancellation</h4>
+                    <p>Where applicable, users may cancel recurring subscriptions per the cancellation instructions within their account or at the time of purchase. Cancellation will prevent future billing but shall not automatically entitle the user to a refund for payments already processed, unless otherwise mentioned.</p>
+                    <h4>Exceptional Circumstances</h4>
+                    <p>Refund requests may be reviewed on a case-by-case basis under exceptional situations, including but not limited to:</p>
+                    <ul>
+                        <li>Duplicate or accidental transactions</li>
+                        <li>Successful payment with failure to receive access due to a verified technical issue</li>
+                        <li>Incorrect billing resulting from a system error</li>
+                        <li>Situations where a refund is required under applicable laws or regulatory requirements</li>
+                    </ul>
+                    <p>Approval of such requests shall remain at the sole discretion of Padhle India after appropriate verification.</p>
+                    <h4>Refund Processing</h4>
+                    <p>If approved, the amount will ordinarily be processed through the original payment method within <strong>7–10 business days</strong>, subject to the timelines of the respective payment gateway or banking institution. Actual credit timelines may vary depending on your financial institution.</p>
+                    <h4>Need Assistance?</h4>
+                    <p>For any questions regarding payments, subscriptions, cancellations, or refund requests, contact us at <a href="mailto:support@padhleindia.com">support@padhleindia.com</a>.</p>
+                    <hr class="legal-divider">
+                    <p>Padhle India reserves the right to modify or update this policy at any time. Any changes become effective immediately upon publication on this website, so please review this page periodically.</p>
+                `
+            },
+            contact: {
+                icon: 'mail',
+                title: 'Contact Us',
+                html: `
+                    <p class="legal-lead">Get in touch — at Padhle India, every student matters.</p>
+                    <p>Whether you have a question about our courses, require technical support, wish to report an issue, or are interested in collaborating with us, our team is always ready to assist you. Your feedback plays an important role in helping us improve our platform.</p>
+                    <h4>Student Support</h4>
+                    <p>For learning resources, website access, technical issues, account queries, or general support:<br><a href="mailto:support@padhleindia.com">support@padhleindia.com</a></p>
+                    <p>Our team strives to respond to all genuine enquiries within <strong>24–48 business hours</strong>.</p>
+                    <h4>Business &amp; Partnership Enquiries</h4>
+                    <p>For institutional collaborations, brand partnerships, sponsorships, or media enquiries:<br><a href="mailto:business@padhleindia.com">business@padhleindia.com</a></p>
+                    <h4>Connect With Us</h4>
+                    <p>Stay connected through our official platforms for the latest content, study resources, and exam updates.</p>
+                    <ul>
+                        <li>YouTube · Telegram · Instagram</li>
+                    </ul>
+                    <h4>Support Hours</h4>
+                    <p>Monday – Saturday<br>9:00 AM – 7:00 PM (IST)</p>
+                    <hr class="legal-divider">
+                    <h4>Our Commitment</h4>
+                    <p>We are committed to reliable support, transparent communication, and continuously improving our platform based on valuable feedback from students, parents, and educators. Thank you for being a part of the Padhle India learning community.</p>
+                `
+            }
+        };
+
+        const legalModal      = document.getElementById('legal-modal');
+        const legalModalBody   = document.getElementById('legal-modal-body');
+        const legalModalTitle  = document.getElementById('legal-modal-title');
+        const legalModalIconWrap = document.getElementById('legal-modal-icon-wrap');
+        const legalModalClose  = document.getElementById('legal-modal-close');
+        const legalModalOk     = document.getElementById('legal-modal-ok');
+
+        function openLegalModal(key) {
+            const data = LEGAL_CONTENT[key];
+            if (!data || !legalModal) return;
+            legalModalTitle.textContent = data.title;
+            // Rebuild the icon node fresh each time (lucide replaces <i> with <svg>,
+            // so reusing the old reference would silently stop updating).
+            if (legalModalIconWrap) {
+                legalModalIconWrap.innerHTML = '<i data-lucide="' + data.icon + '" class="w-5 h-5 text-signal"></i>';
+            }
+            legalModalBody.innerHTML = data.html;
+            legalModalBody.scrollTop = 0;
+            legalModal.classList.remove('opacity-0', 'pointer-events-none');
+            document.body.style.overflow = 'hidden';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+        function closeLegalModal() {
+            if (!legalModal) return;
+            legalModal.classList.add('opacity-0', 'pointer-events-none');
+            document.body.style.overflow = 'auto';
+        }
+
+        document.querySelectorAll('.legal-pill').forEach(pill => {
+            pill.addEventListener('click', () => openLegalModal(pill.getAttribute('data-legal')));
+        });
+        if (legalModalClose) legalModalClose.addEventListener('click', closeLegalModal);
+        if (legalModalOk)    legalModalOk.addEventListener('click', closeLegalModal);
+        if (legalModal) {
+            legalModal.addEventListener('click', (e) => { if (e.target === legalModal) closeLegalModal(); });
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && legalModal && !legalModal.classList.contains('pointer-events-none')) {
+                closeLegalModal();
+            }
+        });
 
         // -- AUTH STATE LISTENER --
         onAuthStateChanged(auth, async (user) => {
