@@ -231,15 +231,31 @@
            reads as "something is happening here" instead of a static small
            corner icon. Spinning the gradient itself (not the ring's
            position) keeps the button perfectly still while the light moves. */
+        /* The ring shape (a circular cut-out mask) lives on the static parent,
+           while the spinning conic-gradient lives on a child pseudo-element.
+           Masking + rotating the SAME element renders on desktop but silently
+           fails on many mobile WebKit/Chrome builds, so we decouple them and
+           force a GPU compositing layer (translateZ) — this makes the moving
+           light show reliably on phones too. */
         #chat-glow-ring {
-            background: conic-gradient(from 0deg, transparent 0%, transparent 65%, var(--signal) 85%, #fff 92%, var(--signal) 99%, transparent 100%);
             -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
             mask: radial-gradient(closest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+            overflow: hidden;
+            transform: translateZ(0);
+        }
+        #chat-glow-ring::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 9999px;
+            background: conic-gradient(from 0deg, transparent 0%, transparent 65%, var(--signal) 85%, #fff 92%, var(--signal) 99%, transparent 100%);
             animation: chatGlowSpin 2.4s linear infinite;
+            will-change: transform;
+            transform: translateZ(0);
         }
         @keyframes chatGlowSpin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from { transform: rotate(0deg) translateZ(0); }
+            to { transform: rotate(360deg) translateZ(0); }
         }
         @keyframes teaserIn {
             from { opacity: 0; transform: translateY(8px) scale(0.97); }
@@ -248,9 +264,12 @@
 
         @media (prefers-reduced-motion: reduce) {
             .gs-reveal { opacity: 1 !important; transform: none !important; }
-            #chat-glow-ring { animation: none !important; opacity: 0.35; }
+            #chat-glow-ring::before { animation: none !important; opacity: 0.6; }
             #chat-teaser { animation: none !important; }
         }
+
+        /* Keep native <select> dropdown options readable on the dark theme */
+        #user-class option { background: var(--ink); color: #fff; }
     </style>
 
     <!-- GSAP load watchdog: if the GSAP CDN is slow/blocked/down, make sure
@@ -363,13 +382,45 @@
             </div>
 
             <div id="phone-section" class="hidden">
-                <div class="w-16 h-16 bg-[rgba(76,124,255,0.10)] rounded-full flex items-center justify-center mx-auto mb-6 border border-[var(--cobalt)]/30"><i data-lucide="phone" class="w-8 h-8 text-cobalt"></i></div>
+                <div class="w-16 h-16 bg-[rgba(76,124,255,0.10)] rounded-full flex items-center justify-center mx-auto mb-6 border border-[var(--cobalt)]/30"><i data-lucide="user-check" class="w-8 h-8 text-cobalt"></i></div>
                 <h3 class="text-2xl font-bold f-display text-white mb-2 tracking-tight">Almost there!</h3>
-                <p class="text-[var(--ink-text-dim)] text-sm mb-6 font-medium">Please verify your phone number to unlock complete access.</p>
-                <div class="relative flex items-center mb-6">
-                    <span class="absolute left-4 text-[var(--ink-text-dim)] font-bold border-r border-white/20 pr-3">+91</span>
-                    <input type="tel" id="user-phone" placeholder="Phone Number" maxlength="10" class="w-full bg-black/50 border border-white/10 rounded-xl pl-16 pr-5 py-4 text-white focus:outline-none focus:border-[var(--cobalt)] tracking-widest font-semibold" required>
+                <p class="text-[var(--ink-text-dim)] text-sm mb-6 font-medium">Please complete your details to unlock complete access.</p>
+
+                <!-- Name -->
+                <div class="text-left mb-4">
+                    <label for="user-name" class="block text-xs font-bold text-[var(--ink-text-dim)] uppercase tracking-wide mb-2">Name</label>
+                    <input type="text" id="user-name" placeholder="Enter your full name" autocomplete="name" class="w-full bg-black/50 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-[var(--cobalt)] font-semibold" required>
                 </div>
+
+                <!-- Class -->
+                <div class="text-left mb-4">
+                    <label for="user-class" class="block text-xs font-bold text-[var(--ink-text-dim)] uppercase tracking-wide mb-2">Class</label>
+                    <div class="relative">
+                        <select id="user-class" class="w-full bg-black/50 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-[var(--cobalt)] font-semibold" style="appearance:none;-webkit-appearance:none;-moz-appearance:none;" required>
+                            <option value="" disabled selected>Select your class</option>
+                            <option value="Class 6">Class 6</option>
+                            <option value="Class 7">Class 7</option>
+                            <option value="Class 8">Class 8</option>
+                            <option value="Class 9">Class 9</option>
+                            <option value="Class 10">Class 10</option>
+                            <option value="Class 11">Class 11</option>
+                            <option value="Class 12">Class 12</option>
+                            <option value="Dropper">Dropper</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-[var(--ink-text-dim)] absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- Mobile Number -->
+                <div class="text-left mb-6">
+                    <label for="user-phone" class="block text-xs font-bold text-[var(--ink-text-dim)] uppercase tracking-wide mb-2">Mobile Number</label>
+                    <div class="relative flex items-center">
+                        <span class="absolute left-4 text-[var(--ink-text-dim)] font-bold border-r border-white/20 pr-3">+91</span>
+                        <input type="tel" id="user-phone" placeholder="Mobile Number" maxlength="10" autocomplete="tel" class="w-full bg-black/50 border border-white/10 rounded-xl pl-16 pr-5 py-4 text-white focus:outline-none focus:border-[var(--cobalt)] tracking-widest font-semibold" required>
+                    </div>
+                </div>
+
                 <button id="save-phone-btn" class="w-full bg-[var(--cobalt)] hover:opacity-90 text-white font-bold py-3.5 rounded-xl transition-all">Unlock Access</button>
             </div>
         </div>
@@ -1141,6 +1192,8 @@
         const googleBtn = document.getElementById('google-signin-btn');
         const savePhoneBtn = document.getElementById('save-phone-btn');
         const phoneInput = document.getElementById('user-phone');
+        const nameInput = document.getElementById('user-name');
+        const classInput = document.getElementById('user-class');
         const closeAuthBtn = document.getElementById('close-auth-btn');
 
         const loginTcCheckbox = document.getElementById('login-tc-agree');
@@ -1322,8 +1375,7 @@
                     } else {
                         userPhoneVerified = false;
                         if(authModal && !authModal.classList.contains('pointer-events-none')) {
-                            googleSection.classList.add('hidden');
-                            phoneSection.classList.remove('hidden');
+                            revealDetailsSection();
                         }
                     }
                 } catch(error) {
@@ -1336,13 +1388,22 @@
         });
 
         // -- MODAL CONTROLS --
+        // Reveal the details step and pre-fill the name with the Google
+        // account name (still editable by the student).
+        function revealDetailsSection() {
+            googleSection.classList.add('hidden');
+            phoneSection.classList.remove('hidden');
+            if (nameInput && currentUser && !nameInput.value.trim()) {
+                nameInput.value = currentUser.displayName || '';
+            }
+        }
+
         function showAuthModal(action) {
             pendingAction = action;
             authModal.classList.remove('opacity-0', 'pointer-events-none');
             document.body.style.overflow = 'hidden';
             if (currentUser && !userPhoneVerified) {
-                googleSection.classList.add('hidden');
-                phoneSection.classList.remove('hidden');
+                revealDetailsSection();
             } else {
                 googleSection.classList.remove('hidden');
                 phoneSection.classList.add('hidden');
@@ -1375,23 +1436,35 @@
             });
         }
 
-        // -- PHONE SAVING WITH VALIDATION --
+        // -- PROFILE SAVING (NAME + CLASS + PHONE) WITH VALIDATION --
         if(savePhoneBtn) {
             savePhoneBtn.addEventListener('click', async () => {
+                const nameVal = (nameInput && nameInput.value || '').trim();
+                const classVal = (classInput && classInput.value || '').trim();
                 const phoneVal = phoneInput.value;
+
+                // Name check
+                if(nameVal.length < 2) {
+                    return showPhoneError(nameInput, "Please enter your name.");
+                }
+                // Class check
+                if(!classVal) {
+                    return showPhoneError(classInput, "Please select your class.");
+                }
+                // Phone check
                 const validation = validateIndianPhone(phoneVal);
-                
                 if(!validation.valid) {
                     return showPhoneError(phoneInput, validation.msg);
                 }
-                
+
                 if(currentUser) {
                     const originalText = savePhoneBtn.innerText;
                     savePhoneBtn.innerText = "Saving...";
                     try {
                         await setDoc(doc(db, "Users", currentUser.uid), {
-                            name: currentUser.displayName,
+                            name: nameVal,
                             email: currentUser.email,
+                            studentClass: classVal,
                             phoneNumber: phoneVal,
                             joinedAt: new Date()
                         }, { merge: true });
@@ -1403,7 +1476,7 @@
                             pendingAction = null;
                         }
                     } catch (error) {
-                        alert("Error saving number. Please check your Firestore rules.");
+                        alert("Error saving your details. Please check your Firestore rules.");
                         savePhoneBtn.innerText = originalText;
                     }
                 }
