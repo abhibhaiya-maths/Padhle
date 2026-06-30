@@ -226,45 +226,34 @@
         #chat-window.maximized { width: 90vw !important; max-width: 900px !important; height: 80vh !important; max-height: 700px !important; transition: all .3s cubic-bezier(.4,0,.2,1); }
         @media (max-width: 640px) { #chat-window.maximized { width: 95vw !important; height: 80vh !important; max-height: none !important; } }
 
-        /* Chatbot attention cue: a bright glow that continuously travels
-           around the button's edge (a rotating conic-gradient ring), so it
-           reads as "something is happening here" instead of a static small
-           corner icon. Spinning the gradient itself (not the ring's
-           position) keeps the button perfectly still while the light moves. */
-        /* The ring shape (a circular cut-out mask) lives on the static parent,
-           while the spinning conic-gradient lives on a child pseudo-element.
-           Masking + rotating the SAME element renders on desktop but silently
-           fails on many mobile WebKit/Chrome builds, so we decouple them and
-           force a GPU compositing layer (translateZ) — this makes the moving
-           light show reliably on phones too. */
+        /* Chatbot attention cue: a bright light that travels around the
+           button's edge. The button itself is an opaque filled circle sitting
+           ON TOP of this disc, so only the ~6px rim of the spinning gradient
+           shows — i.e. a moving ring. Earlier this used a CSS mask, but iOS
+           Safari refuses to animate a masked subtree (it composites the mask as
+           one static layer), so on iPhone the ring rendered but never spun.
+           Dropping the mask and spinning a plain conic-gradient disc animates
+           reliably on iOS, Android and desktop alike. */
         #chat-glow-ring {
-            -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
-            mask: radial-gradient(closest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
-            overflow: hidden;
-            transform: translateZ(0);
-        }
-        #chat-glow-ring::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: 9999px;
             background: conic-gradient(from 0deg, transparent 0%, transparent 65%, var(--signal) 85%, #fff 92%, var(--signal) 99%, transparent 100%);
+            border-radius: 9999px;
             animation: chatGlowSpin 2.4s linear infinite;
             will-change: transform;
-            transform: translateZ(0);
         }
         @keyframes chatGlowSpin {
-            from { transform: rotate(0deg) translateZ(0); }
-            to { transform: rotate(360deg) translateZ(0); }
+            to { transform: rotate(360deg); }
         }
         @keyframes teaserIn {
             from { opacity: 0; transform: translateY(8px) scale(0.97); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
+        /* Respect reduced-motion, but keep a gentle breathing glow rather than a
+           dead-static ring so the cue still reads as "live". */
+        @keyframes chatGlowPulse { 0%,100% { opacity: .35; } 50% { opacity: .9; } }
         @media (prefers-reduced-motion: reduce) {
             .gs-reveal { opacity: 1 !important; transform: none !important; }
-            #chat-glow-ring::before { animation: none !important; opacity: 0.6; }
+            #chat-glow-ring { animation: chatGlowPulse 2.6s ease-in-out infinite !important; }
             #chat-teaser { animation: none !important; }
         }
 
@@ -1072,17 +1061,10 @@
                     <div class="card p-5 md:p-6 rounded-2xl">
                         <h4 class="text-white font-bold mb-4 md:mb-6 uppercase text-xs md:text-sm f-display flex items-center gap-2"><i data-lucide="zap" class="w-4 h-4 text-signal"></i> Connect With Us</h4>
                         <ul class="space-y-3 md:space-y-4 text-xs md:text-sm font-medium">
-                            <li><a href="https://t.me/mathsvalebhaiya" target="_blank" class="flex items-center gap-3 md:gap-4 text-[var(--ink-text-dim)] hover:text-white transition-all group/link"><div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 p-2.5"><img decoding="async" loading="lazy" src="telegram.webp" alt="Telegram" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='telegram.png';this.onerror=function(){this.src='https://via.placeholder.com/20?text=T'}"></div><span class="tracking-wide">Telegram Community</span></a></li>
-                            <li><a href="https://www.youtube.com/@10thTitansbyUnacademy" target="_blank" class="flex items-center gap-3 md:gap-4 text-[var(--ink-text-dim)] hover:text-white transition-all group/link"><div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 p-2"><img decoding="async" loading="lazy" src="youtube.webp" alt="YouTube" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='youtube.png';this.onerror=function(){this.src='https://via.placeholder.com/20?text=Y'}"></div><span class="tracking-wide">YouTube Lectures</span></a></li>
-                            <li><a href="https://www.instagram.com/abhinay.rai_unstoppable/" target="_blank" class="flex items-center gap-3 md:gap-4 text-[var(--ink-text-dim)] hover:text-white transition-all group/link"><div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 p-2"><img loading="lazy" decoding="async" src="instagram.webp" alt="Instagram" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='instagram.png';this.onerror=function(){this.src='https://via.placeholder.com/20?text=I'}"></div><span class="tracking-wide">Instagram Updates</span></a></li>
-                            <li>
-                                <a href="https://whatsapp.com/channel/0029VbAwk0BAO7RCsvzkGZ1B" target="_blank" class="flex items-center gap-3 md:gap-4 text-[var(--ink-text-dim)] hover:text-white transition-all group/link">
-                                    <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 p-2">
-                                        <img loading="lazy" decoding="async" src="whatsapp.webp" alt="WhatsApp" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='whatsapp.png';this.onerror=function(){this.style.display='none'}">
-                                    </div>
-                                    <span class="tracking-wide">Unacademy Foundation Official</span>
-                                </a>
-                            </li>
+                            <li><a href="https://t.me/mathsvalebhaiya" target="_blank" class="flex items-center gap-3 md:gap-4 text-[var(--ink-text-dim)] hover:text-white transition-all group/link"><div class="w-9 h-9 md:w-10 md:h-10 flex-shrink-0 rounded-full bg-white/5 flex items-center justify-center border border-white/10 overflow-hidden p-1"><img decoding="async" loading="lazy" src="telegram.webp" alt="Telegram" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='telegram.png'"></div><span class="tracking-wide">Telegram Community</span></a></li>
+                            <li><a href="https://www.youtube.com/@10thTitansbyUnacademy" target="_blank" class="flex items-center gap-3 md:gap-4 text-[var(--ink-text-dim)] hover:text-white transition-all group/link"><div class="w-9 h-9 md:w-10 md:h-10 flex-shrink-0 rounded-full bg-white/5 flex items-center justify-center border border-white/10 overflow-hidden p-1"><img decoding="async" loading="lazy" src="youtube.webp" alt="YouTube" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='youtube.png'"></div><span class="tracking-wide">YouTube Lectures</span></a></li>
+                            <li><a href="https://www.instagram.com/abhinay.rai_unstoppable/" target="_blank" class="flex items-center gap-3 md:gap-4 text-[var(--ink-text-dim)] hover:text-white transition-all group/link"><div class="w-9 h-9 md:w-10 md:h-10 flex-shrink-0 rounded-full bg-white/5 flex items-center justify-center border border-white/10 overflow-hidden p-1"><img loading="lazy" decoding="async" src="instagram.webp" alt="Instagram" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='instagram.png'"></div><span class="tracking-wide">Instagram Updates</span></a></li>
+                            <li><a href="https://whatsapp.com/channel/0029VbAwk0BAO7RCsvzkGZ1B" target="_blank" class="flex items-center gap-3 md:gap-4 text-[var(--ink-text-dim)] hover:text-white transition-all group/link"><div class="w-9 h-9 md:w-10 md:h-10 flex-shrink-0 rounded-full bg-white/5 flex items-center justify-center border border-white/10 overflow-hidden p-1"><img loading="lazy" decoding="async" src="whatsapp.webp" alt="WhatsApp" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='whatsapp.png'"></div><span class="tracking-wide">Unacademy Foundation Official</span></a></li>
                         </ul>
                     </div>
                 </div>
