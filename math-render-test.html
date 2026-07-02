@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Render Fix — Test</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+<style>
+  body{background:#0a1410;color:#e8f0ec;font-family:system-ui,Segoe UI,Roboto,sans-serif;max-width:900px;margin:0 auto;padding:28px 20px 80px;line-height:1.6}
+  h1{font-size:1.4rem} h2{font-size:1rem;color:#f2a93b;margin:26px 0 6px;letter-spacing:.03em}
+  .case{background:#0f1a15;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;margin:10px 0}
+  .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8aa79b;margin-bottom:6px}
+  .raw{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:#c0704f;white-space:pre-wrap;word-break:break-word;background:#0a1109;padding:8px 10px;border-radius:8px;margin-bottom:10px}
+  .out{font-size:16px}
+  .verdict{margin-top:8px;font-size:12px;font-weight:700}
+  .ok{color:#57c98a} .bad{color:#e0554f}
+  .summary{margin-top:24px;padding:14px 16px;border-radius:12px;font-weight:700}
+  .summary.pass{background:rgba(87,201,138,.12);border:1px solid rgba(87,201,138,.4);color:#57c98a}
+  .summary.fail{background:rgba(224,85,79,.12);border:1px solid rgba(224,85,79,.4);color:#e0554f}
+  .katex-error{color:#e0554f !important}
+</style>
+</head>
+<body>
+<h1>🧪 Math Render Fix — Self-Test</h1>
+<p style="color:#8aa79b;font-size:14px">Ye page tumhare <b>naye index.html</b> ke exact math-repair functions chala raha hai, KaTeX 0.16.8 pe (same version site use karti hai). Agar sab green hai, toh live deploy pe bhi math sahi render hoga.</p>
+
+<!-- SAME two client functions copied verbatim from your new index.html -->
+<script>
+function deglueMathOperators(text) {
+                if (!text) return text;
+                const CDOTS = "\uE000", CDOTP = "\uE001";
+                return text
+                    .replace(/\\cdots/g, CDOTS)                                   // shield ⋯
+                    .replace(/\\cdotp/g, CDOTP)                                   // shield \cdotp fully so \cdot can't corrupt it
+                    .replace(/\\(cdot|times)(?=[a-zA-Z])/g, "\\$1 ")             // de-glue \cdot / \times
+                    .replace(new RegExp(CDOTP + "(?=[a-zA-Z])", "g"), "\\cdotp ")// de-glue \cdotp
+                    .replace(new RegExp(CDOTP, "g"), "\\cdotp")                   // restore \cdotp
+                    .replace(new RegExp(CDOTS, "g"), "\\cdots");                  // restore ⋯
+            }
+function repairMisplacedMathDelimiters(text) {
+                if (!text) return text;
+                const SIZE_SPACE = "\\\\Bigg?l|\\\\bigg?l|\\\\Bigg?r|\\\\bigg?r|\\\\left|\\\\right|\\\\,|\\\\;|\\\\:|\\\\!";
+                const OPS = "\\\\times|\\\\cdotp|\\\\cdot|\\\\div|\\\\pm|\\\\mp|\\\\ast|\\\\star|\\\\circ|\\\\bullet|\\\\cup|\\\\cap|\\\\vee|\\\\wedge|\\\\oplus|\\\\otimes|\\\\le|\\\\leq|\\\\ge|\\\\geq|\\\\neq|\\\\ne|\\\\approx|\\\\equiv|\\\\sim|\\\\propto|\\\\mapsto|\\\\implies|\\\\iff|\\\\leftarrow|\\\\rightarrow|\\\\Rightarrow|\\\\Leftarrow|\\\\to";
+                const NEEDS_ARG = "\\\\frac|\\\\dfrac|\\\\tfrac|\\\\binom|\\\\sqrt|\\\\overline|\\\\underline|\\\\vec|\\\\hat|\\\\bar|\\\\dot|\\\\widehat|\\\\underbrace|\\\\overbrace|\\\\sum|\\\\prod|\\\\int";
+                const DANGLING_END = new RegExp("(" + SIZE_SPACE + "|" + OPS + "|" + NEEDS_ARG + ")\\s*$");
+                const DANGLING_START = /^\s*(\\Bigg?r|\\bigg?r|\\right)/;
+                const GAP_LOOKS_LIKE_MATH = /^\s*([_^]\{|\\[a-zA-Z])/;
+                const bracesUnbalanced = (inner) => {
+                    let depth = 0;
+                    for (let i = 0; i < inner.length; i++) {
+                        const c = inner[i];
+                        if (c === '\\') { i++; continue; }
+                        if (c === '{') depth++;
+                        else if (c === '}') { depth--; if (depth < 0) return true; }
+                    }
+                    return depth !== 0;
+                };
+                return text.split('\n').map(line => {
+                    if (!line.includes('$')) return line;
+                    const frags = [...line.matchAll(/\$([^\$\n]*)\$/g)];
+                    if (!frags.length) return line;
+                    const fragBroken = frags.some(m => {
+                        const inner = m[1];
+                        return DANGLING_END.test(inner) || DANGLING_START.test(inner) || bracesUnbalanced(inner);
+                    });
+                    let gapBroken = false;
+                    for (let i = 1; i < frags.length; i++) {
+                        const prevEnd = frags[i - 1].index + frags[i - 1][0].length;
+                        const gap = line.slice(prevEnd, frags[i].index);
+                        if (GAP_LOOKS_LIKE_MATH.test(gap)) { gapBroken = true; break; }
+                    }
+                    if (!fragBroken && !gapBroken) return line;
+                    const indent = (line.match(/^(\s*)/) || ['', ''])[1];
+                    const stripped = line.slice(indent.length).replace(/\$/g, '').trim();
+                    if (!stripped) return line;
+                    return indent + '$' + stripped + '$';
+                }).join('\n');
+            }
+
+</script>
+
+<div id="app"></div>
+
+<script>
+window.addEventListener('load', function(){
+  // The 6 exact broken lines from your three screenshots:
+  var cases = [
+    ["Screenshot 1 — Leibniz rule", "Direct Answer: $\\frac{d}{dx}\\bigl[u(x)v(x)\\bigr$]=u'(x)v(x)+u(x)v'(x)"],
+    ["Screenshot 2 — limit group (\\Biggr split)", "y' = $\\lim_{h\\to0}\\Biggl[\\frac{u(x)v(x+h)-u(x)v(x)}{h}\\Biggr$]"],
+    ["Screenshot 2 — underbrace subscript leak", "y' = u(x)$\\,\\underbrace{\\lim_{h\\to0}\\frac{v(x+h)-v(x)}{h}}$_{v'(x)}$\\;+\\;v(x)\\,\\underbrace{\\lim_{h\\to0}\\frac{u(x+h)-u(x)}{h}}$_{u'(x)}"],
+    ["Screenshot 3 — valid tau formula", "$\\tau = \\mu \\,\\frac{du}{dy}$"],
+    ["Screenshot 3 — split numeric (\\times end)", "$\\tau$ = (1.0$\\times10^{-3})\\times$ 500 = 0.5$\\,\\text{Pa}$."],
+    ["Screenshot 3 — glued Pa\\cdotps unit", "while $\\mu$ has units $\\text{Pa}\\cdotps$"]
+  ];
+
+  // Minimal renderer mimicking your site: repair -> split on $...$ -> KaTeX each.
+  function renderLine(line){
+    var fixed = repairMisplacedMathDelimiters(deglueMathOperators(line));
+    var errs = 0;
+    var html = fixed.replace(/\$([^$\n]*)\$/g, function(_, inner){
+      try { return katex.renderToString(inner, {throwOnError:true}); }
+      catch(e){ errs++; return '<span class="katex-error">'+inner+'</span>'; }
+    });
+    return {fixed:fixed, html:html, errs:errs};
+  }
+
+  var app = document.getElementById('app');
+  var totalErr = 0;
+  cases.forEach(function(c){
+    var r = renderLine(c[1]);
+    totalErr += r.errs;
+    var div = document.createElement('div');
+    div.className = 'case';
+    div.innerHTML =
+      '<h2>'+c[0]+'</h2>'+
+      '<div class="lbl">Model ne bheja (broken)</div>'+
+      '<div class="raw">'+c[1].replace(/</g,'&lt;')+'</div>'+
+      '<div class="lbl">Repair ke baad — rendered</div>'+
+      '<div class="out">'+r.html+'</div>'+
+      '<div class="verdict '+(r.errs===0?'ok':'bad')+'">'+(r.errs===0?'✓ 0 KaTeX errors':'✗ '+r.errs+' error(s)')+'</div>';
+    app.appendChild(div);
+  });
+
+  var s = document.createElement('div');
+  s.className = 'summary '+(totalErr===0?'pass':'fail');
+  s.textContent = totalErr===0
+    ? '✅ SAB PASS — saare 6 broken cases 0 errors pe render hue. Fix kaam kar raha hai; live deploy safe hai.'
+    : '❌ '+totalErr+' error abhi bhi — screenshot bhej do, main dekhta hoon.';
+  app.appendChild(s);
+});
+</script>
+</body>
+</html>
