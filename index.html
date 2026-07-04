@@ -608,6 +608,511 @@
         .onb-divider span { flex-grow: 1; height: 1px; background: rgba(255,255,255,0.1); }
         .onb-divider b { font-size: 9px; font-weight: 700; color: var(--ink-text-dim); text-transform: uppercase; letter-spacing: 0.1em; }
         .onb-footer { font-size: 9.5px; text-align: center; color: var(--ink-text-dim); font-weight: 500; line-height: 1.5; padding: 12px 16px 16px; border-top: 1px solid rgba(255,255,255,0.06); margin-top: 4px; }
+
+        /* ============================================================
+           NCERT DIGITAL LIBRARY
+           Refined pass: typography, badges, hover and card shell now
+           come from the site's existing utility layer (.card,
+           .f-display, .text-signal, hover:-translate-y-1.5, etc.) —
+           nothing here duplicates them. The only rules that live in
+           CSS are the ones Tailwind's precompiled sheet can't do:
+             1. the 3-column grid (with tablet 2+1 layout),
+             2. a whitespace-nowrap Latest 2026-27 badge,
+             3. a minimal outline book-stack illustration,
+             4. a subtle ambient corner glow on the card,
+             5. a nowrap-safe reset for the <button> card element.
+           ============================================================ */
+
+        /* 1. Grid: mobile 1 col, tablet 2+1 (3rd centered), desktop 3 in row. */
+        .ncert-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        @media (min-width: 768px) {
+            .ncert-grid { grid-template-columns: 1fr 1fr; }
+            .ncert-grid > :nth-child(3) { grid-column: 1 / -1; max-width: 480px; justify-self: center; width: 100%; }
+        }
+        @media (min-width: 1024px) {
+            .ncert-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+            .ncert-grid > :nth-child(3) { grid-column: auto; max-width: none; justify-self: stretch; }
+        }
+
+        /* 2. Badge — matches Featured Courses "Class 10" pill exactly,
+              plus white-space:nowrap so "Latest 2026-27" NEVER wraps. */
+        .ncert-badge {
+            display: inline-block;
+            background: rgba(242, 169, 59, 0.15);
+            border: 1px solid rgba(242, 169, 59, 0.25);
+            color: var(--signal);
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 5px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        /* 3. Card shell — the .card + Tailwind classes on the button
+              handle background, border, radius, padding, hover-lift and
+              transition. This selector only resets the native <button>
+              defaults (font, color, alignment, cursor) and hosts the
+              ambient corner glow. */
+        .ncert-card {
+            cursor: pointer;
+            color: inherit;
+            font: inherit;
+            text-align: left;
+            isolation: isolate;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+        .ncert-card::after {
+            content: "";
+            position: absolute;
+            top: -50px; right: -50px;
+            width: 160px; height: 160px;
+            border-radius: 9999px;
+            background: var(--track-glow, rgba(76, 124, 255, 0.10));
+            filter: blur(60px);
+            opacity: 0.55;
+            pointer-events: none;
+            z-index: 0;
+            transition: opacity .35s ease;
+        }
+        .ncert-card:hover::after { opacity: 0.9; }
+        .ncert-card > * { position: relative; z-index: 1; }
+
+        /* 4. Minimal outline book-stack illustration — thin monochrome
+              line-art, single accent color, gentle rise on hover.
+              Replaces the earlier colorful shelf spines. */
+        .ncert-illustration {
+            width: 60px;
+            height: 48px;
+            color: var(--ink-text-dim);
+            opacity: 0.55;
+            flex-shrink: 0;
+            transition: color .35s ease, opacity .35s ease, transform .4s ease;
+        }
+        .ncert-illustration svg { width: 100%; height: 100%; display: block; }
+        .ncert-card:hover .ncert-illustration {
+            color: var(--signal);
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* Arrow micro-interaction on the "Explore" CTA line. */
+        .ncert-explore-arrow {
+            transition: transform .3s ease;
+        }
+        .ncert-card:hover .ncert-explore-arrow { transform: translateX(3px); }
+
+        /* ---------------------------------------------------------
+           MODAL — untouched per user brief.
+           Header + 2-column subject-tile grid.
+           --------------------------------------------------------- */
+        .ncert-overlay {
+            position: fixed; inset: 0; z-index: 2000;
+            background: rgba(0,0,0,0.80);
+            backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .ncert-overlay.is-open { opacity: 1; pointer-events: auto; }
+        .ncert-modal-card {
+            position: relative;
+            width: 100%; max-width: 640px;
+            max-height: 88vh;
+            /* Vertical scroll only — smooth, native, iOS-momentum-friendly.
+               overflow-x: hidden kills any accidental horizontal drift
+               (e.g. a long book title on a 360px phone), so the modal
+               never lets the user swipe sideways. */
+            overflow-y: auto;
+            overflow-x: hidden;
+            overscroll-behavior: contain;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 22px;
+            border: 1px solid rgba(255,255,255,0.10);
+            background: var(--ink-2);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.65);
+            transform: scale(0.96); opacity: 0;
+            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+                        opacity 0.25s ease;
+        }
+        /* Slim, premium scrollbar — Firefox uses scrollbar-* props,
+           WebKit uses ::-webkit-scrollbar-*. Both quiet and monochrome. */
+        .ncert-modal-card { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.18) transparent; }
+        .ncert-modal-card::-webkit-scrollbar { width: 6px; }
+        .ncert-modal-card::-webkit-scrollbar-track { background: transparent; }
+        .ncert-modal-card::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.15);
+            border-radius: 9999px;
+        }
+        .ncert-modal-card::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+        .ncert-overlay.is-open .ncert-modal-card { transform: scale(1); opacity: 1; }
+        .ncert-modal-glow {
+            position: absolute;
+            top: -80px; right: -60px;
+            width: 220px; height: 220px;
+            border-radius: 9999px;
+            background: var(--track-glow, rgba(76,124,255,0.20));
+            filter: blur(80px);
+            pointer-events: none;
+        }
+        .ncert-modal-close {
+            position: absolute; top: 14px; right: 14px; z-index: 2;
+            width: 30px; height: 30px; border-radius: 9999px;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: var(--ink-text-dim);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .ncert-modal-close:hover { color: #fff; background: rgba(255,255,255,0.12); }
+
+        .ncert-modal-head {
+            position: relative;
+            padding: 26px 26px 4px;
+        }
+        .ncert-modal-eyebrow {
+            /* Site convention for card/modal eyebrows: default font
+               (Inter), text-xs (12px), tracking-widest (0.1em), bold.
+               Matches the timeline eyebrows in the About section
+               ("Academic Foundation", "EdTech Leadership", etc.). */
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--track-color, var(--cobalt));
+            margin-bottom: 8px;
+        }
+        .ncert-modal-title {
+            /* Matches the site's other modals (auth-modal, tc-modal):
+               text-2xl font-bold f-display tracking-tight. */
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: -0.025em;
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.2;
+            margin-bottom: 6px;
+        }
+        .ncert-modal-lead {
+            /* Matches auth-modal body: text-sm font-medium ink-text-dim. */
+            font-size: 14px;
+            line-height: 1.55;
+            color: var(--ink-text-dim);
+            font-weight: 500;
+            padding: 0 26px 20px;
+            position: relative;
+        }
+
+        .ncert-tiles {
+            position: relative;
+            display: grid;
+            /* Single column always. Modal max-width is 640px — a
+               1-column grid gives every tile the full width, so the
+               foot row (badge + Download / Expand button) always
+               fits in one line without clipping, and accordion
+               contents read comfortably on both mobile and desktop. */
+            grid-template-columns: 1fr;
+            gap: 12px;
+            padding: 0 22px 22px;
+            align-items: start;
+        }
+        @media (min-width: 640px) {
+            .ncert-tiles { padding: 0 26px 26px; gap: 14px; }
+        }
+
+        /* Individual book tile — typographic cover + hierarchy where
+           the official book name is more prominent than the subject.
+           Column layout: main row on top, optional parts accordion below. */
+        .ncert-tile {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 14px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px;
+            transition: border-color .25s ease, background .25s ease, transform .25s ease;
+        }
+        .ncert-tile:hover {
+            border-color: var(--subj, rgba(255,255,255,0.18));
+            background: rgba(255,255,255,0.035);
+            transform: translateY(-2px);
+        }
+        .ncert-tile.is-expandable { cursor: pointer; }
+        .ncert-tile.is-expandable:focus-visible {
+            outline: 2px solid var(--subj, var(--cobalt));
+            outline-offset: 2px;
+        }
+        .ncert-tile-main {
+            display: flex;
+            gap: 14px;
+        }
+
+        /* Typographic book cover (option B): solid color + book title
+           set inside. Serves as a placeholder for real NCERT covers;
+           the coverImage field in NCERT_LIBRARY will replace it later
+           without changing this tile markup. */
+        .ncert-cover {
+            position: relative;
+            width: 56px;
+            height: 76px;
+            flex-shrink: 0;
+            border-radius: 6px 4px 4px 6px;
+            background: var(--subj-bg, linear-gradient(160deg, rgba(76,124,255,0.35), rgba(76,124,255,0.10)));
+            border: 1px solid var(--subj-border, rgba(76,124,255,0.35));
+            box-shadow: inset 3px 0 0 rgba(255,255,255,0.06),
+                        0 4px 10px -6px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 7px 6px;
+            overflow: hidden;
+        }
+        .ncert-cover img {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            border-radius: inherit;
+        }
+        .ncert-cover-mark {
+            /* Default font (Inter) — matches site's small uppercase
+               labels. No monospace anywhere. */
+            font-size: 7.5px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            color: rgba(255,255,255,0.85);
+            text-transform: uppercase;
+        }
+        .ncert-cover-name {
+            /* Book title inside cover — f-display (Space Grotesk),
+               matches site's headline convention. */
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: -0.01em;
+            font-size: 9px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.15;
+            text-transform: uppercase;
+        }
+
+        .ncert-tile-body {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            flex-grow: 1;
+        }
+        .ncert-tile-subject {
+            /* Card-level eyebrow — matches the site's "Class 10" pill
+               style: default font (Inter), text-[10px], tracking-wider
+               (0.05em), uppercase, bold. NO monospace. */
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--subj, var(--cobalt));
+            margin-bottom: 5px;
+        }
+        .ncert-tile-title {
+            /* Matches Featured Courses card h3: text-lg font-bold
+               f-display leading-tight. Sized appropriately for a
+               modal-scoped tile (17px vs 18px on full cards). */
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: -0.02em;
+            font-size: 17px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.25;
+            margin-bottom: 6px;
+        }
+        .ncert-tile-desc {
+            /* Matches Featured Courses desc: text-xs (12px) leading-
+               relaxed (1.625) font-medium. Default font. */
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--ink-text-dim);
+            font-weight: 500;
+            margin-bottom: 12px;
+            flex-grow: 1;
+        }
+        .ncert-tile-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: nowrap;
+        }
+        .ncert-tile-badge {
+            /* Same "Class 10" pill treatment as .ncert-tile-subject —
+               default font, text-[10px], tracking-wider, uppercase. */
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--signal);
+            background: rgba(242,169,59,0.10);
+            border: 1px solid rgba(242,169,59,0.25);
+            padding: 4px 9px;
+            border-radius: 9999px;
+            white-space: nowrap;
+        }
+        .ncert-tile-btn {
+            /* Site button convention: font-bold text-[11px] uppercase
+               tracking-wide — matches the "Enroll Now" style. Default
+               font, not Space Grotesk. */
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #fff;
+            background: var(--cobalt);
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: transform .2s ease, opacity .2s ease;
+        }
+        .ncert-tile-btn:hover { transform: translateY(-1px); opacity: 0.92; }
+        .ncert-tile-btn svg { width: 12px; height: 12px; }
+        .ncert-tile-btn.is-coming {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.12);
+            color: var(--ink-text-dim);
+            cursor: not-allowed;
+        }
+        .ncert-tile-btn.is-coming:hover { transform: none; opacity: 1; }
+
+        /* Toggle chip for expandable multi-book tiles. Same button
+           convention as .ncert-tile-btn but neutral surface. */
+        .ncert-tile-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #fff;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: background .2s ease, transform .2s ease;
+        }
+        .ncert-tile-toggle:hover { background: rgba(255,255,255,0.10); transform: translateY(-1px); }
+        .ncert-toggle-icon {
+            width: 12px; height: 12px;
+            transition: transform .3s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .ncert-tile.is-expanded .ncert-toggle-icon { transform: rotate(180deg); }
+
+        /* Accordion region — one row per part. Uses max-height +
+           opacity transition for a smooth reveal, and preserves
+           semantic order (parts stay in the DOM even when collapsed
+           so screen-readers can still announce them if needed). */
+        .ncert-parts {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height .4s cubic-bezier(0.22, 1, 0.36, 1),
+                        opacity .25s ease,
+                        margin-top .3s ease,
+                        padding-top .3s ease;
+        }
+        .ncert-tile.is-expanded .ncert-parts {
+            max-height: 700px;
+            opacity: 1;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px dashed rgba(255,255,255,0.10);
+        }
+        .ncert-part {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            text-decoration: none;
+            flex-wrap: nowrap;
+            transition: background .2s ease, border-color .2s ease;
+        }
+        .ncert-part + .ncert-part { margin-top: 6px; }
+        .ncert-part:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: var(--subj, rgba(255,255,255,0.15));
+        }
+        .ncert-part.is-coming { cursor: not-allowed; opacity: 0.7; }
+        .ncert-part.is-coming:hover {
+            background: rgba(255,255,255,0.02);
+            border-color: rgba(255,255,255,0.05);
+        }
+        .ncert-part-name {
+            /* Book names inside accordion — f-display (Space Grotesk),
+               matches the site's card title convention but smaller. */
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            line-height: 1.35;
+            letter-spacing: -0.015em;
+            min-width: 0;
+            flex-grow: 1;
+            overflow-wrap: anywhere;
+        }
+        .ncert-part-btn {
+            /* Small text button — matches "Explore Channel" style used
+               throughout the site: default font, text-[10px], bold,
+               uppercase, tracking-wider. */
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--subj, var(--cobalt));
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: gap .2s ease;
+        }
+        .ncert-part:hover .ncert-part-btn { gap: 7px; }
+        .ncert-part-btn svg { width: 11px; height: 11px; }
+        .ncert-part-btn.is-coming { color: var(--ink-text-dim); }
+
+        .ncert-modal-foot {
+            /* Default font. Sized to match site body-caption
+               convention: 11px, font-medium, dim color. */
+            position: relative;
+            padding: 14px 26px 20px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            font-size: 11px;
+            text-align: center;
+            color: var(--ink-text-dim);
+            font-weight: 500;
+            line-height: 1.55;
+        }
     </style>
 
     <!-- GSAP load watchdog: if the GSAP CDN is slow/blocked/down, make sure
@@ -1198,73 +1703,61 @@
                     <i data-lucide="chevron-right" class="w-5 h-5 md:w-6 md:h-6"></i>
                 </button>
 
-                <div class="relative overflow-hidden rounded-[1.5rem] md:rounded-[2rem] card h-[300px] sm:h-[400px] md:h-[480px] lg:h-[540px] bg-[var(--ink-2)] flex">
-                    <div class="carousel-slide absolute inset-0 w-full h-full flex flex-col items-center opacity-100 z-10">
-                        <div class="w-full h-[75%] lg:h-[80%] flex items-center justify-center p-3 sm:p-5 lg:p-6 pb-0">
-                            <img decoding="async" loading="lazy" src="slide-1.webp" alt="610+ Learners" class="w-full h-full object-contain transition-transform duration-700 hover:scale-[1.02]" onerror="this.onerror=null;this.src='slide-1.png';this.onerror=function(){this.src='https://via.placeholder.com/1200x600?text=Slide'}">
-                        </div>
-                        <div class="w-full h-[25%] lg:h-[20%] p-2 flex flex-col items-center justify-center text-center">
-                            <p class="text-signal text-[10px] md:text-[11px] font-bold tracking-widest uppercase mb-1">CBSE Class 10 Board Results 2025-26</p>
-                            <h3 class="text-lg sm:text-xl md:text-2xl font-bold f-display text-white tracking-tight">610+ Learners Scored Above 90%</h3>
-                        </div>
+                <!-- Carousel box: aspect-video (16:9, matches the Unacademy result
+                     slide aspect ratio) so the image can fill the entire box with
+                     zero dead space. max-height caps it at 540px on wide screens
+                     to keep vertical rhythm consistent with the rest of the page.
+                     Each slide is now image-only; the tag + title moved to a
+                     synced caption strip below the box (see #carousel-eyebrow /
+                     #carousel-title). -->
+                <div class="relative overflow-hidden rounded-[1.5rem] md:rounded-[2rem] card bg-[var(--ink-2)] aspect-video w-full" style="max-height: 540px;">
+                    <div class="carousel-slide absolute inset-0 w-full h-full opacity-100 z-10"
+                         data-eyebrow="CBSE Class 10 Board Results 2025-26"
+                         data-title="610+ Learners Scored Above 90%">
+                        <img decoding="async" loading="lazy" src="slide-1.webp" alt="610+ Learners Scored Above 90% in CBSE Class 10 Board Results 2025-26" class="w-full h-full object-contain transition-transform duration-700 hover:scale-[1.02]" onerror="this.onerror=null;this.src='slide-1.png';this.onerror=function(){this.src='https://via.placeholder.com/1200x600?text=Slide'}">
                     </div>
-                    <div class="carousel-slide absolute inset-0 w-full h-full flex flex-col items-center opacity-0 pointer-events-none z-0 translate-x-10">
-                        <div class="w-full h-[75%] lg:h-[80%] flex items-center justify-center p-3 sm:p-5 lg:p-6 pb-0">
-                            <img decoding="async" loading="lazy" src="slide-2.webp" alt="Top Performers" class="w-full h-full object-contain transition-transform duration-700 hover:scale-[1.02]" onerror="this.onerror=null;this.src='slide-2.png';this.onerror=function(){this.src='https://via.placeholder.com/1200x600?text=Slide'}">
-                        </div>
-                        <div class="w-full h-[25%] lg:h-[20%] p-2 flex flex-col items-center justify-center text-center">
-                            <p class="text-signal text-[10px] md:text-[11px] font-bold tracking-widest uppercase mb-1">Celebrating Extraordinary Achievement</p>
-                            <h3 class="text-lg sm:text-xl md:text-2xl font-bold f-display text-white tracking-tight">Top Performers of CBSE Class 10</h3>
-                        </div>
+                    <div class="carousel-slide absolute inset-0 w-full h-full opacity-0 pointer-events-none z-0 translate-x-10"
+                         data-eyebrow="Celebrating Extraordinary Achievement"
+                         data-title="Top Performers of CBSE Class 10">
+                        <img decoding="async" loading="lazy" src="slide-2.webp" alt="Top Performers of CBSE Class 10" class="w-full h-full object-contain transition-transform duration-700 hover:scale-[1.02]" onerror="this.onerror=null;this.src='slide-2.png';this.onerror=function(){this.src='https://via.placeholder.com/1200x600?text=Slide'}">
                     </div>
-                    <div class="carousel-slide absolute inset-0 w-full h-full flex flex-col items-center opacity-0 pointer-events-none z-0 translate-x-10">
-                        <div class="w-full h-[75%] lg:h-[80%] flex items-center justify-center p-3 sm:p-5 lg:p-6 pb-0">
-                            <img decoding="async" loading="lazy" src="slide-3.webp" alt="Maths Perfect 100" class="w-full h-full object-contain transition-transform duration-700 hover:scale-[1.02]" onerror="this.onerror=null;this.src='slide-3.png';this.onerror=function(){this.src='https://via.placeholder.com/1200x600?text=Slide'}">
-                        </div>
-                        <div class="w-full h-[25%] lg:h-[20%] p-2 flex flex-col items-center justify-center text-center">
-                            <p class="text-signal text-[10px] md:text-[11px] font-bold tracking-widest uppercase mb-1">Flawless Board Performance</p>
-                            <h3 class="text-lg sm:text-xl md:text-2xl font-bold f-display text-white tracking-tight">Perfect 100/100 in Mathematics</h3>
-                        </div>
+                    <div class="carousel-slide absolute inset-0 w-full h-full opacity-0 pointer-events-none z-0 translate-x-10"
+                         data-eyebrow="Flawless Board Performance"
+                         data-title="Perfect 100/100 in Mathematics">
+                        <img decoding="async" loading="lazy" src="slide-3.webp" alt="Perfect 100/100 in Mathematics" class="w-full h-full object-contain transition-transform duration-700 hover:scale-[1.02]" onerror="this.onerror=null;this.src='slide-3.png';this.onerror=function(){this.src='https://via.placeholder.com/1200x600?text=Slide'}">
                     </div>
-                    <div class="carousel-slide absolute inset-0 w-full h-full flex flex-col items-center opacity-0 pointer-events-none z-0 translate-x-10">
-                        <div class="w-full h-[75%] lg:h-[80%] flex items-center justify-center p-3 sm:p-5 lg:p-6 pb-0">
-                            <img decoding="async" loading="lazy" src="slide-4.webp" alt="Science Perfect 100" class="w-full h-full object-contain transition-transform duration-700 hover:scale-[1.02]" onerror="this.onerror=null;this.src='slide-4.png';this.onerror=function(){this.src='https://via.placeholder.com/1200x600?text=Slide'}">
-                        </div>
-                        <div class="w-full h-[25%] lg:h-[20%] p-2 flex flex-col items-center justify-center text-center">
-                            <p class="text-signal text-[10px] md:text-[11px] font-bold tracking-widest uppercase mb-1">Conceptual Excellence</p>
-                            <h3 class="text-lg sm:text-xl md:text-2xl font-bold f-display text-white tracking-tight">Perfect 100/100 in Science</h3>
-                        </div>
+                    <div class="carousel-slide absolute inset-0 w-full h-full opacity-0 pointer-events-none z-0 translate-x-10"
+                         data-eyebrow="Conceptual Excellence"
+                         data-title="Perfect 100/100 in Science">
+                        <img decoding="async" loading="lazy" src="slide-4.webp" alt="Perfect 100/100 in Science" class="w-full h-full object-contain transition-transform duration-700 hover:scale-[1.02]" onerror="this.onerror=null;this.src='slide-4.png';this.onerror=function(){this.src='https://via.placeholder.com/1200x600?text=Slide'}">
                     </div>
-                    <div class="carousel-slide absolute inset-0 w-full h-full flex flex-col items-center opacity-0 pointer-events-none z-0 translate-x-10">
-                        <div class="w-full h-[75%] lg:h-[80%] flex items-center justify-center p-3 sm:p-5 lg:p-6 pb-0">
-                            <img decoding="async" loading="lazy" src="slide-5.webp" alt="English Perfect 100" class="w-full h-full object-contain transition-transform duration-700 hover:scale-[1.02]" onerror="this.onerror=null;this.src='slide-5.png';this.onerror=function(){this.src='https://via.placeholder.com/1200x600?text=Slide'}">
-                        </div>
-                        <div class="w-full h-[25%] lg:h-[20%] p-2 flex flex-col items-center justify-center text-center">
-                            <p class="text-signal text-[10px] md:text-[11px] font-bold tracking-widest uppercase mb-1">Language Mastery</p>
-                            <h3 class="text-lg sm:text-xl md:text-2xl font-bold f-display text-white tracking-tight">Perfect 100/100 in English</h3>
-                        </div>
+                    <div class="carousel-slide absolute inset-0 w-full h-full opacity-0 pointer-events-none z-0 translate-x-10"
+                         data-eyebrow="Language Mastery"
+                         data-title="Perfect 100/100 in English">
+                        <img decoding="async" loading="lazy" src="slide-5.webp" alt="Perfect 100/100 in English" class="w-full h-full object-contain transition-transform duration-700 hover:scale-[1.02]" onerror="this.onerror=null;this.src='slide-5.png';this.onerror=function(){this.src='https://via.placeholder.com/1200x600?text=Slide'}">
                     </div>
-                    <div class="carousel-slide absolute inset-0 w-full h-full flex flex-col items-center opacity-0 pointer-events-none z-0 translate-x-10">
-                        <div class="w-full h-[75%] lg:h-[80%] flex items-center justify-center p-3 sm:p-5 lg:p-6 pb-0">
-                            <img decoding="async" loading="lazy" src="slide-6.webp" alt="SST Perfect 100" class="w-full h-full object-contain transition-transform duration-700 hover:scale-[1.02]" onerror="this.onerror=null;this.src='slide-6.png';this.onerror=function(){this.src='https://via.placeholder.com/1200x600?text=Slide'}">
-                        </div>
-                        <div class="w-full h-[25%] lg:h-[20%] p-2 flex flex-col items-center justify-center text-center">
-                            <p class="text-signal text-[10px] md:text-[11px] font-bold tracking-widest uppercase mb-1">Academic Excellence</p>
-                            <h3 class="text-lg sm:text-xl md:text-2xl font-bold f-display text-white tracking-tight">Perfect 100/100 in Social Science</h3>
-                        </div>
+                    <div class="carousel-slide absolute inset-0 w-full h-full opacity-0 pointer-events-none z-0 translate-x-10"
+                         data-eyebrow="Academic Excellence"
+                         data-title="Perfect 100/100 in Social Science">
+                        <img decoding="async" loading="lazy" src="slide-6.webp" alt="Perfect 100/100 in Social Science" class="w-full h-full object-contain transition-transform duration-700 hover:scale-[1.02]" onerror="this.onerror=null;this.src='slide-6.png';this.onerror=function(){this.src='https://via.placeholder.com/1200x600?text=Slide'}">
                     </div>
-                    <div class="carousel-slide absolute inset-0 w-full h-full flex flex-col items-center opacity-0 pointer-events-none z-0 translate-x-10">
-                        <div class="w-full h-[75%] lg:h-[80%] flex items-center justify-center p-3 sm:p-5 lg:p-6 pb-0">
-                            <img decoding="async" loading="lazy" src="slide-7.webp" alt="Beyond National Average" class="w-full h-full object-contain transition-transform duration-700 hover:scale-[1.02]" onerror="this.onerror=null;this.src='slide-7.png';this.onerror=function(){this.src='https://via.placeholder.com/1200x600?text=Slide'}">
-                        </div>
-                        <div class="w-full h-[25%] lg:h-[20%] p-2 flex flex-col items-center justify-center text-center">
-                            <p class="text-signal text-[10px] md:text-[11px] font-bold tracking-widest uppercase mb-1">Performance Benchmark Analysis</p>
-                            <h3 class="text-lg sm:text-xl md:text-2xl font-bold f-display text-white tracking-tight">Results Beyond National Average</h3>
-                        </div>
+                    <div class="carousel-slide absolute inset-0 w-full h-full opacity-0 pointer-events-none z-0 translate-x-10"
+                         data-eyebrow="Performance Benchmark Analysis"
+                         data-title="Results Beyond National Average">
+                        <img decoding="async" loading="lazy" src="slide-7.webp" alt="Results Beyond National Average" class="w-full h-full object-contain transition-transform duration-700 hover:scale-[1.02]" onerror="this.onerror=null;this.src='slide-7.png';this.onerror=function(){this.src='https://via.placeholder.com/1200x600?text=Slide'}">
                     </div>
+
+                    <div class="absolute bottom-3 md:bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 z-20" id="carousel-dots"></div>
                 </div>
 
-                <div class="absolute bottom-2 md:bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 z-20" id="carousel-dots"></div>
+                <!-- Synced caption strip: updated from the active slide's
+                     data-eyebrow / data-title attributes on every goToSlide()
+                     call. min-height reserves space so the layout doesn't
+                     jump when text changes across slides of different lengths. -->
+                <div class="mt-5 md:mt-6 text-center" style="min-height: 62px;">
+                    <p id="carousel-eyebrow" class="text-signal text-[10px] md:text-[11px] font-bold tracking-widest uppercase mb-1 transition-opacity duration-300"></p>
+                    <h3 id="carousel-title" class="text-lg sm:text-xl md:text-2xl font-bold f-display text-white tracking-tight transition-opacity duration-300"></h3>
+                </div>
             </div>
         </div>
     </section>
@@ -1349,6 +1842,45 @@
             </div>
         </div>
     </section>
+
+    <!-- ==========================================================
+         NCERT DIGITAL LIBRARY
+         Data-driven — only edit the NCERT_LIBRARY constant (in the
+         script tagged "NCERT LIBRARY DATA" near the bottom).
+         Nothing in this markup needs to change to swap PDFs.
+         ========================================================== -->
+    <section id="ncert-library" class="py-12 lg:py-16 px-4 sm:px-6 relative z-10 bg-[var(--ink)] border-t border-white/[0.06] overflow-hidden">
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="text-center mb-10 md:mb-12 gs-reveal max-w-2xl mx-auto">
+                <span class="text-cobalt font-bold tracking-[0.2em] uppercase text-xs md:text-sm f-display mb-3 block">Official Library</span>
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 f-display tracking-tight text-white">NCERT Digital <span class="text-signal">Library</span></h2>
+                <p class="text-[var(--ink-text-dim)] mx-auto text-sm md:text-base leading-relaxed font-medium">The latest official CBSE textbooks — aligned to the 2026–27 curriculum, ready to read.</p>
+            </div>
+
+            <div id="ncert-cards-grid" class="ncert-grid"></div>
+        </div>
+    </section>
+
+    <!-- NCERT LIBRARY MODAL — subject tiles (2-column grid retained per brief) -->
+    <div id="ncert-modal" class="ncert-overlay">
+        <div class="ncert-modal-card" role="dialog" aria-modal="true" aria-labelledby="ncert-modal-title">
+            <div class="ncert-modal-glow"></div>
+
+            <button id="ncert-modal-close" class="ncert-modal-close" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+
+            <div class="ncert-modal-head">
+                <div id="ncert-modal-eyebrow" class="ncert-modal-eyebrow">CBSE · Class 10</div>
+                <div id="ncert-modal-title" class="ncert-modal-title">Latest Official NCERT Books</div>
+            </div>
+            <p id="ncert-modal-lead" class="ncert-modal-lead">Official NCERT textbooks aligned with the latest CBSE curriculum.</p>
+
+            <div id="ncert-modal-tiles" class="ncert-tiles"></div>
+
+            <div class="ncert-modal-foot">Official NCERT editions · Last synced 2026–27</div>
+        </div>
+    </div>
 
     <!-- ==========================================================
          FEATURED YOUTUBE CLASSES
@@ -2359,9 +2891,21 @@
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
         const carouselContainer = document.getElementById('results-carousel');
-        
+        // Synced caption strip below the carousel box — updated from the
+        // active slide's data-eyebrow / data-title on every goToSlide().
+        const captionEyebrow = document.getElementById('carousel-eyebrow');
+        const captionTitle = document.getElementById('carousel-title');
+
         let currentSlide = 0;
         let autoSlideInterval;
+
+        function updateCaption() {
+            if (!slides.length) return;
+            const active = slides[currentSlide];
+            if (!active) return;
+            if (captionEyebrow) captionEyebrow.textContent = active.dataset.eyebrow || '';
+            if (captionTitle)   captionTitle.textContent   = active.dataset.title || '';
+        }
 
         if(slides.length > 0 && dotsContainer) {
             slides.forEach((_, i) => {
@@ -2388,7 +2932,11 @@
                 slides[currentSlide].classList.remove('z-0');
                 slides[currentSlide].classList.add('z-10');
                 if(dots[currentSlide]) dots[currentSlide].className = 'w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-blue-400 scale-125 shadow-[0_0_10px_rgba(96,165,250,0.5)] transition-all duration-300';
+                updateCaption();
             }
+
+            // Initial caption sync — populate for slide 0 on page load.
+            updateCaption();
 
             function nextSlide() { if(slides.length) goToSlide((currentSlide + 1) % slides.length); }
             function prevSlide() { if(slides.length) goToSlide((currentSlide - 1 + slides.length) % slides.length); }
@@ -2967,6 +3515,463 @@
             requestAnimationFrame(frame);
         })();
     </script>
+
+    <!-- ==========================================================
+         NCERT LIBRARY DATA  —  Only edit the NCERT_LIBRARY constant.
+         ==========================================================
+         HOW THE MODAL RENDERS EACH SUBJECT:
+           • A subject whose  parts  array has EXACTLY ONE entry renders
+             as a single-tile with a direct "Download PDF" button.
+           • A subject whose  parts  array has 2+ entries automatically
+             renders as an expandable accordion — the tile shows
+             "N Books Available" + an Expand toggle, and each part
+             gets its own row with its own Download button.
+             (No nested modals. Same modal, richer content.)
+         HOW TO ADD OR UPDATE A PDF LINK:
+           1. Find the subject inside NCERT_LIBRARY below.
+           2. In its  parts  array, set  pdf: "https://…"  for the
+              part you want to link.
+           3. To add a NEW part to an existing subject (e.g. a fourth
+              Hindi title), just push another  { name, pdf }  object
+              into that subject's  parts  array — the accordion
+              expands automatically.
+           4. (Optional) When you have a real cover image, replace
+              the subject-level  coverImage: ""  with a path like
+              "/images/kaveri.webp" — the typographic cover swaps
+              to the image automatically.
+         Any part with an empty  pdf  stays gracefully as
+         "Coming Soon" instead of throwing a 404, so partial data
+         is always shippable.
+         ========================================================== -->
+    <script>
+        // ---- SINGLE SOURCE OF TRUTH FOR ALL NCERT DATA ----
+        //
+        // Shape:
+        //   NCERT_LIBRARY[trackKey] = {
+        //     meta:  { title, subtitle, description, badge,
+        //              modalEyebrow, modalTitle, modalLead, glowColor }
+        //     books: [
+        //       {
+        //         subject: "English",
+        //         description: "…",
+        //         color: "english",           // math|science|english|hindi|social
+        //         coverImage: "",              // optional real cover URL
+        //         parts: [                     // 1+ entries
+        //           { name: "First Flight", pdf: "https://…" },
+        //           { name: "Footprints Without Feet", pdf: "https://…" }
+        //         ]
+        //       }
+        //     ]
+        //   }
+        //
+        // Every URL / cover image lives here so the UI never needs
+        // to be touched to update content.
+        const NCERT_LIBRARY = {
+            class10: {
+                meta: {
+                    title: "CBSE Class 10",
+                    subtitle: "Latest Official NCERT Books",
+                    description: "Every subject — Mathematics, Science, Social Science, English and Hindi — in one place.",
+                    badge: "Latest 2026–27",
+                    modalEyebrow: "CBSE · Class 10",
+                    modalTitle: "Latest Official NCERT Books",
+                    modalLead: "Official NCERT textbooks aligned with the latest CBSE curriculum.",
+                    // Track glow accent color (used only for the subtle
+                    // ambient corner glow on the card and modal — never
+                    // as a dominant surface color).
+                    glowColor: "math"
+                },
+                books: [
+                    {
+                        subject: "Mathematics", color: "math", coverImage: "",
+                        description: "The standard NCERT syllabus for Class 10 — arithmetic, algebra, geometry, trigonometry and statistics.",
+                        parts: [
+                            { name: "Mathematics", pdf: "https://ncert.nic.in/textbook.php?jemh1=0-14" }
+                        ]
+                    },
+                    {
+                        subject: "Science", color: "science", coverImage: "",
+                        description: "Class 10 Physics, Chemistry and Biology in one integrated NCERT volume.",
+                        parts: [
+                            { name: "Science", pdf: "https://ncert.nic.in/textbook.php?jesc1=0-13" }
+                        ]
+                    },
+                    {
+                        subject: "Social Science", color: "social", coverImage: "",
+                        description: "History, Geography, Political Science and Economics — four official NCERT titles.",
+                        parts: [
+                            { name: "History — India and the Contemporary World II",     pdf: "https://ncert.nic.in/textbook.php?jess3=0-5" },
+                            { name: "Polity — Democratic Politics",                       pdf: "https://ncert.nic.in/textbook.php?jess4=0-5" },
+                            { name: "Geography — Contemporary India",                     pdf: "https://ncert.nic.in/textbook.php?jess1=2-7" },
+                            { name: "Economics — Understanding Economic Development",     pdf: "https://ncert.nic.in/textbook.php?jess2=0-5" }
+                        ]
+                    },
+                    {
+                        subject: "English", color: "english", coverImage: "",
+                        description: "The official NCERT English syllabus — three complementary titles for reading, literature and expression.",
+                        parts: [
+                            { name: "First Flight",                pdf: "https://ncert.nic.in/textbook.php?jeff1=0-9" },
+                            { name: "Footprints Without Feet",     pdf: "https://ncert.nic.in/textbook.php?jefp1=0-9" },
+                            { name: "Words and Expressions II",    pdf: "https://ncert.nic.in/textbook.php?jewe2=0-9" }
+                        ]
+                    },
+                    {
+                        subject: "Hindi", color: "hindi", coverImage: "",
+                        description: "The official NCERT Hindi syllabus — four titles across prose, poetry and supplementary reading.",
+                        parts: [
+                            { name: "Kshitij-2",         pdf: "https://ncert.nic.in/textbook.php?jhks1=0-12" },
+                            { name: "Sparsh",            pdf: "https://ncert.nic.in/textbook.php?jhsp1=0-14" },
+                            { name: "Sanchayan Bhag-2",  pdf: "https://ncert.nic.in/textbook.php?jhsy1=0-3" },
+                            { name: "Kritika",           pdf: "https://ncert.nic.in/textbook.php?jhkr1=0-3" }
+                        ]
+                    }
+                ]
+            },
+            class09: {
+                meta: {
+                    title: "CBSE Class 09",
+                    subtitle: "Latest Official NCERT Books",
+                    description: "The newly released 2026–27 titles — Ganita Manjari, Exploration, Kaveri, Ganga and more.",
+                    badge: "Latest 2026–27",
+                    modalEyebrow: "CBSE · Class 09",
+                    modalTitle: "Latest Official NCERT Books",
+                    modalLead: "Official NCERT textbooks aligned with the latest CBSE curriculum.",
+                    glowColor: "science"
+                },
+                books: [
+                    {
+                        subject: "Mathematics", color: "math", coverImage: "",
+                        description: "Develop mathematical thinking through visual learning, logical reasoning and real-life applications.",
+                        parts: [
+                            { name: "Ganita Manjari", pdf: "https://ncert.nic.in/textbook.php?iemh1=0-8" }
+                        ]
+                    },
+                    {
+                        subject: "Science", color: "science", coverImage: "",
+                        description: "Discover science through observation, experimentation and inquiry-based learning.",
+                        parts: [
+                            { name: "Exploration", pdf: "https://ncert.nic.in/textbook.php?iesc1=0-13" }
+                        ]
+                    },
+                    {
+                        subject: "English", color: "english", coverImage: "",
+                        description: "Strengthen language skills and critical thinking through engaging literature.",
+                        parts: [
+                            { name: "Kaveri", pdf: "https://ncert.nic.in/textbook.php?iebe1=0-8" }
+                        ]
+                    },
+                    {
+                        subject: "Hindi", color: "hindi", coverImage: "",
+                        description: "Build expressive language and communication through carefully curated prose and poetry.",
+                        parts: [
+                            { name: "Ganga", pdf: "https://ncert.nic.in/textbook.php?ihga1=0-12" }
+                        ]
+                    },
+                    {
+                        subject: "Social Science", color: "social", coverImage: "",
+                        description: "Understanding Society — India and Beyond, aligned to the 2026–27 curriculum.",
+                        parts: [
+                            { name: "Understanding Society — India and Beyond", pdf: "https://ncert.nic.in/textbook.php?iest1=0-9" }
+                        ]
+                    }
+                ]
+            },
+            advanced: {
+                meta: {
+                    title: "CBSE Class 09 Advanced",
+                    subtitle: "Advanced Mathematics & Science",
+                    description: "The enriched Class 09 track — deeper reasoning and richer investigations.",
+                    badge: "Latest 2026–27",
+                    modalEyebrow: "CBSE · Class 09 · Advanced",
+                    modalTitle: "Advanced Mathematics & Science",
+                    modalLead: "Enriched Class 09 track — deeper reasoning, richer investigations.",
+                    glowColor: "english"
+                },
+                books: [
+                    {
+                        subject: "Advanced Mathematics", color: "math", coverImage: "",
+                        description: "Enriched problem sets and deeper mathematical reasoning for the advanced Class 09 curriculum.",
+                        parts: [
+                            { name: "Advanced Mathematics", pdf: "https://cbseacademic.nic.in/web_material/CurriculumMain27/SecPart1/MathsAd_SecP1_2026-27.pdf" }
+                        ]
+                    },
+                    {
+                        subject: "Advanced Science", color: "science", coverImage: "",
+                        description: "Deeper coverage of scientific concepts and inquiry-based investigations for the advanced track.",
+                        parts: [
+                            { name: "Advanced Science", pdf: "https://cbseacademic.nic.in/web_material/CurriculumMain27/SecPart1/ScienceAd_SecP1_2026-27.pdf" }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        (function initNCERTLibrary() {
+            const grid = document.getElementById('ncert-cards-grid');
+            if (!grid) return;
+
+            const modal        = document.getElementById('ncert-modal');
+            const modalCard    = modal ? modal.querySelector('.ncert-modal-card') : null;
+            const modalTitle   = document.getElementById('ncert-modal-title');
+            const modalEyebrow = document.getElementById('ncert-modal-eyebrow');
+            const modalLead    = document.getElementById('ncert-modal-lead');
+            const modalTiles   = document.getElementById('ncert-modal-tiles');
+            const modalClose   = document.getElementById('ncert-modal-close');
+
+            // Fixed display order — Class 10, Class 09, Advanced (per brief).
+            const ORDER = ['class10', 'class09', 'advanced'];
+
+            // Per-subject color config — single source of truth for
+            // subject accent colors (used by modal book tiles + the
+            // subtle ambient corner glow on each track card). Kept in
+            // JS rather than as CSS variables so future subjects can
+            // be added by editing this object alone.
+            const SUBJECT_COLOR = {
+                math:    { name: 'Royal Blue',  rgb: '76,124,255' },
+                science: { name: 'Emerald',     rgb: '52,196,140' },
+                english: { name: 'Purple',      rgb: '167,139,250' },
+                hindi:   { name: 'Amber',       rgb: '242,169,59' },
+                social:  { name: 'Teal',        rgb: '45,212,191' }
+            };
+
+            const arrowSVG    = '<svg viewBox="0 0 24 24" fill="none" width="12" height="12"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+            const downloadSVG = '<svg viewBox="0 0 24 24" fill="none"><path d="M12 4v11m0 0l-4-4m4 4l4-4M4 19h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+            // Track glow: very subtle ambient wash keyed to each track's
+            // designated glowColor. Kept at low opacity so the section
+            // never turns colorful.
+            function trackGlow(track) {
+                const key = track.meta.glowColor || 'math';
+                const rgb = (SUBJECT_COLOR[key] || SUBJECT_COLOR.math).rgb;
+                return `rgba(${rgb}, 0.14)`;
+            }
+
+            // ---- RENDER THE THREE COVER CARDS ----
+            // Minimal outline book-stack illustration — same graphic on
+            // every card so it reads as a shared "library" motif rather
+            // than a per-card decoration. Uses currentColor so the
+            // illustration adopts .ncert-illustration's color/opacity
+            // (subtle default, signal-tinted on hover).
+            const bookStackSVG = '<svg viewBox="0 0 60 48" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+                + '<path d="M8 6 h44 v8 h-44 z"/>'
+                + '<line x1="14" y1="6" x2="14" y2="14" opacity="0.5"/>'
+                + '<line x1="46" y1="6" x2="46" y2="14" opacity="0.5"/>'
+                + '<path d="M4 18 h52 v9 h-52 z"/>'
+                + '<line x1="12" y1="18" x2="12" y2="27" opacity="0.5"/>'
+                + '<line x1="48" y1="18" x2="48" y2="27" opacity="0.5"/>'
+                + '<line x1="18" y1="22.5" x2="42" y2="22.5" opacity="0.35"/>'
+                + '<path d="M10 31 h40 v10 h-40 z"/>'
+                + '<line x1="16" y1="31" x2="16" y2="41" opacity="0.5"/>'
+                + '<line x1="44" y1="31" x2="44" y2="41" opacity="0.5"/>'
+                + '</svg>';
+
+            grid.innerHTML = ORDER.map((key) => {
+                const track = NCERT_LIBRARY[key];
+                if (!track) return '';
+                const m = track.meta;
+                // Total book count = sum of parts across every subject.
+                // Reflects "how many PDFs are inside" — more accurate
+                // than counting subjects when subjects have multiple
+                // parts (e.g. Class 10 English has 3 books, Hindi 4).
+                const count = track.books.reduce((n, s) => n + (Array.isArray(s.parts) ? s.parts.length : 0), 0);
+
+                return `
+                    <button type="button"
+                            class="ncert-card card rounded-2xl p-5 flex flex-col group hover:-translate-y-1.5 transition-transform duration-300 gs-reveal h-full"
+                            data-track="${key}"
+                            style="--track-glow: ${trackGlow(track)};"
+                            aria-label="Open ${m.title}">
+                        <div class="flex items-start justify-between mb-4 gap-3">
+                            <span class="ncert-badge">${m.badge}</span>
+                            <div class="ncert-illustration">${bookStackSVG}</div>
+                        </div>
+                        <h3 class="text-lg font-bold mb-1 f-display text-white leading-tight group-hover:text-signal transition-colors">${m.title}</h3>
+                        <p class="text-[var(--ink-text-dim)] text-xs mb-3 font-medium">${m.subtitle}</p>
+                        <p class="text-[var(--ink-text-dim)] text-xs mb-5 leading-relaxed flex-grow font-medium">${m.description}</p>
+                        <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/[0.06]">
+                            <span class="text-[var(--ink-text-dim)] text-[10px] font-bold uppercase tracking-wider">${count} ${count === 1 ? 'Book' : 'Books'}</span>
+                            <span class="text-signal text-[11px] font-bold uppercase tracking-wide f-display flex items-center gap-1.5">
+                                Explore <span class="ncert-explore-arrow flex">${arrowSVG}</span>
+                            </span>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+
+            // Small icons used inside modal tiles + accordion parts.
+            const chevronSVG  = '<svg class="ncert-toggle-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+            const externalSVG = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 5h5v5M19 5l-9 9M11 5H5v14h14v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+            // ---- MODAL RENDER + OPEN / CLOSE ----
+            // Renders one subject tile. Two shapes, same visual language:
+            //   • parts.length === 1  → direct "Download PDF" tile
+            //   • parts.length > 1    → expandable accordion tile with
+            //                           one row per part. Same modal, no
+            //                           nested modal — accordion pattern
+            //                           scales cleanly to any part count.
+            function tileHTML(subject) {
+                const rgb = (SUBJECT_COLOR[subject.color] || SUBJECT_COLOR.math).rgb;
+                const style = `--subj: rgb(${rgb});` +
+                              `--subj-bg: linear-gradient(160deg, rgba(${rgb}, 0.42), rgba(${rgb}, 0.10));` +
+                              `--subj-border: rgba(${rgb}, 0.40);`;
+
+                const parts = Array.isArray(subject.parts) ? subject.parts : [];
+                const isMulti = parts.length > 1;
+
+                // Typographic cover if no image; real image if provided.
+                // For single-book subjects the cover shows the book name;
+                // for multi-book subjects it shows the subject name.
+                const coverLabel = isMulti
+                    ? subject.subject
+                    : (parts[0] && parts[0].name) || subject.subject;
+                const coverInner = subject.coverImage
+                    ? `<img loading="lazy" decoding="async" src="${subject.coverImage}" alt="${subject.subject} cover">`
+                    : `<span class="ncert-cover-mark">NCERT</span><span class="ncert-cover-name">${coverLabel}</span>`;
+
+                // ---- SINGLE-BOOK TILE ----
+                if (!isMulti) {
+                    const part = parts[0] || { name: subject.subject, pdf: "" };
+                    const hasPdf = typeof part.pdf === 'string' && part.pdf.trim() !== '';
+
+                    // Title hierarchy: if the book name differs from the
+                    // subject (e.g. "Ganita Manjari" vs "Mathematics"),
+                    // show the subject as an eyebrow above the book name.
+                    // Otherwise just show the subject as the title.
+                    const differs = part.name && part.name !== subject.subject;
+                    const titleLine = differs ? part.name : subject.subject;
+                    const eyebrowMarkup = differs
+                        ? `<div class="ncert-tile-subject">${subject.subject}</div>`
+                        : "";
+
+                    const button = hasPdf
+                        ? `<a class="ncert-tile-btn" href="${part.pdf}" target="_blank" rel="noopener noreferrer">${downloadSVG} Download PDF</a>`
+                        : `<button type="button" class="ncert-tile-btn is-coming" disabled aria-disabled="true">Coming Soon</button>`;
+
+                    return `
+                        <article class="ncert-tile" style="${style}">
+                            <div class="ncert-tile-main">
+                                <div class="ncert-cover" aria-hidden="true">${coverInner}</div>
+                                <div class="ncert-tile-body">
+                                    ${eyebrowMarkup}
+                                    <div class="ncert-tile-title">${titleLine}</div>
+                                    <p class="ncert-tile-desc">${subject.description}</p>
+                                    <div class="ncert-tile-foot">
+                                        <span class="ncert-tile-badge">Latest 2026–27</span>
+                                        ${button}
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    `;
+                }
+
+                // ---- MULTI-BOOK TILE (accordion) ----
+                const partsHTML = parts.map(part => {
+                    const hasPdf = typeof part.pdf === 'string' && part.pdf.trim() !== '';
+                    return hasPdf
+                        ? `<a class="ncert-part" href="${part.pdf}" target="_blank" rel="noopener noreferrer">
+                              <span class="ncert-part-name">${part.name}</span>
+                              <span class="ncert-part-btn">Download ${externalSVG}</span>
+                           </a>`
+                        : `<div class="ncert-part is-coming" aria-disabled="true">
+                              <span class="ncert-part-name">${part.name}</span>
+                              <span class="ncert-part-btn is-coming">Coming Soon</span>
+                           </div>`;
+                }).join('');
+
+                const count = parts.length;
+                return `
+                    <article class="ncert-tile is-expandable" style="${style}" role="button" tabindex="0" aria-expanded="false" aria-label="${subject.subject} — ${count} books, expand to see all">
+                        <div class="ncert-tile-main">
+                            <div class="ncert-cover" aria-hidden="true">${coverInner}</div>
+                            <div class="ncert-tile-body">
+                                <div class="ncert-tile-subject">${subject.subject}</div>
+                                <div class="ncert-tile-title">${count} Books Available</div>
+                                <p class="ncert-tile-desc">${subject.description}</p>
+                                <div class="ncert-tile-foot">
+                                    <span class="ncert-tile-badge">Latest 2026–27</span>
+                                    <button type="button" class="ncert-tile-toggle" tabindex="-1" aria-hidden="true">
+                                        <span class="ncert-toggle-label">Expand</span>
+                                        ${chevronSVG}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ncert-parts">${partsHTML}</div>
+                    </article>
+                `;
+            }
+
+            function openTrack(trackKey) {
+                const track = NCERT_LIBRARY[trackKey];
+                if (!track || !modal || !modalCard) return;
+                const m = track.meta;
+
+                if (modalEyebrow) modalEyebrow.textContent = m.modalEyebrow;
+                if (modalTitle)   modalTitle.textContent   = m.modalTitle;
+                if (modalLead)    modalLead.textContent    = m.modalLead;
+
+                // Track-colored modal glow accent — subtle, matches the
+                // ambient glow on the source card.
+                const key = m.glowColor || 'math';
+                const rgb = (SUBJECT_COLOR[key] || SUBJECT_COLOR.math).rgb;
+                modalCard.style.setProperty('--track-glow', `rgba(${rgb}, 0.28)`);
+                modalCard.style.setProperty('--track-color', `rgb(${rgb})`);
+
+                if (modalTiles) modalTiles.innerHTML = track.books.map(tileHTML).join('');
+
+                modal.classList.add('is-open');
+            }
+
+            function closeModal() {
+                if (modal) modal.classList.remove('is-open');
+            }
+
+            // Card click / keyboard activation. Delegation keeps this
+            // O(1) regardless of how many cards render later.
+            grid.addEventListener('click', (e) => {
+                const cardEl = e.target.closest('.ncert-card');
+                if (!cardEl) return;
+                openTrack(cardEl.dataset.track);
+            });
+
+            if (modalClose) modalClose.addEventListener('click', closeModal);
+            if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal && modal.classList.contains('is-open')) closeModal();
+            });
+
+            // ---- ACCORDION: expand / collapse multi-book tiles ----
+            // Delegation on modalTiles catches every click inside the
+            // grid without needing a listener per tile (re-rendered on
+            // every openTrack). Any click on an <a> / native download
+            // link short-circuits so browser navigation still happens.
+            function toggleTile(tile) {
+                const isExpanded = tile.classList.toggle('is-expanded');
+                tile.setAttribute('aria-expanded', String(isExpanded));
+                const label = tile.querySelector('.ncert-toggle-label');
+                if (label) label.textContent = isExpanded ? 'Collapse' : 'Expand';
+            }
+            if (modalTiles) {
+                modalTiles.addEventListener('click', (e) => {
+                    // Let native links/buttons handle their own clicks.
+                    if (e.target.closest('a')) return;
+                    if (e.target.closest('button.ncert-tile-btn')) return;
+                    const tile = e.target.closest('.ncert-tile.is-expandable');
+                    if (!tile) return;
+                    toggleTile(tile);
+                });
+                modalTiles.addEventListener('keydown', (e) => {
+                    if (e.key !== 'Enter' && e.key !== ' ') return;
+                    const tile = e.target.closest('.ncert-tile.is-expandable');
+                    if (!tile || e.target !== tile) return;
+                    e.preventDefault();
+                    toggleTile(tile);
+                });
+            }
+        })();
+    </script>
+
 
     <!-- ==========================================================
          FEATURED YOUTUBE CLASSES  —  Only edit the featuredVideos array
