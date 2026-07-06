@@ -1195,6 +1195,16 @@ overflow: visible;
     /* machine ko upar shift karo */
     transform: translate(-50%, -62%) scale(1.45);
 transform-origin: center center;
+    /* This wrapper's own bounding box (900x900, scaled + shifted
+       upward) overflows into the section ABOVE #contact — that part
+       is transparent/invisible but, without this, still an
+       auto-pointer-events box sitting on top of that section's
+       buttons and blocking clicks (e.g. "Explore Library" /
+       "Visit CBSE" above). Making the wrapper itself click-through
+       fixes that; .contact-form-container below explicitly restores
+       pointer-events so the actual form inputs/checkbox/submit still
+       work exactly as before. */
+    pointer-events: none;
 }
         .contact-machine-svg {
             position: absolute;
@@ -1218,6 +1228,14 @@ transform-origin: center center;
             display: flex;
             flex-direction: column;
             gap: 0px;
+            /* Parent .contact-machine-scaler is now pointer-events:
+               none (see comment there) so its overflowing invisible
+               bounding box stops blocking buttons in the section
+               above. pointer-events isn't inherited by default in a
+               way that re-enables itself, so it must be explicitly
+               turned back on here for the actual form to keep
+               working exactly as before. */
+            pointer-events: auto;
         }
         .contact-form-row {
             width: 100%;
