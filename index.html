@@ -322,8 +322,12 @@
         .chat-bubble-content th { background: rgba(255,255,255,0.04); font-weight: 700; color: white; text-transform: uppercase; font-size: 10px; }
         .katex-display { overflow-x: auto; overflow-y: hidden; padding: 6px 0; margin: 10px 0; }
 
-        #chat-window.maximized { width: 90vw !important; max-width: 900px !important; height: 80vh !important; max-height: 700px !important; transition: all .3s cubic-bezier(.4,0,.2,1); }
-        @media (max-width: 640px) { #chat-window.maximized { width: 95vw !important; height: 80vh !important; max-height: none !important; } }
+        #chat-window.maximized { width: 90vw !important; max-width: 900px !important; height: min(700px, 80dvh) !important; transition: all .3s cubic-bezier(.4,0,.2,1); }
+        @media (max-width: 640px) { #chat-window.maximized { width: 95vw !important; height: clamp(340px, 80dvh, 700px) !important; } }
+        @supports not (height: 100dvh) {
+            #chat-window.maximized { height: min(700px, 80vh) !important; }
+            @media (max-width: 640px) { #chat-window.maximized { height: clamp(340px, 80vh, 700px) !important; } }
+        }
 
         /* Chatbot attention cue: a bright light that travels around the
            button's edge. The button itself is an opaque filled circle sitting
@@ -4405,9 +4409,9 @@ transform-origin: center center;
             // student only has to press Send afterwards.
             // ============================================================
             const MAX_RECORDING_MS = 45000;   // safety cap: 45s per voice note
-            const SILENCE_HANG_MS = 1300;      // how long the student must stay quiet before auto-stop
-            const SPEECH_START_HANG_MS = 4000; // if nothing is said at all within this long, stop and let them retry
-            const SILENCE_VOLUME_THRESHOLD = 0.02; // 0-1 scale RMS volume level
+            const SILENCE_HANG_MS = 1800;      // how long the student must stay quiet before auto-stop
+            const SPEECH_START_HANG_MS = 6000; // if nothing is said at all within this long, stop and let them retry
+            const SILENCE_VOLUME_THRESHOLD = 0.012; // 0-1 scale RMS volume level
 
             let mediaRecorder = null;
             let mediaStream = null;
@@ -4608,6 +4612,12 @@ transform-origin: center center;
                     if (data.transcript && data.transcript.trim()) {
                         chatInput.value = (chatInput.value ? chatInput.value.trim() + " " : "") + data.transcript.trim();
                         chatInput.focus();
+                    } else if (data.error) {
+                        // A real backend/API failure (bad audio, Whisper error,
+                        // missing key, etc.) — distinct from genuine silence,
+                        // so it doesn't get mistaken for "just speak clearer".
+                        console.error("Transcription backend error:", data.error);
+                        appendBubble("bot", "Voice process karne me technical issue aa gaya. Thodi der baad try karo, ya text me pooch lo!");
                     } else {
                         appendBubble("bot", "Kuch sunayi nahi diya, thoda paas se aur clearly bolke dekho! 🎤");
                     }
