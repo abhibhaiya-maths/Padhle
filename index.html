@@ -404,6 +404,43 @@
             .bot-float, .bot-eyes, .bot-antenna-dot, .bot-arm-l, .bot-arm-r, .bot-glow-halo { animation: none !important; }
         }
 
+        /* ============================================================
+           IMAGE SOURCE PICKER OVERLAY (chat-image-menu-overlay)
+           Written as plain CSS rather than Tailwind utility classes on
+           purpose: this project's Tailwind stylesheet is a static,
+           pre-generated build (not the live CDN/JIT compiler), so any
+           brand-new utility string (like z-[2500] or sm:items-center)
+           that wasn't already present somewhere else on the page has NO
+           matching CSS rule at all and silently does nothing. Defining
+           the critical positioning/stacking/sizing here guarantees it
+           actually works regardless of what the prebuilt stylesheet has.
+           ============================================================ */
+        #chat-image-menu-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 0 12px 12px;
+            background: rgba(0, 0, 0, 0.6);
+        }
+        #chat-image-menu-overlay.open {
+            display: flex;
+        }
+        @media (min-width: 640px) {
+            #chat-image-menu-overlay { align-items: center; }
+        }
+        #chat-image-menu {
+            width: 100%;
+            max-width: 320px;
+            background: var(--ink-2);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+
         /* Mic button "listening" state */
         #chat-mic-btn.mic-listening {
             background: rgba(239, 68, 68, 0.15) !important;
@@ -1520,7 +1557,7 @@ transform-origin: center center;
 
             <div class="p-4 border-b border-white/5 bg-black/20 flex items-center gap-3">
                 <div class="relative w-10 h-10 rounded-full border border-[var(--signal)]/40 flex items-center justify-center overflow-hidden bg-black/30">
-                    <img decoding="async" loading="lazy" src="hero-photo-tiny.webp" alt="Abhi Bhaiya" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='hero-photo.webp';this.onerror=function(){this.src='logo-nav.webp'}">
+                    <img decoding="async" loading="eager" fetchpriority="low" src="hero-photo-tiny.webp" alt="Abhi Bhaiya" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='hero-photo.webp';this.onerror=function(){this.src='logo-nav.webp'}">
                     <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[var(--ink-2)]"></span>
                 </div>
                 <div>
@@ -1550,8 +1587,9 @@ transform-origin: center center;
             </div>
 
             <div class="p-3 border-t border-white/5 bg-black/30 flex gap-2 items-center">
-                <input type="file" id="chat-image-input" accept="image/*" class="hidden">
-                <button id="chat-image-btn" title="Photo bhejo" class="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-[var(--ink-text-dim)] hover:text-white transition-all flex items-center justify-center flex-shrink-0">
+                <input type="file" id="chat-image-camera-input" accept="image/*" capture="environment" class="hidden">
+                <input type="file" id="chat-image-gallery-input" accept="image/*" class="hidden">
+                <button id="chat-image-btn" title="Attach a Photo" class="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-[var(--ink-text-dim)] hover:text-white transition-all flex items-center justify-center flex-shrink-0">
                     <i data-lucide="image-plus" class="w-4 h-4"></i>
                 </button>
                 <button id="chat-mic-btn" title="Bol ke poochho" class="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-[var(--ink-text-dim)] hover:text-white transition-all flex items-center justify-center flex-shrink-0">
@@ -1562,6 +1600,28 @@ transform-origin: center center;
                     <i data-lucide="send" class="w-4 h-4"></i>
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- IMAGE SOURCE PICKER (bottom-sheet overlay) — deliberately placed OUTSIDE
+         #chat-window and given a very high z-index + position:fixed (via the
+         dedicated #chat-image-menu-overlay CSS rule above), so it can NEVER
+         be clipped by the chat window's overflow:hidden container, and is
+         guaranteed to render on top regardless of the static Tailwind build. -->
+    <div id="chat-image-menu-overlay">
+        <div id="chat-image-menu">
+            <div class="px-4 py-3 border-b border-white/5">
+                <p class="text-xs font-bold text-white uppercase tracking-wide">Choose Photo Source</p>
+            </div>
+            <button type="button" id="chat-image-camera-btn" class="w-full flex items-center gap-3 px-4 py-4 text-sm text-white hover:bg-white/10 transition-colors">
+                <i data-lucide="camera" class="w-5 h-5 text-signal flex-shrink-0"></i> Click the Question Image (Camera)
+            </button>
+            <button type="button" id="chat-image-gallery-btn" class="w-full flex items-center gap-3 px-4 py-4 text-sm text-white hover:bg-white/10 transition-colors border-t border-white/5">
+                <i data-lucide="image" class="w-5 h-5 text-signal flex-shrink-0"></i> Upload From Gallery
+            </button>
+            <button type="button" id="chat-image-menu-cancel" class="w-full px-4 py-3 text-xs text-[var(--ink-text-dim)] hover:text-white transition-colors border-t border-white/10">
+                Cancel
+            </button>
         </div>
     </div>
 
@@ -3988,7 +4048,17 @@ transform-origin: center center;
             const chatSendBtn = document.getElementById('chat-send-btn');
             const chatStream = document.getElementById('chat-stream');
             const chatImageBtn = document.getElementById('chat-image-btn');
-            const chatImageInput = document.getElementById('chat-image-input');
+            const chatImageMenuOverlay = document.getElementById('chat-image-menu-overlay');
+            // Re-parent straight onto <body> so no ancestor container can ever
+            // interfere with its position:fixed behaviour.
+            if (chatImageMenuOverlay && chatImageMenuOverlay.parentElement !== document.body) {
+                document.body.appendChild(chatImageMenuOverlay);
+            }
+            const chatImageMenuCancel = document.getElementById('chat-image-menu-cancel');
+            const chatImageCameraBtn = document.getElementById('chat-image-camera-btn');
+            const chatImageGalleryBtn = document.getElementById('chat-image-gallery-btn');
+            const chatImageCameraInput = document.getElementById('chat-image-camera-input');
+            const chatImageGalleryInput = document.getElementById('chat-image-gallery-input');
             const chatImagePreviewRow = document.getElementById('chat-image-preview-row');
             const chatImagePreview = document.getElementById('chat-image-preview');
             const chatImageRemoveBtn = document.getElementById('chat-image-remove-btn');
@@ -4204,20 +4274,70 @@ transform-origin: center center;
             // read via FileReader; no upload happens until "Send" is
             // pressed, at which point the base64 data URL travels inside
             // the same JSON POST the text already uses.
+            //
+            // Two entry points, one shared handler:
+            //   - "Photo kheecho"      -> chat-image-camera-input (capture="environment"
+            //                             opens the device camera directly on mobile)
+            //   - "Gallery se chuno"   -> chat-image-gallery-input (no capture attr,
+            //                             so it opens the normal file/photo picker)
             // ============================================================
             const MAX_IMAGE_MB = 8; // keep comfortably under Groq's 20MB request cap
 
             function resetSelectedImage() {
                 selectedImageDataUrl = null;
-                chatImageInput.value = "";
+                chatImageCameraInput.value = "";
+                chatImageGalleryInput.value = "";
                 chatImagePreview.src = "";
                 chatImagePreviewRow.classList.add('hidden');
             }
 
-            chatImageBtn.addEventListener('click', () => chatImageInput.click());
+            function openImageMenu() {
+                // Force the critical styles inline (not just via CSS class) as a
+                // belt-and-suspenders guarantee: even if a stale/cached copy of
+                // the stylesheet is being served, these inline styles — set
+                // fresh by JS every time — always win and always work.
+                Object.assign(chatImageMenuOverlay.style, {
+                    display: 'flex',
+                    position: 'fixed',
+                    top: '0', left: '0', right: '0', bottom: '0',
+                    zIndex: '2147483647', // max safe z-index — guaranteed above everything
+                    alignItems: window.innerWidth >= 640 ? 'center' : 'flex-end',
+                    justifyContent: 'center',
+                    background: 'rgba(0,0,0,0.6)',
+                    padding: '12px'
+                });
+                chatImageMenuOverlay.classList.add('open');
+            }
+            function closeImageMenu() {
+                chatImageMenuOverlay.style.display = 'none';
+                chatImageMenuOverlay.classList.remove('open');
+            }
 
-            chatImageInput.addEventListener('change', () => {
-                const file = chatImageInput.files && chatImageInput.files[0];
+            chatImageBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openImageMenu();
+            });
+
+            // Tapping the dark backdrop (anywhere outside the sheet itself)
+            // closes it. Tapping inside the sheet must NOT close it.
+            chatImageMenuOverlay.addEventListener('click', (e) => {
+                if (e.target === chatImageMenuOverlay) closeImageMenu();
+            });
+            chatImageMenuCancel.addEventListener('click', closeImageMenu);
+
+            chatImageCameraBtn.addEventListener('click', () => {
+                closeImageMenu();
+                chatImageCameraInput.click();
+            });
+            chatImageGalleryBtn.addEventListener('click', () => {
+                closeImageMenu();
+                chatImageGalleryInput.click();
+            });
+
+            // Shared handler: reads whichever input (camera or gallery) the
+            // student used, validates it, and shows the preview thumbnail.
+            function handleImageFileSelected(fileInputEl) {
+                const file = fileInputEl.files && fileInputEl.files[0];
                 if (!file) return;
 
                 if (!file.type.startsWith('image/')) {
@@ -4242,68 +4362,251 @@ transform-origin: center center;
                     resetSelectedImage();
                 };
                 reader.readAsDataURL(file);
-            });
+            }
+
+            chatImageCameraInput.addEventListener('change', () => handleImageFileSelected(chatImageCameraInput));
+            chatImageGalleryInput.addEventListener('change', () => handleImageFileSelected(chatImageGalleryInput));
 
             chatImageRemoveBtn.addEventListener('click', resetSelectedImage);
 
             // ============================================================
-            // VOICE INPUT — 100% free, browser-native Web Speech API.
-            // Converts speech to text directly into the existing text box;
-            // nothing is sent anywhere for this step, so it works with
-            // zero backend/API changes and no extra cost.
+            // VOICE INPUT — records audio with the browser's MediaRecorder
+            // API (works reliably on iOS Safari, Android, and desktop —
+            // unlike the native SpeechRecognition API, which iOS browsers
+            // don't actually support despite exposing the constructor) and
+            // sends it to the Worker, which transcribes it using Groq's
+            // free Whisper model. The transcribed text lands in the input
+            // box for the student to review/edit before sending.
+            //
+            // AUTO-STOP ON SILENCE: a lightweight Web Audio API volume
+            // meter watches the live mic input. Once the student has
+            // clearly started talking and then goes quiet for ~1.3s,
+            // recording stops automatically — no second tap needed. The
+            // student only has to press Send afterwards.
             // ============================================================
-            const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-            let recognizer = null;
-            let isListening = false;
+            const MAX_RECORDING_MS = 45000;   // safety cap: 45s per voice note
+            const SILENCE_HANG_MS = 1300;      // how long the student must stay quiet before auto-stop
+            const SPEECH_START_HANG_MS = 4000; // if nothing is said at all within this long, stop and let them retry
+            const SILENCE_VOLUME_THRESHOLD = 0.02; // 0-1 scale RMS volume level
 
-            if (SpeechRecognitionAPI) {
-                recognizer = new SpeechRecognitionAPI();
-                recognizer.continuous = false;
-                recognizer.interimResults = false;
-                recognizer.lang = 'en-IN'; // handles Hinglish speech reasonably well
+            let mediaRecorder = null;
+            let mediaStream = null;
+            let recordedChunks = [];
+            let isRecording = false;
+            let recordingTimeoutId = null;
 
-                recognizer.onstart = () => {
-                    isListening = true;
-                    chatMicBtn.classList.add('mic-listening');
-                };
+            // Web Audio silence-detection state
+            let audioContext = null;
+            let analyserNode = null;
+            let silenceCheckRafId = null;
+            let hasDetectedSpeech = false;
+            let silenceStartedAt = null;
+            let recordingStartedAt = null;
 
-                recognizer.onresult = (event) => {
-                    const transcript = event.results[0][0].transcript;
-                    chatInput.value = (chatInput.value ? chatInput.value.trim() + " " : "") + transcript;
-                    chatInput.focus();
-                };
-
-                recognizer.onerror = (event) => {
-                    console.error("Speech recognition error:", event.error);
-                    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-                        appendBubble("bot", "Mic ka permission allow karo browser me, tabhi voice se pooch paoge! 🎤");
+            // Pick the first audio mime type this browser's MediaRecorder can
+            // actually encode. Safari (iOS/macOS) only supports audio/mp4;
+            // Chrome/Firefox/Edge support audio/webm (with opus).
+            function pickSupportedMimeType() {
+                const candidates = [
+                    'audio/webm;codecs=opus',
+                    'audio/webm',
+                    'audio/mp4',
+                    'audio/aac'
+                ];
+                for (const type of candidates) {
+                    if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(type)) {
+                        return type;
                     }
-                };
-
-                recognizer.onend = () => {
-                    isListening = false;
-                    chatMicBtn.classList.remove('mic-listening');
-                };
-
-                chatMicBtn.addEventListener('click', () => {
-                    if (isListening) {
-                        recognizer.stop();
-                    } else {
-                        try {
-                            recognizer.start();
-                        } catch (e) {
-                            console.error("Could not start recognizer:", e);
-                        }
-                    }
-                });
-            } else {
-                // Browser doesn't support Web Speech API (e.g. some iOS Safari
-                // versions) — keep the button visible but explain instead of
-                // failing silently.
-                chatMicBtn.addEventListener('click', () => {
-                    appendBubble("bot", "Ye browser voice input support nahi karta abhi. Chrome pe try karo, Warrior! 🎤");
-                });
+                }
+                return ''; // let the browser pick its own default
             }
+
+            function setMicBusyState(isBusy) {
+                chatMicBtn.classList.toggle('mic-listening', isBusy);
+            }
+
+            // Starts a requestAnimationFrame loop that reads the live mic
+            // volume and auto-stops recording once real speech has been
+            // heard and then trails off into silence.
+            function startSilenceWatcher(stream) {
+                try {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    audioContext = new AudioCtx();
+                    const source = audioContext.createMediaStreamSource(stream);
+                    analyserNode = audioContext.createAnalyser();
+                    analyserNode.fftSize = 512;
+                    source.connect(analyserNode);
+                } catch (err) {
+                    console.error("Silence watcher init failed (non-fatal):", err);
+                    return; // recording still works fine without auto-stop; user can tap to stop
+                }
+
+                const buffer = new Uint8Array(analyserNode.fftSize);
+                hasDetectedSpeech = false;
+                silenceStartedAt = null;
+                recordingStartedAt = performance.now();
+
+                function checkVolume() {
+                    if (!isRecording || !analyserNode) return;
+                    analyserNode.getByteTimeDomainData(buffer);
+
+                    // RMS volume, normalized 0-1
+                    let sumSquares = 0;
+                    for (let i = 0; i < buffer.length; i++) {
+                        const normalized = (buffer[i] - 128) / 128;
+                        sumSquares += normalized * normalized;
+                    }
+                    const rms = Math.sqrt(sumSquares / buffer.length);
+                    const now = performance.now();
+
+                    if (rms > SILENCE_VOLUME_THRESHOLD) {
+                        hasDetectedSpeech = true;
+                        silenceStartedAt = null;
+                    } else if (hasDetectedSpeech) {
+                        if (silenceStartedAt === null) silenceStartedAt = now;
+                        if (now - silenceStartedAt >= SILENCE_HANG_MS) {
+                            stopRecording();
+                            return;
+                        }
+                    } else if (now - recordingStartedAt >= SPEECH_START_HANG_MS) {
+                        // Nothing said at all for a while — stop so the mic
+                        // doesn't sit open indefinitely waiting for speech.
+                        stopRecording();
+                        return;
+                    }
+
+                    silenceCheckRafId = requestAnimationFrame(checkVolume);
+                }
+                silenceCheckRafId = requestAnimationFrame(checkVolume);
+            }
+
+            function stopSilenceWatcher() {
+                if (silenceCheckRafId) cancelAnimationFrame(silenceCheckRafId);
+                silenceCheckRafId = null;
+                if (audioContext) {
+                    audioContext.close().catch(() => {});
+                    audioContext = null;
+                }
+                analyserNode = null;
+            }
+
+            async function startRecording() {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+                    appendBubble("bot", "Ye browser voice recording support nahi karta. Text me try karo, Warrior! 🎤");
+                    return;
+                }
+                try {
+                    // This line triggers the browser's REAL, native mic
+                    // permission prompt on every platform (including iOS
+                    // Safari) — unlike SpeechRecognition, getUserMedia is
+                    // universally implemented.
+                    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                } catch (err) {
+                    console.error("getUserMedia failed:", err);
+                    if (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) {
+                        appendBubble("bot", "Mic ka permission allow karo browser settings me, tabhi voice se pooch paoge! 🎤");
+                    } else {
+                        appendBubble("bot", "Mic access nahi mil paya. Dobara try karo ya text me pooch lo.");
+                    }
+                    return;
+                }
+
+                const mimeType = pickSupportedMimeType();
+                recordedChunks = [];
+                try {
+                    mediaRecorder = mimeType ? new MediaRecorder(mediaStream, { mimeType }) : new MediaRecorder(mediaStream);
+                } catch (err) {
+                    console.error("MediaRecorder init failed:", err);
+                    appendBubble("bot", "Voice recording start nahi ho payi. Text me try karo, Warrior!");
+                    mediaStream.getTracks().forEach(t => t.stop());
+                    return;
+                }
+
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+                };
+                mediaRecorder.onstop = handleRecordingStopped;
+
+                mediaRecorder.start();
+                isRecording = true;
+                setMicBusyState(true);
+                startSilenceWatcher(mediaStream);
+
+                // Absolute safety net regardless of the silence watcher.
+                recordingTimeoutId = setTimeout(() => {
+                    if (isRecording) stopRecording();
+                }, MAX_RECORDING_MS);
+            }
+
+            function stopRecording() {
+                if (!isRecording || !mediaRecorder) return;
+                clearTimeout(recordingTimeoutId);
+                stopSilenceWatcher();
+                isRecording = false;
+                try {
+                    mediaRecorder.stop();
+                } catch (err) {
+                    console.error("Error stopping recorder:", err);
+                }
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(t => t.stop());
+                }
+            }
+
+            async function handleRecordingStopped() {
+                setMicBusyState(true); // keep the busy visual on while transcribing
+                const usedMimeType = (mediaRecorder && mediaRecorder.mimeType) || 'audio/webm';
+                const blob = new Blob(recordedChunks, { type: usedMimeType });
+                recordedChunks = [];
+
+                if (blob.size === 0) {
+                    setMicBusyState(false);
+                    return; // nothing recorded (e.g. instantly tapped stop) — silently ignore
+                }
+
+                const loaderId = appendBubble("bot", "Awaaz sun raha hu... ⚡", true);
+
+                try {
+                    const audioDataUrl = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(blob);
+                    });
+
+                    const response = await fetch(WORKER_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ action: "transcribe", audio: audioDataUrl })
+                    });
+
+                    if (!response.ok) throw new Error(`Server returned status ${response.status}`);
+                    const data = await response.json();
+
+                    removeLoader(loaderId);
+
+                    if (data.transcript && data.transcript.trim()) {
+                        chatInput.value = (chatInput.value ? chatInput.value.trim() + " " : "") + data.transcript.trim();
+                        chatInput.focus();
+                    } else {
+                        appendBubble("bot", "Kuch sunayi nahi diya, thoda paas se aur clearly bolke dekho! 🎤");
+                    }
+                } catch (error) {
+                    console.error("Transcription error:", error);
+                    removeLoader(loaderId);
+                    appendBubble("bot", "Voice ko text me convert nahi kar paya abhi. Dobara try karo!");
+                } finally {
+                    setMicBusyState(false);
+                }
+            }
+
+            chatMicBtn.addEventListener('click', () => {
+                if (isRecording) {
+                    stopRecording();
+                } else {
+                    startRecording();
+                }
+            });
 
             // Send Message Logic (With decoupled dynamic language & script payloads)
             async function sendMessage() {
@@ -4320,7 +4623,7 @@ transform-origin: center center;
                 resetSelectedImage();
 
                 // Append user bubble to UI (with image thumbnail if present)
-                appendBubble("user", messageText || "<span class='italic text-blue-100'>[Image bheji]</span>", false, imageToSend);
+                appendBubble("user", messageText || "<span class='italic text-blue-100'>Image Sent</span>", false, imageToSend);
 
                 // Append temporary loading bubble
                 const loaderId = appendBubble("bot", "Abhi bhaiya soch rahe hain... ⚡", true);
@@ -4652,6 +4955,41 @@ transform-origin: center center;
                 requestAnimationFrame(frame);
             }
             requestAnimationFrame(frame);
+        })();
+    </script>
+
+    <!-- Mobile Safari dynamic-toolbar fix: iOS Safari shows/hides its
+         address bar AND bottom toolbar as the user scrolls, which changes
+         how much of the screen is actually visible (the "visual viewport")
+         WITHOUT changing the page's layout viewport. A `position:fixed`
+         element positioned via `bottom: Npx` is anchored to the (larger,
+         unchanging) layout viewport — so when Safari's toolbar chrome is
+         expanded (e.g. right after scrolling up / at rest), part of the
+         fixed chat widget — including the floating toggle button — ends up
+         rendered UNDER that toolbar, outside the currently visible area.
+         Scrolling down collapses the toolbar and "reveals" the widget
+         again, which is exactly the confusing glitch reported.
+         Fix: track window.visualViewport (the API purpose-built for this)
+         and nudge the widget up by however much space the toolbar is
+         currently eating, so it always stays fully visible. -->
+    <script>
+        (function () {
+            var container = document.getElementById('ai-chat-container');
+            if (!container || !window.visualViewport) return;
+
+            function reposition() {
+                var vv = window.visualViewport;
+                var hiddenByChrome = window.innerHeight - (vv.height + vv.offsetTop);
+                if (hiddenByChrome < 0) hiddenByChrome = 0;
+                container.style.transform = hiddenByChrome > 1
+                    ? 'translateY(-' + hiddenByChrome + 'px)'
+                    : '';
+            }
+
+            window.visualViewport.addEventListener('resize', reposition);
+            window.visualViewport.addEventListener('scroll', reposition);
+            window.addEventListener('orientationchange', reposition);
+            reposition();
         })();
     </script>
 
