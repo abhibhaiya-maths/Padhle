@@ -404,43 +404,6 @@
             .bot-float, .bot-eyes, .bot-antenna-dot, .bot-arm-l, .bot-arm-r, .bot-glow-halo { animation: none !important; }
         }
 
-        /* ============================================================
-           IMAGE SOURCE PICKER OVERLAY (chat-image-menu-overlay)
-           Written as plain CSS rather than Tailwind utility classes on
-           purpose: this project's Tailwind stylesheet is a static,
-           pre-generated build (not the live CDN/JIT compiler), so any
-           brand-new utility string (like z-[2500] or sm:items-center)
-           that wasn't already present somewhere else on the page has NO
-           matching CSS rule at all and silently does nothing. Defining
-           the critical positioning/stacking/sizing here guarantees it
-           actually works regardless of what the prebuilt stylesheet has.
-           ============================================================ */
-        #chat-image-menu-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
-            display: none;
-            align-items: flex-end;
-            justify-content: center;
-            padding: 0 12px 12px;
-            background: rgba(0, 0, 0, 0.6);
-        }
-        #chat-image-menu-overlay.open {
-            display: flex;
-        }
-        @media (min-width: 640px) {
-            #chat-image-menu-overlay { align-items: center; }
-        }
-        #chat-image-menu {
-            width: 100%;
-            max-width: 320px;
-            background: var(--ink-2);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-        }
-
         /* Mic button "listening" state */
         #chat-mic-btn.mic-listening {
             background: rgba(239, 68, 68, 0.15) !important;
@@ -1557,7 +1520,7 @@ transform-origin: center center;
 
             <div class="p-4 border-b border-white/5 bg-black/20 flex items-center gap-3">
                 <div class="relative w-10 h-10 rounded-full border border-[var(--signal)]/40 flex items-center justify-center overflow-hidden bg-black/30">
-                    <img decoding="async" loading="eager" fetchpriority="low" src="hero-photo-tiny.webp" alt="Abhi Bhaiya" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='hero-photo.webp';this.onerror=function(){this.src='logo-nav.webp'}">
+                    <img decoding="async" loading="lazy" src="hero-photo-tiny.webp" alt="Abhi Bhaiya" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='hero-photo.webp';this.onerror=function(){this.src='logo-nav.webp'}">
                     <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[var(--ink-2)]"></span>
                 </div>
                 <div>
@@ -1587,9 +1550,8 @@ transform-origin: center center;
             </div>
 
             <div class="p-3 border-t border-white/5 bg-black/30 flex gap-2 items-center">
-                <input type="file" id="chat-image-camera-input" accept="image/*" capture="environment" class="hidden">
-                <input type="file" id="chat-image-gallery-input" accept="image/*" class="hidden">
-                <button id="chat-image-btn" title="Attach a Photo" class="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-[var(--ink-text-dim)] hover:text-white transition-all flex items-center justify-center flex-shrink-0">
+                <input type="file" id="chat-image-input" accept="image/*" class="hidden">
+                <button id="chat-image-btn" title="Photo bhejo" class="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-[var(--ink-text-dim)] hover:text-white transition-all flex items-center justify-center flex-shrink-0">
                     <i data-lucide="image-plus" class="w-4 h-4"></i>
                 </button>
                 <button id="chat-mic-btn" title="Bol ke poochho" class="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-[var(--ink-text-dim)] hover:text-white transition-all flex items-center justify-center flex-shrink-0">
@@ -1600,28 +1562,6 @@ transform-origin: center center;
                     <i data-lucide="send" class="w-4 h-4"></i>
                 </button>
             </div>
-        </div>
-    </div>
-
-    <!-- IMAGE SOURCE PICKER (bottom-sheet overlay) — deliberately placed OUTSIDE
-         #chat-window and given a very high z-index + position:fixed (via the
-         dedicated #chat-image-menu-overlay CSS rule above), so it can NEVER
-         be clipped by the chat window's overflow:hidden container, and is
-         guaranteed to render on top regardless of the static Tailwind build. -->
-    <div id="chat-image-menu-overlay">
-        <div id="chat-image-menu">
-            <div class="px-4 py-3 border-b border-white/5">
-                <p class="text-xs font-bold text-white uppercase tracking-wide">Choose Photo Source</p>
-            </div>
-            <button type="button" id="chat-image-camera-btn" class="w-full flex items-center gap-3 px-4 py-4 text-sm text-white hover:bg-white/10 transition-colors">
-                <i data-lucide="camera" class="w-5 h-5 text-signal flex-shrink-0"></i> Click the Question Image (Camera)
-            </button>
-            <button type="button" id="chat-image-gallery-btn" class="w-full flex items-center gap-3 px-4 py-4 text-sm text-white hover:bg-white/10 transition-colors border-t border-white/5">
-                <i data-lucide="image" class="w-5 h-5 text-signal flex-shrink-0"></i> Upload From Gallery
-            </button>
-            <button type="button" id="chat-image-menu-cancel" class="w-full px-4 py-3 text-xs text-[var(--ink-text-dim)] hover:text-white transition-colors border-t border-white/10">
-                Cancel
-            </button>
         </div>
     </div>
 
@@ -4048,17 +3988,7 @@ transform-origin: center center;
             const chatSendBtn = document.getElementById('chat-send-btn');
             const chatStream = document.getElementById('chat-stream');
             const chatImageBtn = document.getElementById('chat-image-btn');
-            const chatImageMenuOverlay = document.getElementById('chat-image-menu-overlay');
-            // Re-parent straight onto <body> so no ancestor container can ever
-            // interfere with its position:fixed behaviour.
-            if (chatImageMenuOverlay && chatImageMenuOverlay.parentElement !== document.body) {
-                document.body.appendChild(chatImageMenuOverlay);
-            }
-            const chatImageMenuCancel = document.getElementById('chat-image-menu-cancel');
-            const chatImageCameraBtn = document.getElementById('chat-image-camera-btn');
-            const chatImageGalleryBtn = document.getElementById('chat-image-gallery-btn');
-            const chatImageCameraInput = document.getElementById('chat-image-camera-input');
-            const chatImageGalleryInput = document.getElementById('chat-image-gallery-input');
+            const chatImageInput = document.getElementById('chat-image-input');
             const chatImagePreviewRow = document.getElementById('chat-image-preview-row');
             const chatImagePreview = document.getElementById('chat-image-preview');
             const chatImageRemoveBtn = document.getElementById('chat-image-remove-btn');
@@ -4274,70 +4204,20 @@ transform-origin: center center;
             // read via FileReader; no upload happens until "Send" is
             // pressed, at which point the base64 data URL travels inside
             // the same JSON POST the text already uses.
-            //
-            // Two entry points, one shared handler:
-            //   - "Photo kheecho"      -> chat-image-camera-input (capture="environment"
-            //                             opens the device camera directly on mobile)
-            //   - "Gallery se chuno"   -> chat-image-gallery-input (no capture attr,
-            //                             so it opens the normal file/photo picker)
             // ============================================================
             const MAX_IMAGE_MB = 8; // keep comfortably under Groq's 20MB request cap
 
             function resetSelectedImage() {
                 selectedImageDataUrl = null;
-                chatImageCameraInput.value = "";
-                chatImageGalleryInput.value = "";
+                chatImageInput.value = "";
                 chatImagePreview.src = "";
                 chatImagePreviewRow.classList.add('hidden');
             }
 
-            function openImageMenu() {
-                // Force the critical styles inline (not just via CSS class) as a
-                // belt-and-suspenders guarantee: even if a stale/cached copy of
-                // the stylesheet is being served, these inline styles — set
-                // fresh by JS every time — always win and always work.
-                Object.assign(chatImageMenuOverlay.style, {
-                    display: 'flex',
-                    position: 'fixed',
-                    top: '0', left: '0', right: '0', bottom: '0',
-                    zIndex: '2147483647', // max safe z-index — guaranteed above everything
-                    alignItems: window.innerWidth >= 640 ? 'center' : 'flex-end',
-                    justifyContent: 'center',
-                    background: 'rgba(0,0,0,0.6)',
-                    padding: '12px'
-                });
-                chatImageMenuOverlay.classList.add('open');
-            }
-            function closeImageMenu() {
-                chatImageMenuOverlay.style.display = 'none';
-                chatImageMenuOverlay.classList.remove('open');
-            }
+            chatImageBtn.addEventListener('click', () => chatImageInput.click());
 
-            chatImageBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openImageMenu();
-            });
-
-            // Tapping the dark backdrop (anywhere outside the sheet itself)
-            // closes it. Tapping inside the sheet must NOT close it.
-            chatImageMenuOverlay.addEventListener('click', (e) => {
-                if (e.target === chatImageMenuOverlay) closeImageMenu();
-            });
-            chatImageMenuCancel.addEventListener('click', closeImageMenu);
-
-            chatImageCameraBtn.addEventListener('click', () => {
-                closeImageMenu();
-                chatImageCameraInput.click();
-            });
-            chatImageGalleryBtn.addEventListener('click', () => {
-                closeImageMenu();
-                chatImageGalleryInput.click();
-            });
-
-            // Shared handler: reads whichever input (camera or gallery) the
-            // student used, validates it, and shows the preview thumbnail.
-            function handleImageFileSelected(fileInputEl) {
-                const file = fileInputEl.files && fileInputEl.files[0];
+            chatImageInput.addEventListener('change', () => {
+                const file = chatImageInput.files && chatImageInput.files[0];
                 if (!file) return;
 
                 if (!file.type.startsWith('image/')) {
@@ -4362,10 +4242,7 @@ transform-origin: center center;
                     resetSelectedImage();
                 };
                 reader.readAsDataURL(file);
-            }
-
-            chatImageCameraInput.addEventListener('change', () => handleImageFileSelected(chatImageCameraInput));
-            chatImageGalleryInput.addEventListener('change', () => handleImageFileSelected(chatImageGalleryInput));
+            });
 
             chatImageRemoveBtn.addEventListener('click', resetSelectedImage);
 
@@ -4443,7 +4320,7 @@ transform-origin: center center;
                 resetSelectedImage();
 
                 // Append user bubble to UI (with image thumbnail if present)
-                appendBubble("user", messageText || "<span class='italic text-blue-100'>Image Sent</span>", false, imageToSend);
+                appendBubble("user", messageText || "<span class='italic text-blue-100'>[Image bheji]</span>", false, imageToSend);
 
                 // Append temporary loading bubble
                 const loaderId = appendBubble("bot", "Abhi bhaiya soch rahe hain... ⚡", true);
