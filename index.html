@@ -405,6 +405,26 @@
         }
 
         /* ============================================================
+           RESPONSIVE CHAT WINDOW HEIGHT (overrides the fixed h-[480px]
+           Tailwind class via ID specificity)
+           The window was a fixed 480px tall regardless of screen size.
+           On a short mobile viewport — especially with mobile Safari's
+           address bar / bottom toolbar chrome taking up space — 480px
+           plus the floating button + gaps below it can exceed the
+           actually-visible screen height, pushing the window's own
+           header and the floating toggle button off the TOP of the
+           screen entirely (the reported "can't find how to minimize"
+           glitch). `dvh` is the dynamic viewport height unit: unlike
+           vh, it automatically tracks Safari's toolbar showing/hiding,
+           so this needs no JS and self-corrects on every device. */
+        #chat-window {
+            height: clamp(340px, calc(100dvh - 170px), 480px);
+        }
+        @supports not (height: 100dvh) {
+            #chat-window { height: clamp(340px, calc(100vh - 170px), 480px); }
+        }
+
+        /* ============================================================
            IMAGE SOURCE PICKER OVERLAY (chat-image-menu-overlay)
            Written as plain CSS rather than Tailwind utility classes on
            purpose: this project's Tailwind stylesheet is a static,
