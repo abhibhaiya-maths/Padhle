@@ -470,16 +470,34 @@
             background: rgba(239, 68, 68, 0.15) !important;
             border-color: rgba(239, 68, 68, 0.5) !important;
             color: #ef4444 !important;
-            animation: micPulse 1.1s ease-in-out infinite;
+            animation: micPulse 1.4s ease-in-out infinite;
+            position: relative;
+        }
+        #chat-mic-btn.mic-listening::after {
+            content: "";
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #ef4444;
+            animation: micDotBlink 1s ease-in-out infinite;
         }
         @keyframes micPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.45); }
-            50%      { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+            0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.5), 0 0 0 0 rgba(239,68,68,0.3); }
+            70%  { box-shadow: 0 0 0 8px rgba(239,68,68,0), 0 0 0 16px rgba(239,68,68,0); }
+            100% { box-shadow: 0 0 0 0 rgba(239,68,68,0), 0 0 0 0 rgba(239,68,68,0); }
+        }
+        @keyframes micDotBlink {
+            0%, 100% { opacity: 1; }
+            50%      { opacity: 0.25; }
         }
 
         @media (prefers-reduced-motion: reduce) {
             .gs-reveal { opacity: 1 !important; transform: none !important; }
             #chat-teaser { animation: none !important; }
+            #chat-mic-btn.mic-listening, #chat-mic-btn.mic-listening::after { animation: none !important; }
         }
 
         /* Keep native <select> dropdown options readable on the dark theme */
@@ -4554,6 +4572,7 @@ transform-origin: center center;
                 mediaRecorder.start();
                 isRecording = true;
                 setMicBusyState(true);
+                if (chatInput) chatInput.placeholder = "🎙️ Sun raha hoon... bolo!";
                 startSilenceWatcher(mediaStream);
 
                 // Absolute safety net regardless of the silence watcher.
@@ -4577,15 +4596,85 @@ transform-origin: center center;
                 }
             }
 
+            // Converts an AudioBuffer into a standard 16-bit PCM WAV Blob.
+            // Used to normalize whatever container the browser's
+            // MediaRecorder produced (webm/mp4/aac/etc — iOS Safari's mp4
+            // output is occasionally malformed in ways that make Groq's
+            // Whisper endpoint reject it) into a format that is always
+            // valid and universally parseable.
+            function audioBufferToWavBlob(audioBuffer) {
+                const numChannels = audioBuffer.numberOfChannels;
+                const sampleRate = audioBuffer.sampleRate;
+                const bitDepth = 16;
+
+                let interleaved;
+                if (numChannels === 2) {
+                    const left = audioBuffer.getChannelData(0);
+                    const right = audioBuffer.getChannelData(1);
+                    interleaved = new Float32Array(left.length + right.length);
+                    for (let i = 0, j = 0; i < left.length; i++) {
+                        interleaved[j++] = left[i];
+                        interleaved[j++] = right[i];
+                    }
+                } else {
+                    interleaved = audioBuffer.getChannelData(0);
+                }
+
+                const dataLength = interleaved.length * (bitDepth / 8);
+                const buffer = new ArrayBuffer(44 + dataLength);
+                const view = new DataView(buffer);
+                const writeString = (offset, str) => {
+                    for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+                };
+
+                writeString(0, 'RIFF');
+                view.setUint32(4, 36 + dataLength, true);
+                writeString(8, 'WAVE');
+                writeString(12, 'fmt ');
+                view.setUint32(16, 16, true);
+                view.setUint16(20, 1, true); // PCM
+                view.setUint16(22, numChannels, true);
+                view.setUint32(24, sampleRate, true);
+                view.setUint32(28, sampleRate * numChannels * (bitDepth / 8), true);
+                view.setUint16(32, numChannels * (bitDepth / 8), true);
+                view.setUint16(34, bitDepth, true);
+                writeString(36, 'data');
+                view.setUint32(40, dataLength, true);
+
+                let offset = 44;
+                for (let i = 0; i < interleaved.length; i++, offset += 2) {
+                    const s = Math.max(-1, Math.min(1, interleaved[i]));
+                    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+                }
+
+                return new Blob([view], { type: 'audio/wav' });
+            }
+
             async function handleRecordingStopped() {
                 setMicBusyState(true); // keep the busy visual on while transcribing
+                if (chatInput) chatInput.placeholder = "⏳ Samajh raha hoon...";
                 const usedMimeType = (mediaRecorder && mediaRecorder.mimeType) || 'audio/webm';
-                const blob = new Blob(recordedChunks, { type: usedMimeType });
+                let blob = new Blob(recordedChunks, { type: usedMimeType });
                 recordedChunks = [];
 
                 if (blob.size === 0) {
                     setMicBusyState(false);
+                    if (chatInput) chatInput.placeholder = "Ask a math query or syllabus doubt...";
                     return; // nothing recorded (e.g. instantly tapped stop) — silently ignore
+                }
+
+                // Best-effort normalize to WAV. If decoding fails for any
+                // reason, fall back to sending the original recorded blob
+                // rather than losing the voice note entirely.
+                try {
+                    const arrayBuf = await blob.arrayBuffer();
+                    const DecodeCtx = window.AudioContext || window.webkitAudioContext;
+                    const decodeCtx = new DecodeCtx();
+                    const audioBuffer = await decodeCtx.decodeAudioData(arrayBuf);
+                    blob = audioBufferToWavBlob(audioBuffer);
+                    decodeCtx.close();
+                } catch (reencodeErr) {
+                    console.error("WAV re-encode failed, sending original recording instead:", reencodeErr);
                 }
 
                 const loaderId = appendBubble("bot", "Awaaz sun raha hu... ⚡", true);
@@ -4627,6 +4716,7 @@ transform-origin: center center;
                     appendBubble("bot", "Voice ko text me convert nahi kar paya abhi. Dobara try karo!");
                 } finally {
                     setMicBusyState(false);
+                    if (chatInput) chatInput.placeholder = "Ask a math query or syllabus doubt...";
                 }
             }
 
