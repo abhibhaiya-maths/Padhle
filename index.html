@@ -4706,7 +4706,7 @@ transform-origin: center center;
                         // missing key, etc.) — distinct from genuine silence,
                         // so it doesn't get mistaken for "just speak clearer".
                         console.error("Transcription backend error:", data.error);
-                        appendBubble("bot", "Voice process karne me technical issue aa gaya. Thodi der baad try karo, ya text me pooch lo!");
+                        appendBubble("bot", "Voice process karne me technical issue aa gaya. Thodi der baad try karo, ya text me pooch lo!" + (data.debug ? ("\n\n🔧 Debug info: " + data.debug) : ""));
                     } else {
                         appendBubble("bot", "Kuch sunayi nahi diya, thoda paas se aur clearly bolke dekho! 🎤");
                     }
@@ -4870,6 +4870,24 @@ transform-origin: center center;
                     .replace(new RegExp(CDOTP, "g"), "\\cdotp")                   // restore \cdotp
                     .replace(new RegExp(CDOTS, "g"), "\\cdots");                  // restore ⋯
             }
+            // Detects an entire English sentence the model accidentally
+            // wrapped in one $...$ pair (structurally "valid" math, so
+            // repairMisplacedMathDelimiters leaves it alone — but KaTeX then
+            // renders it as one glued, space-stripped italic math block).
+            // Several common English stopwords inside a fragment is a
+            // strong, low-false-positive signal that it's prose, not math.
+            function unwrapAccidentalProseMath(text) {
+                if (!text) return text;
+                const STOPWORDS = /\b(the|a|an|is|are|was|were|when|to|of|in|on|for|and|or|but|that|this|from|by|with|without|you|your|write|writes|writing|forget|forgetting|remember|must|should|number|smaller|larger|always|never|will|would|can|could|not|convert|converting|count|counts|counting|means|mean|meaning|because|since|while|before|after|between|each|every|more|than|once|order|matters|choose|chosen|form|group)\b/gi;
+                return text.replace(/\$([^\$\n]*)\$/g, (match, inner) => {
+                    const trimmed = inner.trim();
+                    const words = trimmed.split(/\s+/);
+                    if (words.length < 5) return match;
+                    const stopwordHits = (trimmed.match(STOPWORDS) || []).length;
+                    if (stopwordHits >= 3) return trimmed;
+                    return match;
+                });
+            }
             function repairMisplacedMathDelimiters(text) {
                 if (!text) return text;
                 const SIZE_SPACE = "\\\\Bigg?l|\\\\bigg?l|\\\\Bigg?r|\\\\bigg?r|\\\\left|\\\\right|\\\\,|\\\\;|\\\\:|\\\\!";
@@ -4925,7 +4943,7 @@ transform-origin: center center;
                 }
 
                 // Self-heal the model's math BEFORE KaTeX ever sees it.
-                text = repairMisplacedMathDelimiters(deglueMathOperators(text));
+                text = repairMisplacedMathDelimiters(deglueMathOperators(unwrapAccidentalProseMath(text)));
 
                 const mathBlocks = [];
                 let processedText = text;
