@@ -4892,17 +4892,25 @@ transform-origin: center center;
                     if (!line.includes('$')) return line;
                     const frags = [...line.matchAll(/\$([^\$\n]*)\$/g)];
                     if (!frags.length) return line;
-                    const fragBroken = frags.some(m => {
-                        const inner = m[1];
-                        return DANGLING_END.test(inner) || DANGLING_START.test(inner) || bracesUnbalanced(inner);
-                    });
-                    let gapBroken = false;
-                    for (let i = 1; i < frags.length; i++) {
-                        const prevEnd = frags[i - 1].index + frags[i - 1][0].length;
-                        const gap = line.slice(prevEnd, frags[i].index);
-                        if (GAP_LOOKS_LIKE_MATH.test(gap)) { gapBroken = true; break; }
+                    let triggered;
+                    if (frags.length === 1) {
+                        const inner = frags[0][1];
+                        triggered = DANGLING_END.test(inner) || DANGLING_START.test(inner) || bracesUnbalanced(inner);
+                    } else {
+                        // Multiple independent $...$ mentions on one line/paragraph:
+                        // don't let one legitimately-terminal-looking-but-fine
+                        // snippet (e.g. a lone "$\,$" spacer) nuke the whole
+                        // paragraph into one glued, space-stripped math block.
+                        const fragBroken = frags.some(m => bracesUnbalanced(m[1]));
+                        let gapBroken = false;
+                        for (let i = 1; i < frags.length; i++) {
+                            const prevEnd = frags[i - 1].index + frags[i - 1][0].length;
+                            const gap = line.slice(prevEnd, frags[i].index);
+                            if (GAP_LOOKS_LIKE_MATH.test(gap)) { gapBroken = true; break; }
+                        }
+                        triggered = fragBroken || gapBroken;
                     }
-                    if (!fragBroken && !gapBroken) return line;
+                    if (!triggered) return line;
                     const indent = (line.match(/^(\s*)/) || ['', ''])[1];
                     const stripped = line.slice(indent.length).replace(/\$/g, '').trim();
                     if (!stripped) return line;
