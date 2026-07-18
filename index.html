@@ -4862,10 +4862,36 @@ transform-origin: center center;
             // Fixes two inline formulas colliding into an accidental "$$"
             // (e.g. "...\qquad$$\cos...") which would otherwise get
             // misread as a display-math block, corrupting both neighbours.
-            // See the matching worker-side function for full reasoning.
+            // v7.2: rewritten as a proper stateful scan (tracks which
+            // delimiter is currently open) so genuine, intentional
+            // $$...$$ display blocks pass through completely untouched —
+            // only real collisions get split. See the matching worker-side
+            // function for the full reasoning and test cases.
             function preventAccidentalDoubleDollar(text) {
                 if (!text) return text;
-                return text.replace(/\$\$/g, '$ $');
+                const tokens = text.match(/\$\$|\$|[^$]+/g);
+                if (!tokens) return text;
+                let result = '';
+                let openDelim = null; // null | '$' | '$$'
+                for (const tok of tokens) {
+                    if (tok === '$$' || tok === '$') {
+                        if (openDelim === null) {
+                            openDelim = tok;
+                            result += tok;
+                        } else if (openDelim === tok) {
+                            openDelim = null;
+                            result += tok;
+                        } else if (openDelim === '$' && tok === '$$') {
+                            result += '$ $';
+                            openDelim = '$';
+                        } else {
+                            result += tok;
+                        }
+                    } else {
+                        result += tok;
+                    }
+                }
+                return result;
             }
             function fixCdotInsideText(text) {
                 if (!text) return text;
@@ -5056,7 +5082,13 @@ transform-origin: center center;
 
                 // Step 7: Inject beautifully compiled KaTeX math HTML back into placeholders
                 mathBlocks.forEach(({ placeholder, html }) => {
-                    htmlResult = htmlResult.replace(placeholder, html);
+                    // split/join instead of replace(): guards against the
+                    // rare edge case where `html` contains a literal "$"
+                    // sequence that JS's String.replace() would otherwise
+                    // misinterpret as a special replacement pattern (e.g.
+                    // "$&", "$$"), and replaces every occurrence rather
+                    // than just the first.
+                    htmlResult = htmlResult.split(placeholder).join(html);
                 });
 
                 return htmlResult;
