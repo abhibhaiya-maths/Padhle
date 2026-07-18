@@ -4859,6 +4859,21 @@ transform-origin: center center;
             // Verified against real KaTeX 0.16.8 on every failing case seen
             // in production plus 12 legitimate expressions (all untouched).
             // ============================================================
+            // Fixes two inline formulas colliding into an accidental "$$"
+            // (e.g. "...\qquad$$\cos...") which would otherwise get
+            // misread as a display-math block, corrupting both neighbours.
+            // See the matching worker-side function for full reasoning.
+            function preventAccidentalDoubleDollar(text) {
+                if (!text) return text;
+                return text.replace(/\$\$/g, '$ $');
+            }
+            function fixCdotInsideText(text) {
+                if (!text) return text;
+                return text.replace(/\\text\{([^{}]*)\}/g, (match, inner) => {
+                    const fixed = inner.replace(/\\cdotp|\\cdot/g, '·');
+                    return '\\text{' + fixed + '}';
+                });
+            }
             function deglueMathOperators(text) {
                 if (!text) return text;
                 const CDOTS = "\uE000", CDOTP = "\uE001";
@@ -4943,7 +4958,7 @@ transform-origin: center center;
                 }
 
                 // Self-heal the model's math BEFORE KaTeX ever sees it.
-                text = repairMisplacedMathDelimiters(deglueMathOperators(unwrapAccidentalProseMath(text)));
+                text = repairMisplacedMathDelimiters(fixCdotInsideText(deglueMathOperators(unwrapAccidentalProseMath(preventAccidentalDoubleDollar(text)))));
 
                 const mathBlocks = [];
                 let processedText = text;
