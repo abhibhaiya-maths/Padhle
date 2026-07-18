@@ -4862,36 +4862,38 @@ transform-origin: center center;
             // Fixes two inline formulas colliding into an accidental "$$"
             // (e.g. "...\qquad$$\cos...") which would otherwise get
             // misread as a display-math block, corrupting both neighbours.
-            // v7.2: rewritten as a proper stateful scan (tracks which
-            // delimiter is currently open) so genuine, intentional
-            // $$...$$ display blocks pass through completely untouched —
-            // only real collisions get split. See the matching worker-side
+            // v7.3: LINE-SCOPED scan — state resets at every line break,
+            // so a stray/unpaired $ anywhere earlier in a long response
+            // (e.g. mentioning a price) can never cascade to corrupt
+            // formulas on OTHER lines. See the matching worker-side
             // function for the full reasoning and test cases.
             function preventAccidentalDoubleDollar(text) {
                 if (!text) return text;
-                const tokens = text.match(/\$\$|\$|[^$]+/g);
-                if (!tokens) return text;
-                let result = '';
-                let openDelim = null; // null | '$' | '$$'
-                for (const tok of tokens) {
-                    if (tok === '$$' || tok === '$') {
-                        if (openDelim === null) {
-                            openDelim = tok;
-                            result += tok;
-                        } else if (openDelim === tok) {
-                            openDelim = null;
-                            result += tok;
-                        } else if (openDelim === '$' && tok === '$$') {
-                            result += '$ $';
-                            openDelim = '$';
+                return text.split('\n').map(line => {
+                    const tokens = line.match(/\$\$|\$|[^$]+/g);
+                    if (!tokens) return line;
+                    let result = '';
+                    let openDelim = null; // null | '$' | '$$' — reset per line
+                    for (const tok of tokens) {
+                        if (tok === '$$' || tok === '$') {
+                            if (openDelim === null) {
+                                openDelim = tok;
+                                result += tok;
+                            } else if (openDelim === tok) {
+                                openDelim = null;
+                                result += tok;
+                            } else if (openDelim === '$' && tok === '$$') {
+                                result += '$ $';
+                                openDelim = '$';
+                            } else {
+                                result += tok;
+                            }
                         } else {
                             result += tok;
                         }
-                    } else {
-                        result += tok;
                     }
-                }
-                return result;
+                    return result;
+                }).join('\n');
             }
             function fixCdotInsideText(text) {
                 if (!text) return text;
