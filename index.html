@@ -5033,8 +5033,26 @@ transform-origin: center center;
                     }
                 });
 
-                // Step 6: Run Markdown Parser on the protected text
-                let htmlResult = marked.parse(processedText);
+                // Defensive cleanup: if the response got cut off mid-generation
+                // (e.g. hit the token limit while writing a trailing image
+                // URL), an unclosed "![...](http..." with no closing ")"
+                // can end up as the very last thing in the text. Strip a
+                // clearly-incomplete trailing image link rather than risk
+                // it confusing the markdown parser.
+                processedText = processedText.replace(/!\[[^\]]*\]\([^)\n]*$/, '');
+
+                // Step 6: Run Markdown Parser on the protected text. Wrapped
+                // defensively — a parser exception here previously meant the
+                // ENTIRE message fell back to showing raw, unformatted
+                // source text (bold markers, tables, math placeholders and
+                // all) instead of just this one problem area degrading.
+                let htmlResult;
+                try {
+                    htmlResult = marked.parse(processedText);
+                } catch (e) {
+                    console.error("marked.parse failed, falling back to plain text:", e);
+                    htmlResult = processedText.replace(/</g, '&lt;').replace(/\n/g, '<br>');
+                }
 
                 // Step 7: Inject beautifully compiled KaTeX math HTML back into placeholders
                 mathBlocks.forEach(({ placeholder, html }) => {
@@ -5065,7 +5083,12 @@ transform-origin: center center;
                     let contentHTML = text;
                     if (!isLoading) {
                         // Use the ultimate Smart Math Protection Parser
-                        contentHTML = renderMarkdownAndMath(text); 
+                        try {
+                            contentHTML = renderMarkdownAndMath(text);
+                        } catch (renderErr) {
+                            console.error("renderMarkdownAndMath failed entirely, showing raw text:", renderErr);
+                            contentHTML = String(text).replace(/</g, '&lt;').replace(/\n/g, '<br>');
+                        }
                     }
 
                     // Upgraded with Solid bg-slate-900 and border-slate-800 for pristine text contrast
