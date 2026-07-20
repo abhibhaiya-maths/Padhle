@@ -4859,6 +4859,49 @@ transform-origin: center center;
             // Verified against real KaTeX 0.16.8 on every failing case seen
             // in production plus 12 legitimate expressions (all untouched).
             // ============================================================
+            // Fixes two inline formulas colliding into an accidental "$$"
+            // (e.g. "...\qquad$$\cos...") which would otherwise get
+            // misread as a display-math block, corrupting both neighbours.
+            // v7.3: LINE-SCOPED scan — state resets at every line break,
+            // so a stray/unpaired $ anywhere earlier in a long response
+            // (e.g. mentioning a price) can never cascade to corrupt
+            // formulas on OTHER lines. See the matching worker-side
+            // function for the full reasoning and test cases.
+            function preventAccidentalDoubleDollar(text) {
+                if (!text) return text;
+                return text.split('\n').map(line => {
+                    const tokens = line.match(/\$\$|\$|[^$]+/g);
+                    if (!tokens) return line;
+                    let result = '';
+                    let openDelim = null; // null | '$' | '$$' — reset per line
+                    for (const tok of tokens) {
+                        if (tok === '$$' || tok === '$') {
+                            if (openDelim === null) {
+                                openDelim = tok;
+                                result += tok;
+                            } else if (openDelim === tok) {
+                                openDelim = null;
+                                result += tok;
+                            } else if (openDelim === '$' && tok === '$$') {
+                                result += '$ $';
+                                openDelim = '$';
+                            } else {
+                                result += tok;
+                            }
+                        } else {
+                            result += tok;
+                        }
+                    }
+                    return result;
+                }).join('\n');
+            }
+            function fixCdotInsideText(text) {
+                if (!text) return text;
+                return text.replace(/\\text\{([^{}]*)\}/g, (match, inner) => {
+                    const fixed = inner.replace(/\\cdotp|\\cdot/g, '·');
+                    return '\\text{' + fixed + '}';
+                });
+            }
             function deglueMathOperators(text) {
                 if (!text) return text;
                 const CDOTS = "\uE000", CDOTP = "\uE001";
@@ -4943,7 +4986,7 @@ transform-origin: center center;
                 }
 
                 // Self-heal the model's math BEFORE KaTeX ever sees it.
-                text = repairMisplacedMathDelimiters(deglueMathOperators(unwrapAccidentalProseMath(text)));
+                text = repairMisplacedMathDelimiters(fixCdotInsideText(deglueMathOperators(unwrapAccidentalProseMath(preventAccidentalDoubleDollar(text)))));
 
                 const mathBlocks = [];
                 let processedText = text;
@@ -5018,12 +5061,36 @@ transform-origin: center center;
                     }
                 });
 
-                // Step 6: Run Markdown Parser on the protected text
-                let htmlResult = marked.parse(processedText);
+                // Defensive cleanup: if the response got cut off mid-generation
+                // (e.g. hit the token limit while writing a trailing image
+                // URL), an unclosed "![...](http..." with no closing ")"
+                // can end up as the very last thing in the text. Strip a
+                // clearly-incomplete trailing image link rather than risk
+                // it confusing the markdown parser.
+                processedText = processedText.replace(/!\[[^\]]*\]\([^)\n]*$/, '');
+
+                // Step 6: Run Markdown Parser on the protected text. Wrapped
+                // defensively — a parser exception here previously meant the
+                // ENTIRE message fell back to showing raw, unformatted
+                // source text (bold markers, tables, math placeholders and
+                // all) instead of just this one problem area degrading.
+                let htmlResult;
+                try {
+                    htmlResult = marked.parse(processedText);
+                } catch (e) {
+                    console.error("marked.parse failed, falling back to plain text:", e);
+                    htmlResult = processedText.replace(/</g, '&lt;').replace(/\n/g, '<br>');
+                }
 
                 // Step 7: Inject beautifully compiled KaTeX math HTML back into placeholders
                 mathBlocks.forEach(({ placeholder, html }) => {
-                    htmlResult = htmlResult.replace(placeholder, html);
+                    // split/join instead of replace(): guards against the
+                    // rare edge case where `html` contains a literal "$"
+                    // sequence that JS's String.replace() would otherwise
+                    // misinterpret as a special replacement pattern (e.g.
+                    // "$&", "$$"), and replaces every occurrence rather
+                    // than just the first.
+                    htmlResult = htmlResult.split(placeholder).join(html);
                 });
 
                 return htmlResult;
@@ -5050,7 +5117,12 @@ transform-origin: center center;
                     let contentHTML = text;
                     if (!isLoading) {
                         // Use the ultimate Smart Math Protection Parser
-                        contentHTML = renderMarkdownAndMath(text); 
+                        try {
+                            contentHTML = renderMarkdownAndMath(text);
+                        } catch (renderErr) {
+                            console.error("renderMarkdownAndMath failed entirely, showing raw text:", renderErr);
+                            contentHTML = String(text).replace(/</g, '&lt;').replace(/\n/g, '<br>');
+                        }
                     }
 
                     // Upgraded with Solid bg-slate-900 and border-slate-800 for pristine text contrast
