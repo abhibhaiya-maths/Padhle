@@ -47,7 +47,7 @@
 
     <!-- KaTeX & Marked: only needed once the chatbot is opened, deferred so
          they never block the initial page render -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
@@ -4088,6 +4088,7 @@ transform-origin: center center;
             const closeIcon = document.getElementById('toggle-icon-close');
             const chatInput = document.getElementById('chat-input');
             const chatSendBtn = document.getElementById('chat-send-btn');
+            let isSending = false; // prevents duplicate/overlapping requests from rapid Enter/click spam
             const chatStream = document.getElementById('chat-stream');
             const chatImageBtn = document.getElementById('chat-image-btn');
             const chatImageMenuOverlay = document.getElementById('chat-image-menu-overlay');
@@ -4730,9 +4731,14 @@ transform-origin: center center;
 
             // Send Message Logic (With decoupled dynamic language & script payloads)
             async function sendMessage() {
+                if (isSending) return; // a request is already in flight — ignore extra Enter/click spam
                 const messageText = chatInput.value.trim();
                 const imageToSend = selectedImageDataUrl; // snapshot before we reset it
                 if (!messageText && !imageToSend) return;
+
+                isSending = true;
+                chatSendBtn.disabled = true;
+                chatSendBtn.style.opacity = '0.5';
 
                 // A photo with no typed question still needs some instruction
                 // for the model to act on.
@@ -4822,6 +4828,10 @@ transform-origin: center center;
                     console.error("Chat Error Details: ", error);
                     removeLoader(loaderId);
                     appendBubble("bot", "Lagta hai technical issues hain, dobara koshish karo Champion!");
+                } finally {
+                    isSending = false;
+                    chatSendBtn.disabled = false;
+                    chatSendBtn.style.opacity = '1';
                 }
             }
 
@@ -4939,6 +4949,7 @@ transform-origin: center center;
                 const DANGLING_END = new RegExp("(" + SIZE_SPACE + "|" + OPS + "|" + NEEDS_ARG + ")\\s*$");
                 const DANGLING_START = /^\s*(\\Bigg?r|\\bigg?r|\\right)/;
                 const GAP_LOOKS_LIKE_MATH = /^\s*([_^]\{|\\[a-zA-Z])/;
+                const BARE_TOKEN_ONLY = new RegExp("^(" + SIZE_SPACE + "|" + OPS + ")$");
                 const bracesUnbalanced = (inner) => {
                     let depth = 0;
                     for (let i = 0; i < inner.length; i++) {
@@ -4959,10 +4970,18 @@ transform-origin: center center;
                         triggered = DANGLING_END.test(inner) || DANGLING_START.test(inner) || bracesUnbalanced(inner);
                     } else {
                         // Multiple independent $...$ mentions on one line/paragraph:
-                        // don't let one legitimately-terminal-looking-but-fine
-                        // snippet (e.g. a lone "$\,$" spacer) nuke the whole
-                        // paragraph into one glued, space-stripped math block.
-                        const fragBroken = frags.some(m => bracesUnbalanced(m[1]));
+                        // a BARE, standalone spacer fragment (e.g. a lone "$\,$")
+                        // must NOT trip this, but a SUBSTANTIAL fragment (real
+                        // content) that ends in a dangling spacer/operator IS a
+                        // genuine break — e.g. "$\int x^{n}\,$dx" leaves the
+                        // literal "dx" sitting outside the delimiter as
+                        // unstyled plain text (confirmed in production).
+                        const fragBroken = frags.some(m => {
+                            const inner = m[1].trim();
+                            if (bracesUnbalanced(m[1])) return true;
+                            if (BARE_TOKEN_ONLY.test(inner)) return false;
+                            return DANGLING_END.test(inner) || DANGLING_START.test(inner);
+                        });
                         let gapBroken = false;
                         for (let i = 1; i < frags.length; i++) {
                             const prevEnd = frags[i - 1].index + frags[i - 1][0].length;
